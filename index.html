@@ -13,65 +13,6 @@
    navigator.serviceWorker.register('/service-worker.js')
      .then(() => console.log('Service Worker registered'))
      .catch((err) => console.log('Service Worker registration failed:', err));
- }
- </script>
-/* Header / Navigation bar */
-header {
-  background-color: #C42454; /* Red */
-  color: white;
-  padding: 10px;
-  text-align: center;
-}
-
-/* Task card border */
-.task-card {
-  border: 2px solid #6B3916; /* Dark Brown */
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-/* Due date badge */
-.badge-due {
-  background-color: #F5D104; /* Gold */
-  color: black;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: bold;
-}
-
-<header class="my-header">
-  <h1>LAE Task Card App</h1>
-</header>
-
-<style>
-  .my-header {
-    background-color: #C42454; /* Crimson Red background */
-    padding: 12px;
-    color: white;
-    text-align: center;
-  }
-  .my-header h1 {
-    margin: 0;
-  }
-
-  /* Example: Highlighted badges or due alerts */
-  .badge-due {
-    background-color: #F5D104; /* Gold background */
-    color: black;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-
-  /* Example: Card border or accent */
-  .task-card {
-    border: 2px solid #6B3916; /* Dark Brown accent line */
-    padding: 12px;
-    margin-bottom: 8px;
-    border-radius: 6px;
-  }
-</style>
-
 
   <style>
     :root{--bg:#0f172a;--panel:#111827;--muted:#9ca3af;--ink:#e5e7eb;--ink2:#f9fafb;--brand:#22c55e;--danger:#ef4444;--warn:#f59e0b;--card:#0b1220;}
