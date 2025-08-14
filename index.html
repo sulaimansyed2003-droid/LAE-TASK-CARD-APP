@@ -13,6 +13,9 @@
    navigator.serviceWorker.register('/service-worker.js')
      .then(() => console.log('Service Worker registered'))
      .catch((err) => console.log('Service Worker registration failed:', err));
+ }
+ </script>
+
 
   <style>
     :root{--bg:#0f172a;--panel:#111827;--muted:#9ca3af;--ink:#e5e7eb;--ink2:#f9fafb;--brand:#22c55e;--danger:#ef4444;--warn:#f59e0b;--card:#0b1220;}
@@ -646,25 +649,6 @@ if ('Notification' in window && Notification.permission !== 'granted') {
   <button type="submit">Save Task</button>
 </form>
 
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>BATIK AIR(LAE TASK CARD APP)</title>
-    <style>
-        .task-card {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 6px;
-        }
-    </style>
-</head>
-<body>
-    <h1>LAE Task Cards</h1>
-    <button onclick="signIn()">Sign In</button>
-    <div id="taskList"></div>
 
-    <script src="script.js"></script>
 </body>
 </html>
-
