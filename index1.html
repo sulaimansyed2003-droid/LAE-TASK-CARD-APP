@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LAE Task Card App (Officer & LAE)</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0033A0"> <!-- Changed to Batik Air blue -->
+
+  <style>
+    :root {
+      /* Batik Air Official Colors */
+      --bg: #0033A0;           /* Primary blue */
+      --panel: #00257A;        /* Darker blue for panels */
+      --muted: #A0B4E0;        /* Light blue for secondary text */
+      --ink: #FFFFFF;          /* White primary text */
+      --ink2: #F5F5F5;         /* Off-white for headings */
+      --brand: #E31937;        /* Batik Air red for primary buttons */
+      --danger: #FF4D4D;       /* Error red */
+      --warn: #FFA726;         /* Warning orange */
+      --card: #001F5C;         /* Card backgrounds */
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
+      background: linear-gradient(135deg, #00257A 0%, #0033A0 100%) fixed;
+      color:var(--ink)
+    }
+    .container{max-width:1100px;margin:0 auto;padding:20px}
+    .glass{
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      backdrop-filter:blur(6px);
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.35)
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin:12px 0 20px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px 20px;
+      border-radius: 16px;
+    }
+    h1{font-size:1.25rem;margin:0;color:var(--ink2)}
+    .pill{font-size:.8rem;color:var(--ink);border:1px solid rgba(255,255,255,0.14);padding:6px 10px;border-radius:999px}
+    .row{display:flex;gap:16px;flex-wrap:wrap}
+    .col{flex:1;min-width:280px}
+    .card{
+      padding:16px;
+      border-radius:16px;
+      background:var(--card);
+      border:1px solid rgba(255,255,255,0.06);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    }
+    label{display:block;font-size:.85rem;color:var(--muted);margin:12px 0 6px}
+    input,textarea,select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(0, 0, 0, 0.2);
+      color:var(--ink)
+    }
+    textarea{min-height:90px}
+    .btn{
+      border:0;
+      border-radius:12px;
+      padding:10px 14px;
+      font-weight:600;
+      cursor:pointer
+    }
+    .btn.brand{
+      background:var(--brand);
+      color:white;
+      box-shadow: 0 2px 8px rgba(227, 25, 55, 0.3);
+    }
+    .btn.ghost{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.16);
+      color:var(--ink)
+    }
+    .btn.warn{background:var(--warn);color:#3b2600}
+    .btn.danger{background:var(--danger);color:#2a0b0b}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:12px}
+    .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    @media (max-width:860px){.grid.two,.grid.three{grid-template-columns:1fr}}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;padding:10px;vertical-align:top}
+    th{font-size:.85rem;color:var(--muted);font-weight:600;width:220px}
+    tr:hover{background:rgba(255,255,255,0.035)}
+    .tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .tab{
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.14);
+      cursor:pointer
+    }
+    .tab.active{
+      background:var(--brand);
+      color:white !important;
+    }
+    .center{display:flex;align-items:center;justify-content:center}
+    .scroller{
+      max-height:180px;
+      overflow:auto;
+      padding:8px;
+      border-radius:10px;
+      background:rgba(0, 0, 0, 0.2);
+      border:1px solid rgba(255,255,255,0.08)
+    }
+    .subtle{opacity:.9}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Batik Air Logo Header -->
+    <div style="display:flex;align-items:center;gap:15px;margin-bottom:20px;padding-top:10px">
+      <img src="batik-air-logo.png" alt="Batik Air" style="height:40px">
+      <div>
+        <h1 style="margin:0;font-size:1.5rem;color:white">LAE Task Card App</h1>
+        <p style="margin:0;color:var(--muted);font-size:0.9rem">Maintenance Management System</p>
+      </div>
+    </div>
+
+    <header>
+      <h1>LAE Task Card App</h1>
+      <span class="pill" id="rolePill">Not signed in</span>
+    </header>
+
+    <!-- Rest of your existing HTML content remains exactly the same -->
+    <!-- AUTH / ROLE + STAFF ID -->
+    <div id="auth" class="glass card">
+      [... ALL YOUR EXISTING CONTENT ...]
+    </div>
+
+    <!-- APP -->
+    <div id="app" class="glass card" style="display:none">
+      [... ALL YOUR EXISTING CONTENT ...]
+    </div>
+  </div>
+
+  <!-- Your existing JavaScript remains exactly the same -->
+  <script>
+    // --- Simple state & storage layer (localStorage + optional Firebase) ---
+    [... ALL YOUR EXISTING JAVASCRIPT CODE ...]
+  </script>
+</body>
+</html>
