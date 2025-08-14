@@ -649,6 +649,23 @@ if ('Notification' in window && Notification.permission !== 'granted') {
   <button type="submit">Save Task</button>
 </form>
 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAE Task Card App</title>
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <h1>LAE Task Card App</h1>
 
+    <div>
+        <h2>Due Soon Tasks</h2>
+        <ul id="dueTasksList"></ul>
+        <p><strong>Total Man-hours Needed:</strong> <span id="totalManhours">0</span></p>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
+
