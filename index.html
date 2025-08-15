@@ -3,596 +3,567 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Batik Air – Task Card App</title>
+  <title>Batik Air Task Card App</title>
 
-  <!-- PWA manifest + theme -->
+  <!-- PWA hooks (keep your existing files in the repo root) -->
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#9c1b43" />
-
-  <!-- SheetJS for Excel (.xlsx) parsing -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <meta name="theme-color" content="#b0004d" />
 
   <style>
-    /* ===== Batik Air theme (maroon & gold) ===== */
+    /* ===== Bright Batik Air Theme (magenta, gold, white) ===== */
     :root{
-      --bg:#0b0d12;
-      --panel:#11151d;
-      --ink:#f3f4f6;
-      --muted:#aab0bc;
-      --brand:#9c1b43;  /* Batik Air maroon */
-      --brand-2:#f0b12b;/* Batik Air gold */
-      --card:#0e121a;
-      --ok:#10b981;
+      --brand:#b0004d;      /* Batik Air magenta */
+      --brand-2:#f0b90b;    /* Batik gold */
+      --ink:#17202a;        /* dark text */
+      --ink-2:#475569;      /* muted text */
+      --bg:#ffffff;         /* light background */
+      --panel:#f7f8fa;      /* card bg */
+      --line:#e6e8ee;       /* borders */
+      --ok:#16a34a;
       --warn:#f59e0b;
       --due:#ef4444;
+      --soon:#fde047;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
-      background:linear-gradient(180deg,#0b0d12,#0f1420);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
       color:var(--ink);
+      background:var(--bg);
     }
+
     .container{max-width:1100px;margin:0 auto;padding:20px}
-    .glass{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(6px);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:12px 0 20px}
-    h1{margin:0;font-size:1.2rem}
-    .pill{border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 10px;color:#e5e7eb;font-size:.82rem}
-    .brand{color:#fff;background:linear-gradient(90deg,var(--brand),#b8204f)}
-    .row{display:flex;flex-wrap:wrap;gap:16px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:16px;
+      padding:12px 16px;border:1px solid var(--line);border-radius:14px;background:#fff;
+      position:sticky;top:10px;z-index:10;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;
+    }
+    .brand img{height:40px;width:auto;display:block}
+    .brand h1{font-size:1.1rem;margin:0}
+    .pill{border:1px solid var(--line);padding:6px 10px;border-radius:999px;background:var(--panel);font-size:.85rem}
+    .stats{display:flex;gap:8px;flex-wrap:wrap}
+    .stat{background:var(--panel);border:1px solid var(--line);padding:6px 10px;border-radius:10px;font-size:.85rem}
+
+    .glass.card{
+      background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;
+      box-shadow:0 6px 14px rgba(20,20,20,.05);
+    }
+
+    .row{display:flex;gap:16px;flex-wrap:wrap}
     .col{flex:1;min-width:280px}
-    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px}
-    label{display:block;color:var(--muted);font-size:.85rem;margin:12px 0 6px}
+
+    label{display:block;font-size:.85rem;color:var(--ink-2);margin:10px 0 6px}
     input,select,textarea{
-      width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);
-      background:#0e1422;color:var(--ink)
+      width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);
     }
     textarea{min-height:90px}
+
     .btn{border:0;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
-    .btn.primary{background:linear-gradient(90deg,var(--brand),#b8204f);color:white}
-    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.16);color:var(--ink)}
-    .btn.warn{background:var(--warn);color:#2d1c00}
-    .btn.ok{background:var(--ok);color:#012416}
-    .btn.danger{background:var(--due);color:#2a0b0b}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap}
-    .tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-    .tab{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);cursor:pointer;background:#0e1422}
-    .tab.active{outline:2px solid var(--brand);background:rgba(156,27,67,.15)}
-    .muted{color:var(--muted)}
-    .grid{display:grid;gap:12px}
-    .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media (max-width:880px){.grid.two{grid-template-columns:1fr}}
-    table{width:100%;border-collapse:collapse;margin-top:8px}
-    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top;text-align:left}
-    th{font-size:.85rem;color:var(--muted)}
-    tr:hover{background:rgba(255,255,255,.035)}
-    .scroller{max-height:160px;overflow:auto;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;background:#0e1422}
-    .due-chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.75rem;font-weight:700}
-    .due-ok{background:rgba(16,185,129,.15)}
-    .due-soon{background:rgba(245,158,11,.18)}
-    .due-today{background:rgba(240,177,43,.25);outline:1px solid var(--brand-2)}
-    .due-overdue{background:rgba(239,68,68,.18);outline:1px solid var(--due)}
-    .logoRow{display:flex;align-items:center;gap:14px}
-    .logo{width:120px;height:auto;border-radius:10px;background:white;padding:6px}
+    .btn.brand{background:var(--brand);color:#fff}
+    .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+    .btn.warn{background:var(--brand-2);color:#3b2600}
+    .btn.danger{background:var(--due);color:#fff}
+    .btn.ok{background:var(--ok);color:#fff}
+
+    .tabbar{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer}
+    .tab.active{outline:2px solid var(--brand);outline-offset:2px}
+
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid var(--line);text-align:left;padding:10px;vertical-align:top}
+    th{font-size:.85rem;color:var(--ink-2)}
+
+    .scroller{max-height:180px;overflow:auto;padding:8px;border:1px solid var(--line);border-radius:10px;background:#fff}
+
+    .badge{padding:4px 8px;border-radius:999px;font-size:.75rem;font-weight:700;display:inline-block}
+    .badge.green{background:#dcfce7}
+    .badge.yellow{background:#fef9c3}
+    .badge.orange{background:#ffedd5}
+    .badge.red{background:#fee2e2}
+
+    .dueFlag{font-weight:700}
+    .dueFlag.overdue{color:var(--due)}
+    .dueFlag.today{color:#b45309}
+    .dueFlag.soon{color:#854d0e}
+    .dueFlag.ok{color:#166534}
+
+    .bar{
+      height:8px;border-radius:999px;background:var(--line);overflow:hidden;
+    }
+    .bar>span{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-2))}
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- ===== HEADER ===== -->
     <header>
-      <h1>Batik Air – Task Card App</h1>
-      <div class="pill" id="sessionPill">Not signed in</div>
+      <div class="brand">
+        <!-- Put logo-batik.png in same folder -->
+        <img src="logo-batik.png" alt="Batik Air" onerror="this.style.display='none'"/>
+        <h1>Batik Air • Task Cards</h1>
+      </div>
+      <div class="stats">
+        <div class="stat" id="clock">—</div>
+        <div class="stat" id="who">Not signed in</div>
+        <div class="stat"><b id="remaining">0</b> remaining</div>
+        <div class="stat"><b id="done">0</b> done</div>
+      </div>
     </header>
 
-    <!-- ========= SIGN IN ========= -->
-    <section id="auth" class="glass card">
-      <div class="row">
+    <!-- ===== AUTH ===== -->
+    <section id="auth" class="glass card" style="margin-top:14px">
+      <div class="row" style="align-items:center">
+        <div class="col" style="max-width:360px">
+          <img src="logo-batik.png" alt="" style="max-width:100%;height:auto;border-radius:14px;border:1px solid var(--line);background:#fff;padding:8px" onerror="this.style.display='none'">
+        </div>
         <div class="col">
-          <div class="logoRow">
-            <!-- You can replace the src with your hosted file path -->
-            <img class="logo" src="https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/batikair.svg" alt="Batik Air logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Placeholder_logo.png/120px-Placeholder_logo.png'">
-            <div>
-              <h2 style="margin:0 0 6px">Sign in</h2>
-              <p class="muted" style="margin:0">Use your name, Staff ID and choose LAE or OFFICER.</p>
-            </div>
-          </div>
-
+          <h2 style="margin:0 0 8px">Sign in</h2>
+          <p style="margin:0 0 12px;color:var(--ink-2)">Enter your details to continue.</p>
           <label>Your name</label>
           <input id="nameInput" placeholder="e.g. Aiman" />
           <label>Staff ID</label>
-          <input id="staffInput" placeholder="e.g. BID1234" />
+          <input id="staffIdInput" placeholder="e.g. BID1234" />
           <label>Role</label>
-          <select id="roleInput">
+          <select id="roleSelect">
             <option value="LAE">LAE</option>
             <option value="OFFICER">OFFICER</option>
           </select>
-          <div class="toolbar" style="margin-top:12px">
-            <button class="btn primary" onclick="signIn()">Continue</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn brand" onclick="signIn()">Continue</button>
             <button class="btn ghost" onclick="seedDemo()">Load demo data</button>
           </div>
         </div>
-
-        <div class="col">
-          <div class="card">
-            <b>After sign-in</b>
-            <ul class="muted" style="margin-top:8px">
-              <li>Officer can import an Excel (.xlsx) and edit Due Date & Man Hours.</li>
-              <li>LAE can search, filter by ATA, and mark tasks completed.</li>
-              <li>Colour warnings show due status (Soon/Today/Overdue).</li>
-            </ul>
-          </div>
-        </div>
       </div>
     </section>
 
-    <!-- ========= APP SHELL ========= -->
-    <section id="app" class="glass card" style="display:none">
-      <div class="toolbar" style="justify-content:space-between;align-items:center">
-        <div class="toolbar">
-          <button class="btn ghost" onclick="goBack()">◀ Back</button>
-          <div class="pill" id="whoPill">—</div>
-        </div>
+    <!-- ===== APP ===== -->
+    <section id="app" class="glass card" style="display:none;margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
         <div class="tabbar" id="tabs"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost" onclick="goBack()">◀ Back</button>
+          <button class="btn ghost" onclick="signOut()">Sign out</button>
+        </div>
       </div>
 
-      <!-- Top status row -->
-      <div class="row" style="margin:6px 0 10px">
-        <div class="pill brand" id="todayPill">—</div>
-        <div class="pill" id="remainingPill">—</div>
-      </div>
-
-      <!-- ===== LAE: Search & View ===== -->
+      <!-- LAE: SEARCH -->
       <section id="tab-search" style="display:none">
-        <div class="grid two">
-          <div>
+        <div class="row">
+          <div class="col">
             <label>ATA Chapter</label>
             <select id="ataFilter" onchange="renderSearch()"></select>
           </div>
-          <div>
-            <label>Search by Task Card / AMM or Description</label>
-            <input id="searchInput" placeholder="e.g. 32-070-00-01 or 'servicing'" oninput="renderSearch()" />
+          <div class="col">
+            <label>Search by Task Card / AMM / Description</label>
+            <input id="searchInput" placeholder="e.g. 32-07-00-01 or STRUT" oninput="renderSearch()"/>
           </div>
         </div>
-        <div id="searchResults" style="margin-top:8px"></div>
+        <div id="searchResults" style="margin-top:10px"></div>
       </section>
 
-      <!-- ===== OFFICER: Import & Edit ===== -->
+      <!-- OFFICER: MANAGE -->
       <section id="tab-manage" style="display:none">
-        <div class="grid two">
-          <div class="card">
-            <h3 style="margin:0 0 8px">Import Excel (.xlsx)</h3>
-            <p class="muted">Expected columns (any order): <i>TASK CARD NUM / AMM REF</i>, <i>TASK DESCRIPTION</i>, <i>TOOLS / TESTSET</i>, <i>CONSUMABLES / MSL</i>, <i>REMARKS</i>, <i>DURATION</i>, optional <i>ATA</i>. We’ll add <b>Due Date</b> and <b>Man Hours</b>.</p>
-            <div class="toolbar">
-              <input type="file" id="excelFile" accept=".xlsx" style="display:none" />
-              <button class="btn warn" onclick="document.getElementById('excelFile').click()">Choose .xlsx</button>
-              <button class="btn ghost" onclick="exportJSON()">Export JSON</button>
-              <button class="btn danger" onclick="clearAll()">Clear all data</button>
+        <div class="row">
+          <div class="col">
+            <div class="glass card">
+              <h3 style="margin:0 0 6px">Add / Edit Task Card</h3>
+              <p id="formMode" style="margin:0 0 12px;color:var(--ink-2)">Mode: Create</p>
+              <label>ATA</label><input id="f_ata" placeholder="e.g. 12 or 32" />
+              <label>Task Card Number / AMM Ref</label><input id="f_tc" placeholder="e.g. 32-07-00-01" />
+              <label>Task Description</label><textarea id="f_desc" placeholder="Short description"></textarea>
+              <label>Tools / Testset</label><textarea id="f_tools" placeholder="List tools"></textarea>
+              <label>Consumables / MSL</label><textarea id="f_cons" placeholder="Consumables, materials"></textarea>
+              <label>Remarks</label><textarea id="f_rem" placeholder="Notes"></textarea>
+              <div class="row">
+                <div class="col">
+                  <label>Duration</label><input id="f_dur" placeholder="e.g. 4HRS" />
+                </div>
+                <div class="col">
+                  <label>Man Hours</label><input id="f_mh" placeholder="e.g. 3.5" />
+                </div>
+              </div>
+              <label>Due Date</label><input id="f_due" type="date" />
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+                <button class="btn brand" onclick="saveTask()">Save</button>
+                <button class="btn ghost" onclick="resetForm()">Reset</button>
+              </div>
             </div>
           </div>
 
-          <div class="card">
-            <h3 style="margin:0 0 8px">Quick edit: Due Date & Man Hours</h3>
-            <p class="muted">Click a row to edit. Changes save automatically.</p>
-            <div id="listWrap" class="scroller" style="max-height:340px"></div>
+          <div class="col">
+            <div class="glass card">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <h3 style="margin:0">All Task Cards</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <input type="file" id="excelFile" accept=".xlsx" style="display:none" />
+                  <button class="btn warn" onclick="document.getElementById('excelFile').click()">Import Excel (.xlsx)</button>
+                  <button class="btn ghost" onclick="exportJSON()">Export JSON</button>
+                </div>
+              </div>
+              <p style="color:var(--ink-2);margin:.5rem 0">Excel columns supported:
+                <i>ATA</i>, <i>TASK CARD NUM / AMM REF</i>, <i>TASK DESCRIPTION</i>, <i>TOOLS / TESTSET</i>,
+                <i>CONSUMABLES / MSL</i>, <i>REMARKS</i>, <i>DURATION</i>, <i>DUE DATE</i>, <i>MAN HOURS</i>.
+              </p>
+              <div id="listWrap"></div>
+            </div>
           </div>
         </div>
       </section>
     </section>
-
-    <div class="toolbar" style="justify-content:center;margin-top:14px">
-      <button class="btn ghost" onclick="signOut()">Sign out</button>
-    </div>
   </div>
 
+  <!-- SheetJS for .xlsx parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
   <script>
-    /***********************
-     * Minimal state model *
-     ***********************/
-    const STORAGE_KEY = 'batik_taskcards_v1';
+    /* ================== STATE ================== */
+    const STORAGE_KEY = 'batik_taskcards_v3';
     let state = {
-      user:null,              // {name, staffId, role}
-      tasks:[],               // array of task objects
-      history:[],             // in-app back stack
-      editId:null
+      user: null,     // {name, staffId, role}
+      tasks: [],      // {id, ata, tc, desc, tools, cons, rem, dur, due, mh, done}
+      editId: null,
+      history: []
     };
-
-    // Task shape reference:
-    // { id, ata, tc, desc, tools, cons, rem, dur, manHours, dueDate, completed:false }
-
-    const uid = () => 'id-' + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
-
-    function todayLabel(){
-      const d = new Date();
-      return d.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'short',day:'numeric'});
-    }
+    const uid = ()=> 'id-'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(2);
 
     function loadLocal(){
       try{
         const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){ const obj = JSON.parse(raw); state.tasks = obj.tasks||[]; }
-      }catch(e){ console.warn('Local load failed', e); }
+        if(raw){ const o = JSON.parse(raw); state.tasks = o.tasks||[]; }
+      }catch(e){ console.warn(e); }
     }
     function saveLocal(){
-      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({tasks: state.tasks})) }catch(e){ console.warn('Local save failed', e); }
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({tasks: state.tasks})); }catch(e){ console.warn(e); }
     }
 
-    /***************
-     * AUTH & NAV  *
-     ***************/
+    /* ================== AUTH ================== */
     function signIn(){
       const name = (document.getElementById('nameInput').value||'User').trim();
-      const staffId = (document.getElementById('staffInput').value||'').trim();
-      const role = document.getElementById('roleInput').value;
+      const staffId = (document.getElementById('staffIdInput').value||'').trim();
+      const role = document.getElementById('roleSelect').value;
       if(!staffId){ alert('Please enter Staff ID'); return; }
       state.user = {name, staffId, role};
-      document.getElementById('sessionPill').textContent = `${role} — ${name}`;
-      document.getElementById('whoPill').textContent = `${role} • ${staffId}`;
-      document.getElementById('todayPill').textContent = todayLabel();
       document.getElementById('auth').style.display='none';
       document.getElementById('app').style.display='block';
       state.history=['home'];
       loadLocal();
       buildTabs();
+      tickClock();
+      setInterval(tickClock, 1000);
       renderAll();
     }
     function signOut(){ location.reload(); }
-    function goBack(){
-      if(state.history.length>1){
-        state.history.pop();
-        setTab(state.history[state.history.length-1]);
-      }else{
-        setTab(state.user.role==='OFFICER'?'manage':'search');
-      }
-    }
 
+    /* ================== UI CORE ================== */
     function buildTabs(){
       const tabs = document.getElementById('tabs');
       tabs.innerHTML='';
-      const make=(id,label)=>{ const b=document.createElement('button'); b.className='tab'; b.textContent=label; b.onclick=()=>setTab(id); return b; }
-      if(state.user.role==='OFFICER'){
-        tabs.appendChild(make('manage','Manage'));
-        tabs.appendChild(make('search','Search'));
-        setTab('manage');
-      }else{
-        tabs.appendChild(make('search','Search'));
+      const mk=(id,label)=>{ const b=document.createElement('button'); b.className='tab'; b.textContent=label; b.onclick=()=>setTab(id); return b; }
+      if(state.user.role==='LAE'){
+        tabs.appendChild(mk('search','Search'));
         setTab('search');
+      }else{
+        tabs.appendChild(mk('manage','Manage'));
+        tabs.appendChild(mk('search','Search'));
+        setTab('manage');
       }
     }
     function setTab(id){
-      document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none');
+      for(const el of document.querySelectorAll('[id^="tab-"]')) el.style.display='none';
       document.getElementById('tab-'+id).style.display='block';
-      document.querySelectorAll('.tabbar .tab').forEach(b=>b.classList.remove('active'));
+      // highlight
       const order = (state.user.role==='OFFICER')?['manage','search']:['search'];
-      const idx = order.indexOf(id);
-      if(idx>-1) document.querySelectorAll('.tabbar .tab')[idx].classList.add('active');
+      const btns = document.querySelectorAll('#tabs .tab');
+      btns.forEach((b,i)=> b.classList.toggle('active', order[i]===id));
+      // history
       if(state.history[state.history.length-1]!==id) state.history.push(id);
-      renderAll();
+      // tab-specific
+      if(id==='search'){ populateATA(); renderSearch(); }
+      if(id==='manage'){ renderList(); }
+    }
+    function goBack(){
+      if(state.history.length>1){ state.history.pop(); setTab(state.history.pop()||'search'); }
+      else setTab(state.user.role==='OFFICER'?'manage':'search');
     }
 
-    /**********************
-     * IMPORT & MAPPINGS  *
-     **********************/
-    document.getElementById('excelFile').addEventListener('change', handleExcelFile);
+    /* ================== HEADER/WIDGETS ================== */
+    function tickClock(){
+      const now = new Date();
+      const day = now.toLocaleDateString([], {weekday:'long'});
+      const date = now.toLocaleDateString();
+      const time = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+      document.getElementById('clock').textContent = `${day}, ${date} • ${time}`;
+      document.getElementById('who').textContent = state.user? `${state.user.role} • ${state.user.staffId}` : 'Not signed in';
+      const done = state.tasks.filter(t=>t.done).length;
+      const rem = state.tasks.length - done;
+      document.getElementById('done').textContent = done;
+      document.getElementById('remaining').textContent = rem;
+    }
 
-    function handleExcelFile(ev){
-      const file = ev.target.files[0];
-      if(!file){ alert('No file selected'); return; }
-      const reader = new FileReader();
-      reader.onload = (e)=>{
-        try{
-          const data = new Uint8Array(e.target.result);
-          const wb = XLSX.read(data, { type: 'array' });
-          const ws = wb.Sheets[wb.SheetNames[0]];
-          const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', blankrows:false});
-          const parsed = parseExcelRows(rows);
-          if(!parsed.length){ alert('No tasks parsed. Please check column headers.'); return; }
-          // assign ids and merge
-          parsed.forEach(t=>t.id=uid());
-          state.tasks = [...parsed, ...state.tasks];
-          saveLocal();
-          ev.target.value='';
-          alert(`Imported ${parsed.length} task(s).`);
-          renderAll();
-        }catch(err){
-          console.error(err); alert('Failed to parse Excel.');
-        }
+    /* ================== CRUD ================== */
+    function resetForm(){
+      state.editId=null;
+      document.getElementById('formMode').textContent = 'Mode: Create';
+      ['f_ata','f_tc','f_desc','f_tools','f_cons','f_rem','f_dur','f_mh','f_due'].forEach(id=>document.getElementById(id).value='');
+    }
+    function fillForm(t){
+      state.editId = t.id;
+      document.getElementById('formMode').textContent = 'Mode: Edit #'+t.tc;
+      f_ata.value=t.ata||''; f_tc.value=t.tc||''; f_desc.value=t.desc||'';
+      f_tools.value=t.tools||''; f_cons.value=t.cons||''; f_rem.value=t.rem||'';
+      f_dur.value=t.dur||''; f_mh.value=t.mh||''; f_due.value=t.due||'';
+    }
+    function saveTask(){
+      const t={
+        ata:f_ata.value.trim(), tc:f_tc.value.trim(), desc:f_desc.value.trim(),
+        tools:f_tools.value.trim(), cons:f_cons.value.trim(), rem:f_rem.value.trim(),
+        dur:f_dur.value.trim(), mh:f_mh.value.trim(), due:f_due.value, done:false
       };
-      reader.readAsArrayBuffer(file);
-    }
-
-    // Flexible header detection; will match your screenshot headers.
-    function parseExcelRows(rows){
-      let currentATA = '';
-      let headerIdx = -1; let cols = {};
-      const out = [];
-
-      for(let r=0;r<rows.length;r++){
-        const row = rows[r].map(v=>String(v).trim());
-        if(row.length===0) continue;
-
-        // Detect "ATA 12" style lines to carry forward
-        const firstUpper = (row[0]||'').toUpperCase();
-        const m = firstUpper.match(/^ATA\s*([0-9A-Z.]+)$/);
-        if(m){ currentATA = m[1]; continue; }
-
-        // Find header row once
-        if(headerIdx<0 && (firstUpper.includes('TASK CARD') || firstUpper.includes('AMM'))){
-          headerIdx = r;
-          for(let i=0;i<row.length;i++){
-            const name = row[i].toUpperCase();
-            if(name.includes('ATA')) cols.ata=i;
-            if(name.includes('TASK CARD') || name.includes('AMM')) cols.tc=i;
-            if(name.includes('TASK DESCRIPTION')) cols.desc=i;
-            if(name.includes('TOOLS')) cols.tools=i;
-            if(name.includes('CONSUMABLES')) cols.cons=i;
-            if(name.includes('REMARKS')) cols.rem=i;
-            if(name.includes('DURATION')) cols.dur=i;
-            if(name.includes('MAN') && name.includes('HOUR')) cols.mh=i;      // optional in sheet
-            if(name.includes('DUE')) cols.due=i;                               // optional in sheet
-          }
-          continue;
-        }
-        if(headerIdx<0) continue;                 // skip leading junk
-        if(row.every(c=>c==='')) continue;       // skip blank lines
-
-        const t = {
-          ata: getCell(row, cols.ata) || currentATA || '',
-          tc:  getCell(row, cols.tc),
-          desc:getCell(row, cols.desc),
-          tools:getCell(row, cols.tools),
-          cons:getCell(row, cols.cons),
-          rem: getCell(row, cols.rem),
-          dur: getCell(row, cols.dur),
-          manHours: getCell(row, cols.mh),       // might be blank; can edit later
-          dueDate:  normalizeDate(getCell(row, cols.due)), // may be blank
-          completed:false
-        };
-        if(!(t.tc||t.desc)) continue;            // ignore noise rows
-        out.push(t);
+      if(!t.ata || !t.tc || !t.desc){ alert('Fill ATA, Task Card/AMM, and Description'); return; }
+      if(state.editId){
+        const i = state.tasks.findIndex(x=>x.id===state.editId);
+        if(i>-1) state.tasks[i] = {...state.tasks[i], ...t};
+      }else{
+        t.id=uid(); state.tasks.unshift(t);
       }
-      return out;
+      saveLocal(); resetForm(); renderList(); renderSearch(); tickClock();
+      alert('Saved.');
     }
-    function getCell(row, idx){ return (idx==null)?'':String(row[idx]||'').trim(); }
-    function normalizeDate(s){
-      if(!s) return '';
-      // Try Excel serial number
-      if(/^\d+$/.test(s)){
-        const base = new Date(Date.UTC(1899,11,30));
-        const dt = new Date(base.getTime() + parseInt(s,10)*86400000);
-        return dt.toISOString().slice(0,10);
+    function removeTask(id){
+      if(!confirm('Delete this task?')) return;
+      state.tasks = state.tasks.filter(t=>t.id!==id);
+      saveLocal(); renderList(); renderSearch(); tickClock();
+    }
+    function toggleDone(id, checked){
+      const t = state.tasks.find(x=>x.id===id);
+      if(t){ t.done = !!checked; saveLocal(); tickClock(); }
+    }
+
+    /* ================== LIST (OFFICER) ================== */
+    function renderList(){
+      const wrap = document.getElementById('listWrap');
+      if(!state.tasks.length){ wrap.innerHTML='<p style="color:var(--ink-2)">No task cards yet.</p>'; return; }
+      let html='<table><thead><tr><th>Done</th><th>ATA</th><th>Task Card / AMM</th><th>Description</th><th>Due</th><th>MH</th><th>Duration</th><th></th></tr></thead><tbody>';
+      for(const t of state.tasks){
+        const dueTxt = dueText(t.due);
+        html += `<tr>
+          <td><input type="checkbox" ${t.done?'checked':''} onchange="toggleDone('${t.id}', this.checked)"></td>
+          <td>${esc(t.ata||'')}</td>
+          <td>${esc(t.tc)}</td>
+          <td>${esc(t.desc)}</td>
+          <td class="dueFlag ${dueTxt.cls}">${esc(dueTxt.text)}</td>
+          <td>${esc(t.mh||'')}</td>
+          <td>${esc(t.dur||'')}</td>
+          <td style="text-align:right">
+            <button class="btn ghost" onclick="fillForm(state.tasks.find(x=>x.id==='${t.id}'))">Edit</button>
+            <button class="btn danger" onclick="removeTask('${t.id}')">Delete</button>
+          </td>
+        </tr>`;
       }
-      // Try parseable yyyy-mm-dd or dd/mm/yyyy
-      const tryD = new Date(s);
-      if(!isNaN(tryD)) return tryD.toISOString().slice(0,10);
-      return s; // leave as-is
+      html+='</tbody></table>';
+      wrap.innerHTML = html;
     }
 
-    /****************
-     * RENDER VIEWS *
-     ****************/
-    function renderAll(){
-      populateATAFilter();
-      renderSearch();
-      renderList();
-      updateCounters();
+    /* ================== SEARCH (LAE) ================== */
+    function populateATA(){
+      const sel = document.getElementById('ataFilter');
+      const set = Array.from(new Set(state.tasks.map(t=>String(t.ata||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+      sel.innerHTML = '<option value="">All ATA</option>' + set.map(a=>`<option value="${esc(a)}">ATA ${esc(a)}</option>`).join('');
     }
-
-    function populateATAFilter(){
-      const select = document.getElementById('ataFilter');
-      const set = Array.from(new Set(state.tasks.map(t=>String(t.ata||'').trim()).filter(Boolean)))
-        .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
-      select.innerHTML = '<option value="">All ATA</option>' + set.map(a=>`<option value="${escapeHTML(a)}">ATA ${escapeHTML(a)}</option>`).join('');
-    }
-
-    function updateCounters(){
-      const remaining = state.tasks.filter(t=>!t.completed).length;
-      document.getElementById('remainingPill').textContent = `Remaining: ${remaining}`;
-    }
-
     function renderSearch(){
-      const q=(document.getElementById('searchInput').value||'').toLowerCase();
-      const ata=(document.getElementById('ataFilter').value||'').trim();
-      let list = state.tasks.slice();
-      if(ata) list = list.filter(t=>String(t.ata||'')===ata);
-      if(q) list = list.filter(t=> (t.tc||'').toLowerCase().includes(q) || (t.desc||'').toLowerCase().includes(q));
-
-      const wrap=document.getElementById('searchResults');
-      if(!list.length){ wrap.innerHTML = '<p class="muted">No matching task cards.</p>'; return; }
-      wrap.innerHTML = list.map(card).join('');
+      const q = (document.getElementById('searchInput').value||'').toLowerCase();
+      const ata = (document.getElementById('ataFilter').value||'').trim();
+      let rs = state.tasks.slice();
+      if(ata) rs = rs.filter(t=>String(t.ata||'')===ata);
+      if(q) rs = rs.filter(t=>(t.tc||'').toLowerCase().includes(q) || (t.desc||'').toLowerCase().includes(q));
+      const wrap = document.getElementById('searchResults');
+      if(!rs.length){ wrap.innerHTML='<p style="color:var(--ink-2)">No matching task cards.</p>'; return; }
+      let html='';
+      for(const t of rs){ html += card(t); }
+      wrap.innerHTML = html;
     }
-
-    // Single card renderer with due-date colouring and complete toggle
     function card(t){
-      const status = dueStatus(t.dueDate);
-      const chipClass = status.class;
-      const chipText  = status.text;
-      const mh = t.manHours?`${escapeHTML(t.manHours)} h`:'—';
-      const due = t.dueDate?escapeHTML(t.dueDate):'—';
-      const check = t.completed?'checked':'';
-
+      const due = dueText(t.due);
+      const doneBadge = t.done ? '<span class="badge green">DONE</span>' : '';
       return `
-      <div class="card" style="margin-top:12px">
-        <div class="grid two">
-          <div>
-            <b>ATA ${escapeHTML(t.ata||'—')} • ${escapeHTML(t.tc||'—')}</b>
-            <p class="muted" style="margin:6px 0">${escapeHTML(t.desc||'—')}</p>
-          </div>
+      <div class="glass card" style="margin-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div><b>ATA ${esc(t.ata||'—')} • ${esc(t.tc)}</b><br>
+              <span style="color:var(--ink-2)">${esc(t.desc||'—')}</span></div>
           <div style="text-align:right">
-            <span class="due-chip ${chipClass}">${chipText}: ${due}</span>
-            <span class="pill" style="margin-left:6px">Man Hours: ${mh}</span>
-            <span class="pill" style="margin-left:6px">${escapeHTML(t.dur||'')}</span>
+            ${doneBadge}
+            <div class="pill">${esc(t.dur||'')}</div>
           </div>
         </div>
 
-        <div class="grid two" style="margin-top:10px">
-          <div>
-            <label>Tools / Test Set</label>
-            <div class="scroller">${nl2br(escapeHTML(t.tools||'-'))}</div>
+        <div class="row" style="margin-top:8px">
+          <div class="col">
+            <label>Tools / Testset</label>
+            <div class="scroller">${nl2br(esc(t.tools||'-'))}</div>
           </div>
-          <div>
+          <div class="col">
             <label>Consumables / MSL</label>
-            <div class="scroller">${nl2br(escapeHTML(t.cons||'-'))}</div>
+            <div class="scroller">${nl2br(esc(t.cons||'-'))}</div>
           </div>
         </div>
 
-        <div style="margin-top:10px">
-          <label>Remarks</label>
-          <div class="scroller">${nl2br(escapeHTML(t.rem||'-'))}</div>
-        </div>
+        <label style="margin-top:10px">Remarks</label>
+        <div class="scroller">${nl2br(esc(t.rem||'-'))}</div>
 
-        <div class="toolbar" style="margin-top:10px;justify-content:space-between">
-          <div class="muted">Duration: ${escapeHTML(t.dur||'—')}</div>
-          <label class="muted" style="display:flex;align-items:center;gap:8px">
-            <input type="checkbox" ${check} onchange="toggleComplete('${t.id}', this.checked)"> Mark as completed
-          </label>
+        <div class="row" style="margin-top:10px">
+          <div class="col">
+            <label>Due Date</label>
+            <div class="pill dueFlag ${due.cls}">${esc(due.text)}</div>
+          </div>
+          <div class="col">
+            <label>Man Hours</label>
+            <div class="pill">${esc(t.mh||'-')}</div>
+          </div>
         </div>
       </div>`;
     }
 
-    function toggleComplete(id, val){
-      const i = state.tasks.findIndex(x=>x.id===id);
-      if(i>-1){ state.tasks[i].completed = !!val; saveLocal(); updateCounters(); }
+    /* ================== EXCEL IMPORT ================== */
+    document.getElementById('excelFile').addEventListener('change', handleExcelFile);
+    function handleExcelFile(ev){
+      const file = ev.target.files[0];
+      if(!file){ alert('No file selected'); return; }
+      const reader = new FileReader();
+      reader.onload = e=>{
+        try{
+          const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(ws, {header:1, blankrows:false, defval:''});
+          const parsed = parseExcelRows(rows);
+          for(const t of parsed){ t.id = uid(); }
+          state.tasks = [...parsed, ...state.tasks];
+          saveLocal();
+          populateATA(); renderList(); renderSearch(); tickClock();
+          alert('Excel imported: '+parsed.length+' task(s).');
+        }catch(err){ console.error(err); alert('Failed to parse Excel.'); }
+      };
+      reader.readAsArrayBuffer(file);
+      ev.target.value='';
     }
 
-    // Compute due status & class
-    function dueStatus(iso){
-      if(!iso) return {class:'due-ok', text:'No Due'};
+    // Flexible parser: recognizes common header labels (case-insensitive).
+    function parseExcelRows(rows){
+      let currentATA = '';
+      let headerIdx=-1; const cols={};
+      const out=[];
+      for(let r=0;r<rows.length;r++){
+        const row = rows[r].map(x=>String(x).trim());
+        if(row.length===0) continue;
+        const first = (row[0]||'').toUpperCase();
+
+        const m = first.match(/^ATA\s*([0-9A-Z.\-]+)$/);
+        if(m){ currentATA = m[1]; continue; }
+
+        if(headerIdx<0 && (first.includes('TASK CARD') || first.includes('AMM'))){
+          headerIdx=r;
+          for(let i=0;i<row.length;i++){
+            const n = row[i].toUpperCase();
+            if(n==='ATA') cols.ata=i;
+            else if(n.includes('TASK CARD') || n.includes('AMM')) cols.tc=i;
+            else if(n.includes('TASK DESCRIPTION')) cols.desc=i;
+            else if(n.includes('TOOLS')) cols.tools=i;
+            else if(n.includes('CONSUMABLES')) cols.cons=i;
+            else if(n.includes('REMARKS')) cols.rem=i;
+            else if(n.includes('DURATION')) cols.dur=i;
+            else if(n.includes('DUE')) cols.due=i;
+            else if(n.includes('MAN') && n.includes('HOUR')) cols.mh=i;
+          }
+          continue;
+        }
+        if(headerIdx<0) continue;
+        const isBlank = row.every(c=>c===''); if(isBlank) continue;
+
+        const ata = (cols.ata!=null? row[cols.ata] : currentATA)||'';
+        const t = {
+          ata:String(ata).trim(),
+          tc:getCell(row, cols.tc),
+          desc:getCell(row, cols.desc),
+          tools:getCell(row, cols.tools),
+          cons:getCell(row, cols.cons),
+          rem:getCell(row, cols.rem),
+          dur:getCell(row, cols.dur),
+          due:normalizeDate(getCell(row, cols.due)),
+          mh:getCell(row, cols.mh),
+          done:false
+        };
+        if(!(t.tc||t.desc)) continue;
+        out.push(t);
+      }
+      return out;
+    }
+    function getCell(row, i){ return i==null? '' : String(row[i]||'').trim(); }
+    function normalizeDate(s){
+      if(!s) return '';
+      // Try to interpret Excel date or text date
+      // If it's a number (excel serial), convert
+      if(/^\d+(\.\d+)?$/.test(s)){ // naive excel serial
+        const num = Math.floor(Number(s));
+        const base = new Date(Date.UTC(1899,11,30));
+        const d = new Date(base.getTime()+num*86400000);
+        return d.toISOString().slice(0,10);
+      }
+      // Try Date.parse
+      const d = new Date(s);
+      if(!isNaN(d)) return d.toISOString().slice(0,10);
+      return '';
+    }
+
+    /* ================== HELPERS ================== */
+    function esc(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function nl2br(s){ return (s||'').replace(/\n/g,'<br>'); }
+
+    function daysUntil(dateStr){
+      if(!dateStr) return Infinity;
       const today = new Date(); today.setHours(0,0,0,0);
-      const d = new Date(iso); d.setHours(0,0,0,0);
-      const diff = Math.round((d - today)/86400000);
-      if(diff < 0)  return {class:'due-overdue', text:'Overdue'};
-      if(diff === 0) return {class:'due-today', text:'Due Today'};
-      if(diff <= 3) return {class:'due-soon', text:'Due Soon'};
-      return {class:'due-ok', text:'On Track'};
+      const d = new Date(dateStr); d.setHours(0,0,0,0);
+      return Math.round((d - today)/86400000);
+    }
+    function dueText(dateStr){
+      if(!dateStr) return {text:'No due date', cls:'ok'};
+      const n = daysUntil(dateStr);
+      if(n<0) return {text:`Overdue (${dateStr})`, cls:'overdue'};
+      if(n===0) return {text:`Due today (${dateStr})`, cls:'today'};
+      if(n<=3) return {text:`Due in ${n} day(s) (${dateStr})`, cls:'soon'};
+      return {text:`Due ${dateStr}`, cls:'ok'};
     }
 
-    /*********************
-     * OFFICER QUICK EDIT *
-     *********************/
-    function renderList(){
-      const wrap=document.getElementById('listWrap');
-      if(!wrap || document.getElementById('tab-manage').style.display==='none') return;
-
-      if(!state.tasks.length){ wrap.innerHTML='<p class="muted">No task cards yet.</p>'; return; }
-
-      let html = `<table>
-        <thead><tr>
-          <th>ATA</th><th>Task Card / AMM</th><th>Description</th>
-          <th>Due Date</th><th>Man Hours</th><th></th>
-        </tr></thead><tbody>`;
-
-      for(const t of state.tasks){
-        html += `<tr>
-          <td>${escapeHTML(t.ata||'')}</td>
-          <td>${escapeHTML(t.tc||'')}</td>
-          <td>${escapeHTML(t.desc||'')}</td>
-          <td>
-            <input type="date" value="${escapeAttr(t.dueDate||'')}" onchange="editField('${t.id}','dueDate', this.value)">
-          </td>
-          <td>
-            <input type="number" min="0" step="0.1" value="${escapeAttr(t.manHours||'')}" placeholder="e.g. 4" onchange="editField('${t.id}','manHours', this.value)">
-          </td>
-          <td style="text-align:right">
-            <button class="btn danger" onclick="delTask('${t.id}')">Delete</button>
-          </td>
-        </tr>`;
-      }
-      html += '</tbody></table>';
-      wrap.innerHTML = html;
-    }
-
-    function editField(id, key, val){
-      const i = state.tasks.findIndex(x=>x.id===id);
-      if(i>-1){
-        state.tasks[i][key] = (key==='manHours' && val)? String(val): (key==='dueDate'? normalizeDate(val): val);
-        saveLocal();
-        renderSearch();
-        updateCounters();
-      }
-    }
-    function delTask(id){
-      if(!confirm('Delete this task?')) return;
-      state.tasks = state.tasks.filter(t=>t.id!==id);
-      saveLocal();
-      renderAll();
-    }
-    function clearAll(){
-      if(!confirm('This will remove all saved tasks on this device. Continue?')) return;
-      state.tasks = [];
-      saveLocal();
-      renderAll();
-    }
-
-    /*************
-     * UTILITIES *
-     *************/
     function exportJSON(){
       const blob = new Blob([JSON.stringify(state.tasks,null,2)], {type:'application/json'});
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href=url; a.download='batik-taskcards.json'; a.click();
+      const a = document.createElement('a'); a.href=url; a.download='taskcards.json'; a.click();
       URL.revokeObjectURL(url);
     }
-    function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
-    function escapeAttr(s){ return String(s||'').replace(/"/g,'&quot;'); }
-    function nl2br(s){ return (s||'').replace(/\n/g,'<br>'); }
 
-    /********************
-     * DEMO SEED (ATA12)
-     ********************/
-    function seedDemo(){
-      const seed=[
-        {ata:'12', tc:'32-070-00-01', desc:'Service the nose landing gear shock strut (AMM TASK 12-15-41-610-802)',
-         tools:`COM-1532 Cart - Servicing, Strut Oil
- Part #: 1104 Supplier: 30188
- Part #: 8774B Supplier: 94861
- Part #: 8844 Supplier: 94861
- Part #: 8844B Supplier: 94861
- Part #: HM-GT1-C-VS Supplier: 1HV74
- Part #: PF53481-9P Supplier: 94861
- Part #: PF54124-3P Supplier: 94861
- Part #: PF55451-1 Supplier: 94861
- Part #: PF55451-23 Supplier: 94861
- Part #: SH001 Supplier: D2029
- Opt Part #: HM-GT1-C Supplier: 1HV74
-
-SPL-1521 Tool - Strut Inflation, Landing Gear
- Part #: F70200-35 Supplier: 81205
- Opt Part #: F70200-1 Supplier: 81205
- Opt Part #: F70200-14 Supplier: 81205
- Opt Part #: F70200-17 Supplier: 81205
- Opt Part #: F70200-18 Supplier: 81205
-
-SPL-1829 Valve - Drain, Landing Gear Shock Strut Oil
- Part #: J32108-16 Supplier: 81205
-
-STD-1103 Hose - Flexible, 5/8 Inch ID, Oil/Hydraulic Resistant, 6 ft
-STD-1110 Container - Hydraulic Fluid Resistant, 5 Gallon (19 L)
-STD-1157 Gauge - Pressure, 0-3000 PSIG (0-20685 KPa)`,
-         cons:'AEROSHELL-LGF',
-         rem:`SPL-1829 Valve - Drain, Landing Gear Shock Strut Oil
- Part #: J32108-16 Supplier: 81205
-( alternate to use a container )`,
-         dur:'4 HRS',
-         manHours:'4',
-         dueDate:new Date(Date.now()+86400000*2).toISOString().slice(0,10), // +2 days
-         completed:false
-        }
-      ];
-      seed.forEach(t=>t.id=uid());
-      state.tasks = [...seed, ...state.tasks];
-      saveLocal();
-      alert('Demo ATA 12 task loaded.');
-      renderAll();
+    function renderAll(){
+      if(document.getElementById('tab-search').style.display!=='none') { populateATA(); renderSearch(); }
+      if(document.getElementById('tab-manage').style.display!=='none') renderList();
+      tickClock();
     }
 
-    /************************
-     * Service Worker (PWA) *
-     ************************/
+    /* ================== DEMO DATA (optional) ================== */
+    function seedDemo(){
+      state.tasks = [
+        {id:uid(), ata:'12', tc:'32-07-00-01', desc:'Service the nose landing gear shock strut', tools:'SPL-1521 Tool - Strut Inflation ...', cons:'AEROSHELL-LGF', rem:'Alternate to use a container', dur:'4HRS', due:future(2), mh:'3.5', done:false},
+        {id:uid(), ata:'20', tc:'AMM20-10-00-802', desc:'HP ROTOR POWER CONSUMPTION CHECK', tools:'BONDING TESTER / METER ...', cons:'—', rem:'—', dur:'2HRS', due:future(0), mh:'2', done:false},
+        {id:uid(), ata:'12', tc:'STD-1103', desc:'Hose - Flexible, 5/8 Inch ID, 6 ft', tools:'—', cons:'—', rem:'—', dur:'—', due:future(5), mh:'0.5', done:true},
+      ];
+      saveLocal(); renderAll(); alert('Demo data loaded.');
+    }
+    function future(d){ const x=new Date(); x.setDate(x.getDate()+d); return x.toISOString().slice(0,10); }
+
+    /* ================== PWA: register service worker ================== */
     if ("serviceWorker" in navigator) {
-      // Safe to register; will simply do nothing if file is missing
       window.addEventListener("load", function () {
-        navigator.serviceWorker.register("/service-worker.js");
+        navigator.serviceWorker.register("/service-worker.js").catch(()=>{});
       });
     }
   </script>
