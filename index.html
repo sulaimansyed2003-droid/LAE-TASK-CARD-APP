@@ -3,131 +3,145 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LAE Task Card App (Officer & LAE)</title>
+  <title>Batik Air – Task Card App</title>
 
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1a73e8">
+  <!-- PWA manifest + theme -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#9c1b43" />
 
- <script>
- if ('serviceWorker' in navigator) {
-   navigator.serviceWorker.register('/service-worker.js')
-     .then(() => console.log('Service Worker registered'))
-     .catch((err) => console.log('Service Worker registration failed:', err));
- }
- </script>
-
+  <!-- SheetJS for Excel (.xlsx) parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
   <style>
-    :root{--bg:#0f172a;--panel:#111827;--muted:#9ca3af;--ink:#e5e7eb;--ink2:#f9fafb;--brand:#22c55e;--danger:#ef4444;--warn:#f59e0b;--card:#0b1220;}
+    /* ===== Batik Air theme (maroon & gold) ===== */
+    :root{
+      --bg:#0b0d12;
+      --panel:#11151d;
+      --ink:#f3f4f6;
+      --muted:#aab0bc;
+      --brand:#9c1b43;  /* Batik Air maroon */
+      --brand-2:#f0b12b;/* Batik Air gold */
+      --card:#0e121a;
+      --ok:#10b981;
+      --warn:#f59e0b;
+      --due:#ef4444;
+    }
+    *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:linear-gradient(180deg,#0b1220,#0f172a);color:var(--ink)}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+      background:linear-gradient(180deg,#0b0d12,#0f1420);
+      color:var(--ink);
+    }
     .container{max-width:1100px;margin:0 auto;padding:20px}
-    .glass{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(6px);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.35)}
+    .glass{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(6px);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
     header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:12px 0 20px}
-    h1{font-size:1.25rem;margin:0;color:var(--ink2)}
-    .pill{font-size:.8rem;color:var(--ink);border:1px solid rgba(255,255,255,0.14);padding:6px 10px;border-radius:999px}
-    .row{display:flex;gap:16px;flex-wrap:wrap}
+    h1{margin:0;font-size:1.2rem}
+    .pill{border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 10px;color:#e5e7eb;font-size:.82rem}
+    .brand{color:#fff;background:linear-gradient(90deg,var(--brand),#b8204f)}
+    .row{display:flex;flex-wrap:wrap;gap:16px}
     .col{flex:1;min-width:280px}
-    .card{padding:16px;border-radius:16px;background:var(--card);border:1px solid rgba(255,255,255,0.06)}
-    label{display:block;font-size:.85rem;color:var(--muted);margin:12px 0 6px}
-    input,textarea,select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:#0f172a;color:var(--ink)}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px}
+    label{display:block;color:var(--muted);font-size:.85rem;margin:12px 0 6px}
+    input,select,textarea{
+      width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);
+      background:#0e1422;color:var(--ink)
+    }
     textarea{min-height:90px}
     .btn{border:0;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
-    .btn.brand{background:var(--brand);color:#052e16}
-    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.16);color:var(--ink)}
-    .btn.warn{background:var(--warn);color:#3b2600}
-    .btn.danger{background:var(--danger);color:#2a0b0b}
+    .btn.primary{background:linear-gradient(90deg,var(--brand),#b8204f);color:white}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.16);color:var(--ink)}
+    .btn.warn{background:var(--warn);color:#2d1c00}
+    .btn.ok{background:var(--ok);color:#012416}
+    .btn.danger{background:var(--due);color:#2a0b0b}
     .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+    .tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .tab{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);cursor:pointer;background:#0e1422}
+    .tab.active{outline:2px solid var(--brand);background:rgba(156,27,67,.15)}
     .muted{color:var(--muted)}
     .grid{display:grid;gap:12px}
     .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
-    @media (max-width:860px){.grid.two,.grid.three{grid-template-columns:1fr}}
+    @media (max-width:880px){.grid.two{grid-template-columns:1fr}}
     table{width:100%;border-collapse:collapse;margin-top:8px}
-    th,td{border-bottom:1px solid rgba(255,255,255,0.08);text-align:left;padding:10px;vertical-align:top}
-    th{font-size:.85rem;color:var(--muted);font-weight:600;width:220px}
-    tr:hover{background:rgba(255,255,255,0.035)}
-    .tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-    .tab{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);cursor:pointer}
-    .tab.active{background:rgba(255,255,255,0.08)}
-    .center{display:flex;align-items:center;justify-content:center}
-    .scroller{max-height:180px;overflow:auto;padding:8px;border-radius:10px;background:#0f172a;border:1px solid rgba(255,255,255,0.08)}
-    .subtle{opacity:.9}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top;text-align:left}
+    th{font-size:.85rem;color:var(--muted)}
+    tr:hover{background:rgba(255,255,255,.035)}
+    .scroller{max-height:160px;overflow:auto;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;background:#0e1422}
+    .due-chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.75rem;font-weight:700}
+    .due-ok{background:rgba(16,185,129,.15)}
+    .due-soon{background:rgba(245,158,11,.18)}
+    .due-today{background:rgba(240,177,43,.25);outline:1px solid var(--brand-2)}
+    .due-overdue{background:rgba(239,68,68,.18);outline:1px solid var(--due)}
+    .logoRow{display:flex;align-items:center;gap:14px}
+    .logo{width:120px;height:auto;border-radius:10px;background:white;padding:6px}
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>LAE Task Card App</h1>
-      <span class="pill" id="rolePill">Not signed in</span>
+      <h1>Batik Air – Task Card App</h1>
+      <div class="pill" id="sessionPill">Not signed in</div>
     </header>
 
-    <!-- AUTH / ROLE + STAFF ID -->
-    <div id="auth" class="glass card">
+    <!-- ========= SIGN IN ========= -->
+    <section id="auth" class="glass card">
       <div class="row">
         <div class="col">
-          <h2 style="margin:0 0 8px">Sign in (Demo)</h2>
-          <p class="muted" style="margin:0 0 12px">Choose role and enter Staff ID. In production, replace with real auth.</p>
+          <div class="logoRow">
+            <!-- You can replace the src with your hosted file path -->
+            <img class="logo" src="https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/batikair.svg" alt="Batik Air logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Placeholder_logo.png/120px-Placeholder_logo.png'">
+            <div>
+              <h2 style="margin:0 0 6px">Sign in</h2>
+              <p class="muted" style="margin:0">Use your name, Staff ID and choose LAE or OFFICER.</p>
+            </div>
+          </div>
+
           <label>Your name</label>
           <input id="nameInput" placeholder="e.g. Aiman" />
           <label>Staff ID</label>
-          <input id="staffIdInput" placeholder="e.g. BID1234" />
+          <input id="staffInput" placeholder="e.g. BID1234" />
           <label>Role</label>
-          <select id="roleSelect">
+          <select id="roleInput">
             <option value="LAE">LAE</option>
             <option value="OFFICER">OFFICER</option>
           </select>
           <div class="toolbar" style="margin-top:12px">
-            <button class="btn brand" onclick="signIn()">Continue</button>
+            <button class="btn primary" onclick="signIn()">Continue</button>
             <button class="btn ghost" onclick="seedDemo()">Load demo data</button>
           </div>
         </div>
+
         <div class="col">
           <div class="card">
-            <b>What you can do</b>
-            <ul>
-              <li><b>LAE:</b> Pick ATA, search task cards, view full details.</li>
-              <li><b>OFFICER:</b> Import Excel (.xlsx), add/edit/delete task cards.</li>
+            <b>After sign-in</b>
+            <ul class="muted" style="margin-top:8px">
+              <li>Officer can import an Excel (.xlsx) and edit Due Date & Man Hours.</li>
+              <li>LAE can search, filter by ATA, and mark tasks completed.</li>
+              <li>Colour warnings show due status (Soon/Today/Overdue).</li>
             </ul>
-            <p class="muted">Data saves to your browser (localStorage). Optional Firebase sync below.</p>
           </div>
         </div>
       </div>
+    </section>
 
-      <details style="margin-top:12px">
-        <summary><b>Optional: Enable Firebase (paste config)</b></summary>
-        <div class="grid two" style="margin-top:10px">
-          <textarea id="firebaseConfig" placeholder='{
-  "apiKey": "...",
-  "authDomain": "...",
-  "projectId": "...",
-  "storageBucket": "...",
-  "messagingSenderId": "...",
-  "appId": "..."
-}'></textarea>
-          <div>
-            <p class="muted">Paste your Web App config JSON from Firebase Console → Project settings → General → Your apps → Web app. Then click <b>Enable Firebase</b>.</p>
-            <div class="toolbar">
-              <button class="btn warn" onclick="enableFirebase()">Enable Firebase</button>
-              <button class="btn ghost" onclick="disableFirebase()">Disable Firebase</button>
-            </div>
-            <p id="fbStatus" class="muted">Firebase: Off</p>
-          </div>
-        </div>
-      </details>
-    </div>
-
-    <!-- APP -->
-    <div id="app" class="glass card" style="display:none">
+    <!-- ========= APP SHELL ========= -->
+    <section id="app" class="glass card" style="display:none">
       <div class="toolbar" style="justify-content:space-between;align-items:center">
         <div class="toolbar">
           <button class="btn ghost" onclick="goBack()">◀ Back</button>
-          <div class="pill subtle" id="whoPill">—</div>
+          <div class="pill" id="whoPill">—</div>
         </div>
         <div class="tabbar" id="tabs"></div>
       </div>
 
-      <!-- LAE VIEW: SEARCH -->
+      <!-- Top status row -->
+      <div class="row" style="margin:6px 0 10px">
+        <div class="pill brand" id="todayPill">—</div>
+        <div class="pill" id="remainingPill">—</div>
+      </div>
+
+      <!-- ===== LAE: Search & View ===== -->
       <section id="tab-search" style="display:none">
         <div class="grid two">
           <div>
@@ -135,338 +149,130 @@
             <select id="ataFilter" onchange="renderSearch()"></select>
           </div>
           <div>
-            <label>Search by Task Card Number / AMM Ref</label>
-            <input id="searchInput" placeholder="e.g. TC-001 or AMM 32-11-00" oninput="renderSearch()" />
+            <label>Search by Task Card / AMM or Description</label>
+            <input id="searchInput" placeholder="e.g. 32-070-00-01 or 'servicing'" oninput="renderSearch()" />
           </div>
         </div>
-        <div id="searchResults"></div>
+        <div id="searchResults" style="margin-top:8px"></div>
       </section>
 
-      <!-- OFFICER VIEW: MANAGE + EXCEL UPLOAD -->
+      <!-- ===== OFFICER: Import & Edit ===== -->
       <section id="tab-manage" style="display:none">
         <div class="grid two">
           <div class="card">
-            <h3 style="margin:0 0 6px">Add / Edit Task Card</h3>
-            <p id="formMode" class="muted" style="margin:0 0 12px">Mode: Create</p>
-            <div class="grid">
-              <label>ATA</label>
-              <input id="f_ata" placeholder="e.g. 12 or 32" />
-
-              <label>Task Card Number / AMM Ref</label>
-              <input id="f_tc" placeholder="e.g. TC-001 / AMM 32-11-00" />
-
-              <label>Task Description</label>
-              <textarea id="f_desc" placeholder="Short description of the task"></textarea>
-
-              <label>Tools / Test Set</label>
-              <textarea id="f_tools" placeholder="List tools or test equipment"></textarea>
-
-              <label>Consumables / MSL</label>
-              <textarea id="f_cons" placeholder="Consumables, materials, MSL"></textarea>
-
-              <label>Remarks</label>
-              <textarea id="f_rem" placeholder="Notes, cautions, references"></textarea>
-
-              <label>Duration</label>
-              <input id="f_dur" placeholder="e.g. 2h 30m" />
-            </div>
-            <div class="toolbar" style="margin-top:12px">
-              <button class="btn brand" onclick="saveTask()">Save</button>
-              <button class="btn ghost" onclick="resetForm()">Reset</button>
+            <h3 style="margin:0 0 8px">Import Excel (.xlsx)</h3>
+            <p class="muted">Expected columns (any order): <i>TASK CARD NUM / AMM REF</i>, <i>TASK DESCRIPTION</i>, <i>TOOLS / TESTSET</i>, <i>CONSUMABLES / MSL</i>, <i>REMARKS</i>, <i>DURATION</i>, optional <i>ATA</i>. We’ll add <b>Due Date</b> and <b>Man Hours</b>.</p>
+            <div class="toolbar">
+              <input type="file" id="excelFile" accept=".xlsx" style="display:none" />
+              <button class="btn warn" onclick="document.getElementById('excelFile').click()">Choose .xlsx</button>
+              <button class="btn ghost" onclick="exportJSON()">Export JSON</button>
+              <button class="btn danger" onclick="clearAll()">Clear all data</button>
             </div>
           </div>
 
           <div class="card">
-            <div class="toolbar" style="justify-content:space-between;align-items:center">
-              <h3 style="margin:0">All Task Cards</h3>
-              <div class="toolbar">
-                <input type="file" id="excelFile" accept=".xlsx" style="display:none" />
-                <button class="btn warn" onclick="document.getElementById('excelFile').click()">Import Excel (.xlsx)</button>
-                <button class="btn ghost" onclick="exportJSON()">Export JSON</button>
-              </div>
-            </div>
-            <p class="muted" style="margin:6px 0">Excel expected columns: <i>ATA</i> (may appear once then apply to following rows), <i>TASK CARD NUM / AMM REF</i>, <i>TASK DESCRIPTION</i>, <i>TOOLS / TESTSET</i>, <i>CONSUMABLES / MSL</i>, <i>REMARKS</i>, <i>DURATION</i>.</p>
-            <div id="listWrap"></div>
+            <h3 style="margin:0 0 8px">Quick edit: Due Date & Man Hours</h3>
+            <p class="muted">Click a row to edit. Changes save automatically.</p>
+            <div id="listWrap" class="scroller" style="max-height:340px"></div>
           </div>
         </div>
       </section>
-    </div>
+    </section>
 
-    <div class="center" style="margin-top:16px">
+    <div class="toolbar" style="justify-content:center;margin-top:14px">
       <button class="btn ghost" onclick="signOut()">Sign out</button>
     </div>
   </div>
 
-  <!-- SheetJS for .xlsx parsing -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <!-- Firebase (optional; loaded only when enabled) -->
   <script>
-    // --- Simple state & storage layer (localStorage + optional Firebase) ---
-    const STORAGE_KEY = 'lae_taskcards_v2';
+    /***********************
+     * Minimal state model *
+     ***********************/
+    const STORAGE_KEY = 'batik_taskcards_v1';
     let state = {
-      user: null, // { name, staffId, role }
-      tasks: [],  // [{id, ata, tc, desc, tools, cons, rem, dur}]
-      editId: null,
-      history: [],
-      useFirebase: false,
-      fb: { app:null, db:null }
+      user:null,              // {name, staffId, role}
+      tasks:[],               // array of task objects
+      history:[],             // in-app back stack
+      editId:null
     };
 
-    // Utility: generate id
-    const uid = () => 'id-' + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(2);
+    // Task shape reference:
+    // { id, ata, tc, desc, tools, cons, rem, dur, manHours, dueDate, completed:false }
 
-    // Local persistence
+    const uid = () => 'id-' + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+
+    function todayLabel(){
+      const d = new Date();
+      return d.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'short',day:'numeric'});
+    }
+
     function loadLocal(){
       try{
         const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){
-          const obj = JSON.parse(raw);
-          state.tasks = obj.tasks||[];
-        }
-      }catch(e){console.warn('Local load failed', e)}
+        if(raw){ const obj = JSON.parse(raw); state.tasks = obj.tasks||[]; }
+      }catch(e){ console.warn('Local load failed', e); }
     }
     function saveLocal(){
-      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({tasks: state.tasks})) }catch(e){ console.warn('Local save failed', e) }
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({tasks: state.tasks})) }catch(e){ console.warn('Local save failed', e); }
     }
 
-    // Demo data (includes ATA 12 sample per your format)
-    function seedDemo(){
-      const t = [];
-      t.push({id:uid(), ata:'12', tc:'COM-1532 / AMM —', desc:'Cart - Servicing, Strut Oil', tools: `COM-1532 Cart - Servicing, Strut Oil\n Part #: 1104 Supplier: 30188\n Part #: 8774B Supplier: 94861\n Part #: 8844 Supplier: 94861\n Part #: 8844B Supplier: 94861\n Part #: HM-GT1-C-VS Supplier: 1HV74\n Part #: PF53481-9P Supplier: 94861\n Part #: PF54124-3P Supplier: 94861\n Part #: PF55451-1 Supplier: 94861\n Part #: PF55451-23 Supplier: 94861\n Part #: SH001 Supplier: D2029\n Opt Part #: HM-GT1-C Supplier: 1HV74`, cons: 'AEROSHELL-LGF', rem: `SPL-1829 Valve - Drain, Landing Gear Shock Strut Oil\n Part #: J32108-16 Supplier: 81205\n\n( alternate to use a container )`, dur:'—'});
-      t.push({id:uid(), ata:'12', tc:'SPL-1521 / AMM —', desc:'Tool - Strut Inflation, Landing Gear', tools:`SPL-1521 Tool - Strut Inflation, Landing Gear\n Part #: F70200-35 Supplier: 81205\n Opt Part #: F70200-1 Supplier: 81205\n Opt Part #: F70200-14 Supplier: 81205\n Opt Part #: F70200-17 Supplier: 81205\n Opt Part #: F70200-18 Supplier: 81205`, cons:'AEROSHELL-LGF', rem:'—', dur:'—'});
-      t.push({id:uid(), ata:'12', tc:'SPL-1829 / AMM —', desc:'Valve - Drain, Landing Gear Shock Strut Oil', tools:`SPL-1829 Valve - Drain, Landing Gear Shock Strut Oil\n Part #: J32108-16 Supplier: 81205`, cons:'AEROSHELL-LGF', rem:'—', dur:'—'});
-      t.push({id:uid(), ata:'12', tc:'STD-1103 / AMM —', desc:'Hose - Flexible, 5/8 Inch ID, Oil or Hydraulic Fluid Resistant, 6 foot', tools:'STD-1103 Hose - Flexible, 5/8 Inch ID, Oil or Hydraulic Fluid Resistant, 6 foot', cons:'—', rem:'—', dur:'—'});
-      t.push({id:uid(), ata:'12', tc:'STD-1110 / AMM —', desc:'Container - Hydraulic Fluid Resistant, 5 Gallon (19 Liter)', tools:'STD-1110 Container - Hydraulic Fluid Resistant, 5 Gallon (19 Liter)', cons:'—', rem:'—', dur:'—'});
-      t.push({id:uid(), ata:'12', tc:'STD-1157 / AMM —', desc:'Gauge - Pressure, 0-3000 PSIG (0-20685 KPa)', tools:'STD-1157 Gauge - Pressure, 0-3000 PSIG (0-20685 KPa)', cons:'—', rem:'—', dur:'—'});
-      state.tasks = t; saveLocal();
-      alert('Demo data for ATA 12 loaded.');
-      render();
-    }
-
-    // Auth (demo)
+    /***************
+     * AUTH & NAV  *
+     ***************/
     function signIn(){
       const name = (document.getElementById('nameInput').value||'User').trim();
-      const staffId = (document.getElementById('staffIdInput').value||'').trim();
-      const role = document.getElementById('roleSelect').value;
+      const staffId = (document.getElementById('staffInput').value||'').trim();
+      const role = document.getElementById('roleInput').value;
       if(!staffId){ alert('Please enter Staff ID'); return; }
       state.user = {name, staffId, role};
-      document.getElementById('rolePill').textContent = role+ ' — ' + name;
-      document.getElementById('whoPill').textContent = role + ' • ' + staffId;
+      document.getElementById('sessionPill').textContent = `${role} — ${name}`;
+      document.getElementById('whoPill').textContent = `${role} • ${staffId}`;
+      document.getElementById('todayPill').textContent = todayLabel();
       document.getElementById('auth').style.display='none';
       document.getElementById('app').style.display='block';
-      state.history = ['home'];
+      state.history=['home'];
       loadLocal();
-      if(state.useFirebase){ syncFromFirebase(); }
       buildTabs();
-      render();
+      renderAll();
     }
     function signOut(){ location.reload(); }
-
-    // Back button (in-app navigation)
     function goBack(){
       if(state.history.length>1){
         state.history.pop();
-        const last = state.history[state.history.length-1];
-        setTab(last);
+        setTab(state.history[state.history.length-1]);
       }else{
-        // go to default tab for role
         setTab(state.user.role==='OFFICER'?'manage':'search');
       }
     }
 
-    // Tabs
     function buildTabs(){
       const tabs = document.getElementById('tabs');
       tabs.innerHTML='';
-      const make=(id,label)=>{const a=document.createElement('button');a.className='tab';a.textContent=label;a.onclick=()=>setTab(id);return a}
-      if(state.user.role==='LAE'){
-        tabs.appendChild(make('search','Search'));
-        setTab('search');
-      }else{
+      const make=(id,label)=>{ const b=document.createElement('button'); b.className='tab'; b.textContent=label; b.onclick=()=>setTab(id); return b; }
+      if(state.user.role==='OFFICER'){
         tabs.appendChild(make('manage','Manage'));
         tabs.appendChild(make('search','Search'));
         setTab('manage');
+      }else{
+        tabs.appendChild(make('search','Search'));
+        setTab('search');
       }
     }
     function setTab(id){
-      for(const el of document.querySelectorAll('[id^="tab-"]')) el.style.display='none';
-      const btns = document.querySelectorAll('.tabbar .tab');
-      btns.forEach(b=>b.classList.remove('active'));
-      const show=document.getElementById('tab-'+id); if(show) show.style.display='block';
-      const map = (state.user.role==='OFFICER')?[ 'manage','search']:[ 'search' ];
-      const idx = map.indexOf(id); if(idx>-1) btns[idx]?.classList.add('active');
-      // record history
+      document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none');
+      document.getElementById('tab-'+id).style.display='block';
+      document.querySelectorAll('.tabbar .tab').forEach(b=>b.classList.remove('active'));
+      const order = (state.user.role==='OFFICER')?['manage','search']:['search'];
+      const idx = order.indexOf(id);
+      if(idx>-1) document.querySelectorAll('.tabbar .tab')[idx].classList.add('active');
       if(state.history[state.history.length-1]!==id) state.history.push(id);
-
-      if(id==='search') { populateATAFilter(); renderSearch(); }
-      else if(id==='manage') { renderList(); }
+      renderAll();
     }
 
-    // Populate ATA dropdown with unique values in data
-    function populateATAFilter(){
-      const select = document.getElementById('ataFilter');
-      const ataset = Array.from(new Set(state.tasks.map(t=>String(t.ata||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
-      select.innerHTML = '<option value="">All ATA</option>' + ataset.map(a=>`<option value="${escapeHTML(a)}">ATA ${escapeHTML(a)}</option>`).join('');
-    }
-
-    // CRUD
-    async function saveTask(){
-      const t={
-        ata: (document.getElementById('f_ata').value||'').trim(),
-        tc: (document.getElementById('f_tc').value||'').trim(),
-        desc: (document.getElementById('f_desc').value||'').trim(),
-        tools: (document.getElementById('f_tools').value||'').trim(),
-        cons: (document.getElementById('f_cons').value||'').trim(),
-        rem: (document.getElementById('f_rem').value||'').trim(),
-        dur: (document.getElementById('f_dur').value||'').trim()
-      };
-      if(!t.ata || !t.tc || !t.desc){ alert('Please fill ATA, Task Card / AMM Ref, and Description.'); return; }
-
-      if(state.editId){
-        const i = state.tasks.findIndex(x=>x.id===state.editId);
-        if(i>-1){ state.tasks[i] = {...state.tasks[i], ...t}; }
-      }else{
-        t.id = uid();
-        state.tasks.unshift(t);
-      }
-
-      saveLocal();
-      if(state.useFirebase){ await upsertFirebase(t); }
-      resetForm();
-      renderList();
-      alert('Saved.');
-    }
-
-    async function removeTask(id){
-      if(!confirm('Delete this task?')) return;
-      state.tasks = state.tasks.filter(x=>x.id!==id);
-      saveLocal();
-      if(state.useFirebase){ await deleteFirebase(id); }
-      renderList();
-    }
-
-    function resetForm(){
-      state.editId=null;
-      document.getElementById('formMode').textContent='Mode: Create';
-      ['f_ata','f_tc','f_desc','f_tools','f_cons','f_rem','f_dur'].forEach(id=>document.getElementById(id).value='');
-    }
-    function fillForm(t){
-      state.editId=t.id;
-      document.getElementById('formMode').textContent='Mode: Edit #'+t.tc;
-      document.getElementById('f_ata').value=t.ata||'';
-      document.getElementById('f_tc').value=t.tc||'';
-      document.getElementById('f_desc').value=t.desc||'';
-      document.getElementById('f_tools').value=t.tools||'';
-      document.getElementById('f_cons').value=t.cons||'';
-      document.getElementById('f_rem').value=t.rem||'';
-      document.getElementById('f_dur').value=t.dur||'';
-    }
-
-    function renderList(){
-      const wrap=document.getElementById('listWrap');
-      if(!state.tasks.length){ wrap.innerHTML='<p class="muted">No task cards yet.</p>'; return; }
-      let html='<table><thead><tr><th>ATA</th><th>Task Card / AMM</th><th>Description</th><th>Duration</th><th></th></tr></thead><tbody>';
-      for(const t of state.tasks){
-        html+=`<tr>
-          <td>${escapeHTML(t.ata||'')}</td>
-          <td>${escapeHTML(t.tc)}</td>
-          <td>${escapeHTML(t.desc)}</td>
-          <td>${escapeHTML(t.dur||'—')}</td>
-          <td style="text-align:right">
-            <button class="btn ghost" onclick='editById("${t.id}")'>Edit</button>
-            <button class="btn danger" onclick='removeTask("${t.id}")'>Delete</button>
-          </td>
-        </tr>`
-      }
-      html+='</tbody></table>';
-      wrap.innerHTML=html;
-    }
-
-    function editById(id){ const t=state.tasks.find(x=>x.id===id); if(t) fillForm(t); }
-
-    // Search
-    function clearSearch(){ document.getElementById('searchInput').value=''; renderSearch(); }
-    function renderSearch(){
-      const q=(document.getElementById('searchInput').value||'').toLowerCase();
-      const ataSel=(document.getElementById('ataFilter').value||'').trim();
-      let results = state.tasks;
-      if(ataSel) results = results.filter(t=>String(t.ata||'')===ataSel);
-      if(q) results = results.filter(t=>
-        (t.tc||'').toLowerCase().includes(q) || (t.desc||'').toLowerCase().includes(q)
-      );
-      const wrap=document.getElementById('searchResults');
-      if(!results.length){ wrap.innerHTML='<p class="muted">No matching task cards.</p>'; return; }
-      let html='';
-      for(const t of results){ html+=card(t); }
-      wrap.innerHTML=html;
-    }
-
-    function card(t){
-      return `<div class=\"card\" style=\"margin-top:12px\">\n        <div class=\"grid two\">\n          <div>\n            <b>ATA ${escapeHTML(t.ata||'—')} • ${escapeHTML(t.tc)}</b>\n            <p class=\"muted\" style=\"margin:6px 0\">${escapeHTML(t.desc||'—')}</p>\n          </div>\n          <div style=\"text-align:right\"><span class=\"pill\">${escapeHTML(t.dur || '—')}</span></div>\n        </div>\n        <div class=\"grid two\" style=\"margin-top:10px\">\n          <div>\n            <label>Tools / Test Set</label>\n            <div class=\"scroller\">${nl2br(escapeHTML(t.tools||'-'))}</div>\n          </div>\n          <div>\n            <label>Consumables / MSL</label>\n            <div class=\"scroller\">${nl2br(escapeHTML(t.cons||'-'))}</div>\n          </div>\n        </div>\n        <div style=\"margin-top:10px\">\n          <label>Remarks</label>\n          <div class=\"scroller\">${nl2br(escapeHTML(t.rem||'-'))}</div>\n        </div>\n      </div>`
-    }
-
-    function exportJSON(){
-      const blob = new Blob([JSON.stringify(state.tasks, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href=url; a.download='taskcards.json'; a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    // Helpers
-    function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
-    function nl2br(s){ return (s||'').replace(/\n/g,'<br>'); }
-
-    // ---- Optional Firebase integration (Firestore) ----
-    async function enableFirebase(){
-      try{
-        const cfgRaw = document.getElementById('firebaseConfig').value.trim();
-        const cfg = JSON.parse(cfgRaw);
-        await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
-        await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js');
-        state.fb.app = window.firebase.initializeApp(cfg);
-        state.fb.db  = window.firebase.firestore();
-        state.useFirebase = true;
-        document.getElementById('fbStatus').textContent = 'Firebase: On (Firestore)';
-        if(state.user){ await syncFromFirebase(); render(); }
-        alert('Firebase enabled.');
-      }catch(e){
-        console.error(e); alert('Failed to enable Firebase. Check your config JSON.');
-      }
-    }
-    function disableFirebase(){ state.useFirebase=false; state.fb={app:null,db:null}; document.getElementById('fbStatus').textContent='Firebase: Off'; }
-
-    async function syncFromFirebase(){
-      if(!state.useFirebase || !state.fb.db) return;
-      const snap = await state.fb.db.collection('taskcards').orderBy('createdAt','desc').get();
-      const out=[]; snap.forEach(doc=>{ out.push({id:doc.id, ...doc.data()}); });
-      state.tasks = out;
-      saveLocal();
-      render();
-    }
-
-    async function upsertFirebase(t){
-      if(!state.useFirebase || !state.fb.db) return;
-      if(state.editId){
-        await state.fb.db.collection('taskcards').doc(state.editId).set({...t, updatedAt: Date.now()}, {merge:true});
-      }else{
-        const ref = await state.fb.db.collection('taskcards').add({...t, createdAt: Date.now()});
-        const idx = state.tasks.findIndex(x=>!x.id || x.id.startsWith('id-'));
-        if(idx>-1) state.tasks[idx].id = ref.id;
-      }
-    }
-
-    async function deleteFirebase(id){
-      if(!state.useFirebase || !state.fb.db) return;
-      await state.fb.db.collection('taskcards').doc(id).delete();
-    }
-
-    function loadScript(src){
-      return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
-    }
-
-    // ---- Excel Import (.xlsx) ----
-    document.getElementById('excelFile')?.addEventListener('change', handleExcelFile);
+    /**********************
+     * IMPORT & MAPPINGS  *
+     **********************/
+    document.getElementById('excelFile').addEventListener('change', handleExcelFile);
 
     function handleExcelFile(ev){
       const file = ev.target.files[0];
@@ -476,207 +282,319 @@
         try{
           const data = new Uint8Array(e.target.result);
           const wb = XLSX.read(data, { type: 'array' });
-          const sheetName = wb.SheetNames[0];
-          const ws = wb.Sheets[sheetName];
-          // read as rows to detect ATA headers
-          const rows = XLSX.utils.sheet_to_json(ws, { header:1, blankrows:false, defval:'' });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', blankrows:false});
           const parsed = parseExcelRows(rows);
-          if(!parsed.length){ alert('No rows parsed. Check your sheet format.'); return; }
-          // merge into state
-          for(const t of parsed){ t.id = uid(); }
+          if(!parsed.length){ alert('No tasks parsed. Please check column headers.'); return; }
+          // assign ids and merge
+          parsed.forEach(t=>t.id=uid());
           state.tasks = [...parsed, ...state.tasks];
           saveLocal();
-          renderList();
-          populateATAFilter();
-          alert('Excel imported: '+parsed.length+' task(s).');
+          ev.target.value='';
+          alert(`Imported ${parsed.length} task(s).`);
+          renderAll();
         }catch(err){
           console.error(err); alert('Failed to parse Excel.');
         }
       };
       reader.readAsArrayBuffer(file);
-      // reset input so same file can be reselected later
-      ev.target.value='';
     }
 
-    // Parser: Option 1 — ATA applies to following rows until new ATA appears
+    // Flexible header detection; will match your screenshot headers.
     function parseExcelRows(rows){
-      // Expect columns like: [ 'TASK CARD NUM / AMM REF', 'TASK DESCRIPTION', 'TOOLS / TESTSET', 'CONSUMABLES / MSL', 'REMARKS', 'DURATION' ]
-      // ATA may appear as a row like ['ATA 12', '', '', ...] or with ATA in a dedicated column 'ATA'
       let currentATA = '';
-      // find header indices (first row that contains TASK CARD or AMM)
       let headerIdx = -1; let cols = {};
       const out = [];
+
       for(let r=0;r<rows.length;r++){
         const row = rows[r].map(v=>String(v).trim());
         if(row.length===0) continue;
-        const first = (row[0]||'').toUpperCase();
-        // ATA header line
-        const m = first.match(/^ATA\s*([0-9A-Z.]+)$/);
+
+        // Detect "ATA 12" style lines to carry forward
+        const firstUpper = (row[0]||'').toUpperCase();
+        const m = firstUpper.match(/^ATA\s*([0-9A-Z.]+)$/);
         if(m){ currentATA = m[1]; continue; }
-        // detect header row
-        if(headerIdx<0 && (first.includes('TASK CARD') || first.includes('AMM'))){
-          headerIdx=r;
-          // map columns by name
+
+        // Find header row once
+        if(headerIdx<0 && (firstUpper.includes('TASK CARD') || firstUpper.includes('AMM'))){
+          headerIdx = r;
           for(let i=0;i<row.length;i++){
             const name = row[i].toUpperCase();
-            if(name.includes('TASK CARD')) cols.tc=i;
-            else if(name.includes('AMM') && cols.tc==null) cols.tc=i; // sometimes merged
-            else if(name.includes('TASK DESCRIPTION')) cols.desc=i;
-            else if(name.includes('TOOLS')) cols.tools=i;
-            else if(name.includes('CONSUMABLES')) cols.cons=i;
-            else if(name.includes('REMARKS')) cols.rem=i;
-            else if(name.includes('DURATION')) cols.dur=i;
-            else if(name==='ATA') cols.ata=i;
+            if(name.includes('ATA')) cols.ata=i;
+            if(name.includes('TASK CARD') || name.includes('AMM')) cols.tc=i;
+            if(name.includes('TASK DESCRIPTION')) cols.desc=i;
+            if(name.includes('TOOLS')) cols.tools=i;
+            if(name.includes('CONSUMABLES')) cols.cons=i;
+            if(name.includes('REMARKS')) cols.rem=i;
+            if(name.includes('DURATION')) cols.dur=i;
+            if(name.includes('MAN') && name.includes('HOUR')) cols.mh=i;      // optional in sheet
+            if(name.includes('DUE')) cols.due=i;                               // optional in sheet
           }
           continue;
         }
-        // skip title rows before header
-        if(headerIdx<0) continue;
-        // empty row ends a block
-        const isBlank = row.every(c=>c==='');
-        if(isBlank) continue;
-        // determine ATA for this row
-        let ata = cols.ata!=null ? (row[cols.ata]||currentATA||'') : (currentATA||'');
-        ata = String(ata).trim();
-        // build task object
-        const tc = getCell(row, cols.tc);
-        const desc = getCell(row, cols.desc);
-        const tools = getCell(row, cols.tools);
-        const cons = getCell(row, cols.cons);
-        const rem = getCell(row, cols.rem);
-        const dur = getCell(row, cols.dur);
-        // ignore if no tc & no desc
-        if(!(tc||desc)) continue;
-        out.push({ ata, tc, desc, tools, cons, rem, dur });
+        if(headerIdx<0) continue;                 // skip leading junk
+        if(row.every(c=>c==='')) continue;       // skip blank lines
+
+        const t = {
+          ata: getCell(row, cols.ata) || currentATA || '',
+          tc:  getCell(row, cols.tc),
+          desc:getCell(row, cols.desc),
+          tools:getCell(row, cols.tools),
+          cons:getCell(row, cols.cons),
+          rem: getCell(row, cols.rem),
+          dur: getCell(row, cols.dur),
+          manHours: getCell(row, cols.mh),       // might be blank; can edit later
+          dueDate:  normalizeDate(getCell(row, cols.due)), // may be blank
+          completed:false
+        };
+        if(!(t.tc||t.desc)) continue;            // ignore noise rows
+        out.push(t);
       }
       return out;
     }
-    function getCell(row, idx){ if(idx==null) return ''; return String(row[idx]||'').trim(); }
+    function getCell(row, idx){ return (idx==null)?'':String(row[idx]||'').trim(); }
+    function normalizeDate(s){
+      if(!s) return '';
+      // Try Excel serial number
+      if(/^\d+$/.test(s)){
+        const base = new Date(Date.UTC(1899,11,30));
+        const dt = new Date(base.getTime() + parseInt(s,10)*86400000);
+        return dt.toISOString().slice(0,10);
+      }
+      // Try parseable yyyy-mm-dd or dd/mm/yyyy
+      const tryD = new Date(s);
+      if(!isNaN(tryD)) return tryD.toISOString().slice(0,10);
+      return s; // leave as-is
+    }
 
-    // Initial
-    function render(){
-      if(document.getElementById('tab-search').style.display!=='none') { populateATAFilter(); renderSearch(); }
-      if(document.getElementById('tab-manage').style.display!=='none') renderList();
+    /****************
+     * RENDER VIEWS *
+     ****************/
+    function renderAll(){
+      populateATAFilter();
+      renderSearch();
+      renderList();
+      updateCounters();
+    }
+
+    function populateATAFilter(){
+      const select = document.getElementById('ataFilter');
+      const set = Array.from(new Set(state.tasks.map(t=>String(t.ata||'').trim()).filter(Boolean)))
+        .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+      select.innerHTML = '<option value="">All ATA</option>' + set.map(a=>`<option value="${escapeHTML(a)}">ATA ${escapeHTML(a)}</option>`).join('');
+    }
+
+    function updateCounters(){
+      const remaining = state.tasks.filter(t=>!t.completed).length;
+      document.getElementById('remainingPill').textContent = `Remaining: ${remaining}`;
+    }
+
+    function renderSearch(){
+      const q=(document.getElementById('searchInput').value||'').toLowerCase();
+      const ata=(document.getElementById('ataFilter').value||'').trim();
+      let list = state.tasks.slice();
+      if(ata) list = list.filter(t=>String(t.ata||'')===ata);
+      if(q) list = list.filter(t=> (t.tc||'').toLowerCase().includes(q) || (t.desc||'').toLowerCase().includes(q));
+
+      const wrap=document.getElementById('searchResults');
+      if(!list.length){ wrap.innerHTML = '<p class="muted">No matching task cards.</p>'; return; }
+      wrap.innerHTML = list.map(card).join('');
+    }
+
+    // Single card renderer with due-date colouring and complete toggle
+    function card(t){
+      const status = dueStatus(t.dueDate);
+      const chipClass = status.class;
+      const chipText  = status.text;
+      const mh = t.manHours?`${escapeHTML(t.manHours)} h`:'—';
+      const due = t.dueDate?escapeHTML(t.dueDate):'—';
+      const check = t.completed?'checked':'';
+
+      return `
+      <div class="card" style="margin-top:12px">
+        <div class="grid two">
+          <div>
+            <b>ATA ${escapeHTML(t.ata||'—')} • ${escapeHTML(t.tc||'—')}</b>
+            <p class="muted" style="margin:6px 0">${escapeHTML(t.desc||'—')}</p>
+          </div>
+          <div style="text-align:right">
+            <span class="due-chip ${chipClass}">${chipText}: ${due}</span>
+            <span class="pill" style="margin-left:6px">Man Hours: ${mh}</span>
+            <span class="pill" style="margin-left:6px">${escapeHTML(t.dur||'')}</span>
+          </div>
+        </div>
+
+        <div class="grid two" style="margin-top:10px">
+          <div>
+            <label>Tools / Test Set</label>
+            <div class="scroller">${nl2br(escapeHTML(t.tools||'-'))}</div>
+          </div>
+          <div>
+            <label>Consumables / MSL</label>
+            <div class="scroller">${nl2br(escapeHTML(t.cons||'-'))}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <label>Remarks</label>
+          <div class="scroller">${nl2br(escapeHTML(t.rem||'-'))}</div>
+        </div>
+
+        <div class="toolbar" style="margin-top:10px;justify-content:space-between">
+          <div class="muted">Duration: ${escapeHTML(t.dur||'—')}</div>
+          <label class="muted" style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" ${check} onchange="toggleComplete('${t.id}', this.checked)"> Mark as completed
+          </label>
+        </div>
+      </div>`;
+    }
+
+    function toggleComplete(id, val){
+      const i = state.tasks.findIndex(x=>x.id===id);
+      if(i>-1){ state.tasks[i].completed = !!val; saveLocal(); updateCounters(); }
+    }
+
+    // Compute due status & class
+    function dueStatus(iso){
+      if(!iso) return {class:'due-ok', text:'No Due'};
+      const today = new Date(); today.setHours(0,0,0,0);
+      const d = new Date(iso); d.setHours(0,0,0,0);
+      const diff = Math.round((d - today)/86400000);
+      if(diff < 0)  return {class:'due-overdue', text:'Overdue'};
+      if(diff === 0) return {class:'due-today', text:'Due Today'};
+      if(diff <= 3) return {class:'due-soon', text:'Due Soon'};
+      return {class:'due-ok', text:'On Track'};
+    }
+
+    /*********************
+     * OFFICER QUICK EDIT *
+     *********************/
+    function renderList(){
+      const wrap=document.getElementById('listWrap');
+      if(!wrap || document.getElementById('tab-manage').style.display==='none') return;
+
+      if(!state.tasks.length){ wrap.innerHTML='<p class="muted">No task cards yet.</p>'; return; }
+
+      let html = `<table>
+        <thead><tr>
+          <th>ATA</th><th>Task Card / AMM</th><th>Description</th>
+          <th>Due Date</th><th>Man Hours</th><th></th>
+        </tr></thead><tbody>`;
+
+      for(const t of state.tasks){
+        html += `<tr>
+          <td>${escapeHTML(t.ata||'')}</td>
+          <td>${escapeHTML(t.tc||'')}</td>
+          <td>${escapeHTML(t.desc||'')}</td>
+          <td>
+            <input type="date" value="${escapeAttr(t.dueDate||'')}" onchange="editField('${t.id}','dueDate', this.value)">
+          </td>
+          <td>
+            <input type="number" min="0" step="0.1" value="${escapeAttr(t.manHours||'')}" placeholder="e.g. 4" onchange="editField('${t.id}','manHours', this.value)">
+          </td>
+          <td style="text-align:right">
+            <button class="btn danger" onclick="delTask('${t.id}')">Delete</button>
+          </td>
+        </tr>`;
+      }
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    }
+
+    function editField(id, key, val){
+      const i = state.tasks.findIndex(x=>x.id===id);
+      if(i>-1){
+        state.tasks[i][key] = (key==='manHours' && val)? String(val): (key==='dueDate'? normalizeDate(val): val);
+        saveLocal();
+        renderSearch();
+        updateCounters();
+      }
+    }
+    function delTask(id){
+      if(!confirm('Delete this task?')) return;
+      state.tasks = state.tasks.filter(t=>t.id!==id);
+      saveLocal();
+      renderAll();
+    }
+    function clearAll(){
+      if(!confirm('This will remove all saved tasks on this device. Continue?')) return;
+      state.tasks = [];
+      saveLocal();
+      renderAll();
+    }
+
+    /*************
+     * UTILITIES *
+     *************/
+    function exportJSON(){
+      const blob = new Blob([JSON.stringify(state.tasks,null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url; a.download='batik-taskcards.json'; a.click();
+      URL.revokeObjectURL(url);
+    }
+    function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+    function escapeAttr(s){ return String(s||'').replace(/"/g,'&quot;'); }
+    function nl2br(s){ return (s||'').replace(/\n/g,'<br>'); }
+
+    /********************
+     * DEMO SEED (ATA12)
+     ********************/
+    function seedDemo(){
+      const seed=[
+        {ata:'12', tc:'32-070-00-01', desc:'Service the nose landing gear shock strut (AMM TASK 12-15-41-610-802)',
+         tools:`COM-1532 Cart - Servicing, Strut Oil
+ Part #: 1104 Supplier: 30188
+ Part #: 8774B Supplier: 94861
+ Part #: 8844 Supplier: 94861
+ Part #: 8844B Supplier: 94861
+ Part #: HM-GT1-C-VS Supplier: 1HV74
+ Part #: PF53481-9P Supplier: 94861
+ Part #: PF54124-3P Supplier: 94861
+ Part #: PF55451-1 Supplier: 94861
+ Part #: PF55451-23 Supplier: 94861
+ Part #: SH001 Supplier: D2029
+ Opt Part #: HM-GT1-C Supplier: 1HV74
+
+SPL-1521 Tool - Strut Inflation, Landing Gear
+ Part #: F70200-35 Supplier: 81205
+ Opt Part #: F70200-1 Supplier: 81205
+ Opt Part #: F70200-14 Supplier: 81205
+ Opt Part #: F70200-17 Supplier: 81205
+ Opt Part #: F70200-18 Supplier: 81205
+
+SPL-1829 Valve - Drain, Landing Gear Shock Strut Oil
+ Part #: J32108-16 Supplier: 81205
+
+STD-1103 Hose - Flexible, 5/8 Inch ID, Oil/Hydraulic Resistant, 6 ft
+STD-1110 Container - Hydraulic Fluid Resistant, 5 Gallon (19 L)
+STD-1157 Gauge - Pressure, 0-3000 PSIG (0-20685 KPa)`,
+         cons:'AEROSHELL-LGF',
+         rem:`SPL-1829 Valve - Drain, Landing Gear Shock Strut Oil
+ Part #: J32108-16 Supplier: 81205
+( alternate to use a container )`,
+         dur:'4 HRS',
+         manHours:'4',
+         dueDate:new Date(Date.now()+86400000*2).toISOString().slice(0,10), // +2 days
+         completed:false
+        }
+      ];
+      seed.forEach(t=>t.id=uid());
+      state.tasks = [...seed, ...state.tasks];
+      saveLocal();
+      alert('Demo ATA 12 task loaded.');
+      renderAll();
+    }
+
+    /************************
+     * Service Worker (PWA) *
+     ************************/
+    if ("serviceWorker" in navigator) {
+      // Safe to register; will simply do nothing if file is missing
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/service-worker.js");
+      });
     }
   </script>
-<!-- Paste this at the end of your index.html, just before </body> -->
-
-<script>
-/* ----- Service Worker Registration (already done) ----- */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
-    .then(() => console.log('Service Worker registered'))
-    .catch((err) => console.log('Service Worker registration failed:', err));
-}
-
-/* ----- Offline Task Storage ----- */
-function saveTaskOffline(task) {
-  let tasks = JSON.parse(localStorage.getItem('offlineTasks')) || [];
-  tasks.push(task);
-  localStorage.setItem('offlineTasks', JSON.stringify(tasks));
-  console.log('Task saved offline:', task);
-}
-
-/* Example: call this when a task is submitted */
-document.addEventListener('DOMContentLoaded', () => {
-  const taskForm = document.getElementById('taskForm'); // make sure your form has id="taskForm"
-  if (taskForm) {
-    taskForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const task = {
-        title: e.target.title.value,
-        details: e.target.details.value,
-        timestamp: new Date().toISOString()
-      };
-      saveTaskOffline(task);
-      e.target.reset();
-      showNotification('Task saved locally', 'Your task has been saved offline.');
-    });
-  }
-});
-
-/* ----- Sync Tasks When Back Online ----- */
-window.addEventListener('online', () => {
-  let tasks = JSON.parse(localStorage.getItem('offlineTasks')) || [];
-  if (tasks.length > 0) {
-    tasks.forEach(task => {
-      // TODO: Replace this with actual send to Google Sheet / server
-      console.log('Syncing task to server:', task);
-    });
-    localStorage.removeItem('offlineTasks');
-    showNotification('Tasks Synced', 'All offline tasks have been synced.');
-  }
-});
-
-/* ----- Push Notifications ----- */
-function showNotification(title, message) {
-  if ('Notification' in window && Notification.permission === 'granted') {
-    navigator.serviceWorker.ready.then(swReg => {
-      swReg.showNotification(title, {
-        body: message,
-        icon: '/icons/icon-192.png',
-        tag: 'lae-task'
-      });
-    });
-  }
-}
-
-/* Request notification permission on first load */
-if ('Notification' in window && Notification.permission !== 'granted') {
-  Notification.requestPermission().then(permission => {
-    if (permission === 'granted') {
-      console.log('Notifications enabled');
-    }
-  });
-}
-</script>
-
-<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-  <img src="batik-air-logo.png" alt="Batik Air Logo" style="height: 50px; width: auto;">
-  
-  <div style="flex: 1;">
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" placeholder="Enter Name" required style="margin-right: 10px;">
-    
-    <label for="id">ID:</label>
-    <input type="text" id="id" name="id" placeholder="Enter ID" required>
-  </div>
-</div>
-
-<form id="taskForm">
-  <input type="text" name="title" placeholder="Task title" required>
-  <textarea name="details" placeholder="Task details" required></textarea>
-  <button type="submit">Save Task</button>
-</form>
-
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LAE Task Card App</title>
-    <link rel="manifest" href="manifest.json">
-</head>
-<body>
-    <h1>LAE Task Card App</h1>
-
-    <div>
-        <h2>Due Soon Tasks</h2>
-        <ul id="dueTasksList"></ul>
-        <p><strong>Total Man-hours Needed:</strong> <span id="totalManhours">0</span></p>
-    </div>
-
-    <script src="script.js"></script>
-<!-- Add these right after the Duration field -->
-<label>Manhours Required</label>
-<input id="f_manhours" type="number" placeholder="e.g. 4" step="0.5" min="0">
-
-<label>Due Date</label>
-<input id="f_duedate" type="date">
-
-<div class="card" style="margin-top: 20px;">
-  <h3>Upcoming Tasks</h3>
-  <div id="upcomingTasks" class="scroller"></div>
-</div>
 </body>
 </html>
-
