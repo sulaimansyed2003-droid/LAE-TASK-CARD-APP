@@ -1,772 +1,309 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LAE Task Card App — Batik Air</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LAE Task Card App (Officer & LAE)</title>
 
-  <!-- PWA manifest (optional if you add manifest.json later) -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#b30056"> <!-- Batik magenta -->
+  <meta name="theme-color" content="#8B1538">
 
-  <!-- Embedded style: bright Batik Air theme (magenta + gold) and high contrast -->
   <style>
-    :root{
-      --bg:#fff;
-      --panel:#fff;
-      --muted:#6b7280;
-      --ink:#071126;
-      --magenta:#b30056; /* Batik primary */
-      --gold:#ffd100;    /* Batik accent */
-      --card:#ffffff;
-      --border:#e6e6e6;
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      color: #333;
+      margin: 0;
+      padding: 0;
     }
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,#fff,#f6f6f8);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
-    .container{max-width:1100px;margin:18px auto;padding:18px}
-    header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
-    h1{margin:0;font-size:20px;color:var(--magenta)}
-    .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--ink);font-weight:600}
-    .card{background:var(--card);border-radius:12px;padding:14px;border:1px solid var(--border);box-shadow:0 6px 18px rgba(11,12,14,0.04)}
-    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-    input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--ink);font-size:14px}
-    textarea{min-height:84px;resize:vertical}
-    .row{display:flex;gap:12px;align-items:flex-start}
-    .col{flex:1;min-width:200px}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    button{cursor:pointer;border-radius:10px;padding:10px 12px;border:0;font-weight:700}
-    .btn-primary{background:var(--magenta);color:#fff}
-    .btn-secondary{background:#fff;color:var(--magenta);border:1px solid var(--magenta)}
-    .btn-ghost{background:#fff;border:1px solid var(--border);color:var(--ink)}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
-    .small{font-size:13px;color:var(--muted)}
-    .scroller{max-height:180px;overflow:auto;padding:8px;border-radius:8px;border:1px solid var(--border);background:#fff}
-    .grid{display:grid;gap:12px}
-    .grid.two{grid-template-columns:1fr 1fr}
-    @media (max-width:900px){.grid.two{grid-template-columns:1fr}}
-    .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:700;font-size:12px}
-    .badge.overdue{background:#ffe6e6;color:#b30056;border:1px solid #f7c7c7}
-    .badge.today{background:#fff2e6;color:#b36b00;border:1px solid #f2d0b0}
-    .badge.soon{background:#fff8e6;color:#b36b00;border:1px solid #f8e8c8}
-    .task-card{border-radius:10px;padding:12px;border:1px solid var(--border);background:#fff;margin-bottom:10px}
-    .task-title{font-weight:800;color:var(--magenta);font-size:15px}
-    .task-meta{font-size:13px;color:var(--muted);margin-top:6px}
-    .flex{display:flex;gap:10px;align-items:center}
-    .right{margin-left:auto}
-    .done-list{margin-top:12px}
-    .stat{display:inline-block;padding:8px 12px;border-radius:10px;background:#fff;border:1px solid var(--border);margin-right:8px;font-weight:700}
-    .logo {height:48px;width:auto;border-radius:8px}
-    /* checkbox style */
-    .chk {transform:scale(1.2);margin-right:8px}
+    header {
+      background-color: #8B1538;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+    .container {
+      padding: 15px;
+    }
+    .login-box {
+      max-width: 400px;
+      margin: auto;
+      background: #f8f8f8;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    select, input, button {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .task-card {
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #fff;
+    }
+    .task-done {
+      background-color: #d4edda !important;
+    }
+    .warning-yellow {
+      border-color: #ffc107;
+    }
+    .warning-orange {
+      border-color: #fd7e14;
+    }
+    .warning-red {
+      border-color: #dc3545;
+    }
+    h2 {
+      color: #8B1538;
+    }
+    .section-title {
+      margin-top: 20px;
+      padding: 8px;
+      background: #eee;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+    .filter-bar {
+      position: sticky;
+      top: 0;
+      background: #f1f1f1;
+      padding: 10px;
+      z-index: 10;
+      border-bottom: 1px solid #ccc;
+    }
+    .filter-bar input, .filter-bar select {
+      display: inline-block;
+      width: auto;
+      min-width: 120px;
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div style="display:flex;gap:12px;align-items:center">
-        <img class="logo" alt="Batik Air" src="data:image/png;base64,{{BASE64_LOGO}}">
-        <div>
-          <h1>LAE Task Card App</h1>
-          <div class="small">Batik Air — Task Cards (Officer & LAE)</div>
-        </div>
-      </div>
-      <div>
-        <span id="whoPill" class="pill">Not signed in</span>
-      </div>
-    </header>
 
-    <!-- ===== SIGN-IN CARD ===== -->
-    <div id="auth" class="card">
-      <!-- sign in form: name, staff id, role -->
-      <div class="grid two">
-        <div>
-          <label for="nameInput">Your name</label>
-          <input id="nameInput" placeholder="e.g. Aiman">
-        </div>
-        <div>
-          <label for="staffIdInput">Staff ID</label>
-          <input id="staffIdInput" placeholder="e.g. BID1234">
-        </div>
-      </div>
+<header>
+  <h1>LAE Task Card App</h1>
+  <div id="datetime"></div>
+</header>
 
-      <div class="grid two" style="margin-top:12px">
-        <div>
-          <label for="roleSelect">Role</label>
-          <select id="roleSelect">
-            <option value="LAE">LAE</option>
-            <option value="OFFICER">OFFICER</option>
-          </select>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <div class="toolbar">
-            <button class="btn-primary" onclick="signIn()">Continue</button>
-            <button class="btn-ghost" onclick="seedDemo()">Load demo data</button>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top:12px" class="small">
-        <strong>Install</strong> — add to Home Screen: Chrome menu → Install / Safari → Add to Home Screen.<br>
-        Notifications will alert you for due/overdue tasks (please allow when the browser asks).
-      </div>
-    </div>
-
-    <!-- ===== APP (hidden until sign in) ===== -->
-    <div id="app" style="display:none;margin-top:12px">
-      <div class="topbar">
-        <div class="flex">
-          <span class="stat" id="statRemaining">Remaining: 0</span>
-          <span class="stat" id="statDone">Done: 0</span>
-          <div class="small" id="nowDisplay"></div>
-        </div>
-
-        <div class="flex">
-          <button class="btn-ghost" onclick="signOut()">Sign out</button>
-        </div>
-      </div>
-
-      <div class="grid two">
-        <!-- LEFT: manage (Officer) or search (LAE) -->
-        <div>
-          <div id="controlsCard" class="card">
-            <div class="grid two">
-              <div>
-                <label>ATA Filter</label>
-                <select id="ataFilter" onchange="renderSearch()">
-                  <option value="">All ATA</option>
-                </select>
-              </div>
-              <div>
-                <label>Search (task card or description)</label>
-                <input id="searchInput" placeholder="TC-001 or inspection" oninput="renderSearch()">
-              </div>
-            </div>
-
-            <div style="margin-top:12px" class="grid two">
-              <div>
-                <label>Show</label>
-                <select id="showSelect" onchange="renderSearch()">
-                  <option value="all">All tasks</option>
-                  <option value="open">Open only</option>
-                  <option value="done">Done only</option>
-                </select>
-              </div>
-              <div>
-                <!-- Officer-only: upload Excel -->
-                <label>&nbsp;</label>
-                <div class="toolbar">
-                  <input type="file" id="excelFile" accept=".xlsx" style="display:none">
-                  <button class="btn-primary" id="importBtn" onclick="document.getElementById('excelFile').click()">Import Excel (.xlsx)</button>
-                  <button class="btn-ghost" onclick="exportJSON()">Export JSON</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- search results / list -->
-          <div id="results" style="margin-top:12px"></div>
-        </div>
-
-        <!-- RIGHT: officer edit panel + Done list -->
-        <div>
-          <div id="manageCard" class="card">
-            <h3 style="margin:0 0 8px">Add / Edit Task (Officer)</h3>
-            <div class="small">Fill the task card details (Officer only).</div>
-
-            <div style="margin-top:10px" class="grid two">
-              <div>
-                <label>ATA</label><input id="f_ata">
-              </div>
-              <div>
-                <label>Task Card # / AMM Ref</label><input id="f_tc">
-              </div>
-            </div>
-
-            <div style="margin-top:10px">
-              <label>Task Description</label><textarea id="f_desc"></textarea>
-            </div>
-
-            <div style="margin-top:10px" class="grid two">
-              <div>
-                <label>Tools / Testset</label><textarea id="f_tools"></textarea>
-              </div>
-              <div>
-                <label>Consumables / MSL</label><textarea id="f_cons"></textarea>
-              </div>
-            </div>
-
-            <div style="margin-top:10px">
-              <label>Remarks</label><textarea id="f_rem"></textarea>
-            </div>
-
-            <div style="margin-top:10px" class="grid two">
-              <div>
-                <label>Man Hours (est.)</label><input id="f_mh" placeholder="e.g. 2.5">
-              </div>
-              <div>
-                <label>Due Date</label><input id="f_due" type="date">
-              </div>
-            </div>
-
-            <div style="margin-top:10px" class="grid two">
-              <div>
-                <label>Duration (text)</label><input id="f_dur" placeholder="e.g. 4HRS">
-              </div>
-              <div style="display:flex;align-items:flex-end;justify-content:flex-end">
-                <div class="toolbar">
-                  <button class="btn-primary" onclick="saveTask()">Save</button>
-                  <button class="btn-ghost" onclick="resetForm()">Reset</button>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Done tasks -->
-          <div class="card done-list" id="doneCard" style="margin-top:12px">
-            <h3 style="margin:0 0 8px">Task Done</h3>
-            <div id="doneList" class="small">No tasks completed yet.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- footer note -->
-    <div style="margin-top:18px" class="small card">Data stored in browser. Officers can re-import Excel to update tasks. For multi-user sync, enable Firebase in the code later.</div>
+<div class="container" id="loginSection">
+  <div class="login-box">
+    <h2>Login</h2>
+    <label for="nameSelect">Name</label>
+    <select id="nameSelect"></select>
+    <label for="staffId">Staff ID</label>
+    <input type="text" id="staffId" placeholder="Enter Staff ID">
+    <label for="roleSelect">Role</label>
+    <select id="roleSelect">
+      <option value="LAE">LAE</option>
+      <option value="Officer">Officer</option>
+    </select>
+    <button onclick="login()">Sign In</button>
   </div>
+</div>
 
-  <!-- SheetJS (xlsx) to parse Excel files client-side -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<div class="container" id="officerSection" style="display:none;">
+  <h2>Officer Panel</h2>
+  <input type="file" id="excelFile" accept=".xlsx">
+  <div class="filter-bar">
+    <input type="text" id="searchOfficer" placeholder="Search tasks">
+    <select id="ataFilterOfficer"></select>
+  </div>
+  <div id="officerTasks"></div>
+</div>
 
-  <script>
-  /************************************************************************
-   * LAE Task Card App — single-file JS
-   * - Inline comments explain important parts (Excel parsing, due logic)
-   * - Data stored in localStorage under key 'lae_taskcards_app'
-   ************************************************************************/
+<div class="container" id="laeSection" style="display:none;">
+  <h2>LAE Panel</h2>
+  <div id="taskCount"></div>
 
-  // ========== APP STATE ==========
-  const STORAGE_KEY = 'lae_taskcards_app_v1';
-  let state = {
-    user: null,          // {name, staffId, role}
-    tasks: [],           // array of {id, ata, tc, desc, tools, cons, rem, dur, mh, due, done, doneBy, doneAt}
-  };
+  <div class="section-title">My Tasks</div>
+  <div class="filter-bar">
+    <input type="text" id="searchMy" placeholder="Search my tasks">
+    <select id="ataFilterMy"></select>
+  </div>
+  <div id="myTasks"></div>
 
-  // generate unique id for new tasks
-  const uid = () => 'id_' + Math.random().toString(36).slice(2,9);
+  <div class="section-title">All Tasks</div>
+  <div class="filter-bar">
+    <input type="text" id="searchAll" placeholder="Search all tasks">
+    <select id="ataFilterAll"></select>
+  </div>
+  <div id="allTasks"></div>
+</div>
 
-  // load saved tasks from localStorage
-  function loadLocal(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(raw) state = JSON.parse(raw);
-      // ensure fields are present (normalize)
-      state.tasks = (state.tasks||[]).map(t=>normalizeTask(t));
-    }catch(e){
-      console.warn('loadLocal error', e);
-      state.tasks = state.tasks || [];
-    }
-  }
-  function saveLocal(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script>
+  const malaysianNames = [
+    "Ahmad Faiz", "Nur Aisyah", "Muhammad Amir", "Siti Hajar", "Mohd Zulkifli",
+    "Aina Sofea", "Hafizuddin", "Nurul Izzah", "Azlan Hakim", "Farah Nabila",
+    "Syafiqah", "Mohamad Iqbal", "Siti Aminah", "Faris Zaim", "Nadia Farhana",
+    "Iskandar Zulkarnain", "Amirah Syahirah", "Faizal Rahman", "Nur Syafiqa", "Hazim Hafiz",
+    "Sabrina Amani", "Aiman Arif", "Husna Batrisyia", "Zaki Fikri", "Hannah Maisarah",
+    "Mohd Ridzuan", "Liyana Sofiya", "Zulhilmi Firdaus", "Sarah Iman", "Ikmal Haziq",
+    "Maisarah Humaira", "Naufal Danish", "Puteri Balqis", "Haris Azwan", "Alya Medina",
+    "Akmal Hakim", "Siti Khadijah", "Aqil Haqim", "Nur Fatin", "Rayyan Harith",
+    "Hafiza Qistina", "Adam Hakimi", "Sofia Qalesya", "Ahmad Danish", "Amalina Zahra",
+    "Fahmi Ikhwan", "Qistina Syahirah", "Izzat Haziq", "Nur Aqeelah", "Hakim Zafran"
+  ];
 
-  // normalize a task record (ensure known fields exist)
-  function normalizeTask(t){
-    return {
-      id: t.id || uid(),
-      ata: (t.ata||'').toString().trim(),
-      tc: (t.tc||'').toString().trim(),
-      desc: (t.desc||'').toString().trim(),
-      tools: (t.tools||'').toString(),
-      cons: (t.cons||'').toString(),
-      rem: (t.rem||'').toString(),
-      dur: (t.dur||'').toString(),
-      mh: (t.mh||'').toString(),
-      due: t.due?toYMD(t.due):'',   // store ISO date string YYYY-MM-DD
-      done: !!t.done,
-      doneBy: t.doneBy||'',
-      doneAt: t.doneAt||''
-    };
-  }
+  let allTaskCards = [];
+  let assignedTasks = {};
+  let currentUser = null;
+  let ataList = [];
 
-  // ========== UI ELEMENTS ==========
-  const whoPill = document.getElementById('whoPill');
-  const appDiv = document.getElementById('app');
-  const authDiv = document.getElementById('auth');
-  const ataFilter = document.getElementById('ataFilter');
-  const searchInput = document.getElementById('searchInput');
-  const resultsDiv = document.getElementById('results');
-  const doneListDiv = document.getElementById('doneList');
-  const statRemaining = document.getElementById('statRemaining');
-  const statDone = document.getElementById('statDone');
-  const nowDisplay = document.getElementById('nowDisplay');
-  const excelFileInput = document.getElementById('excelFile');
+  const nameSelect = document.getElementById("nameSelect");
+  malaysianNames.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    nameSelect.appendChild(opt);
+  });
 
-  // wire file input change
-  excelFileInput.addEventListener('change', handleExcelFile);
-
-  // ========== SIGN-IN ==========
-  function signIn(){
-    const name = document.getElementById('nameInput').value.trim() || 'User';
-    const staffId = document.getElementById('staffIdInput').value.trim();
-    const role = document.getElementById('roleSelect').value;
-    if(!staffId){ alert('Please enter Staff ID'); return; }
-    state.user = { name, staffId, role };
-    whoPill.textContent = ${role} • ${name} (${staffId});
-    authDiv.style.display = 'none';
-    appDiv.style.display = 'block';
-    loadLocal();
-    refreshUI();
-    // request notification permission (optional)
-    requestNotifications();
-    // start clock
-    startClock();
-    // notify due items
-    checkDueNotifications();
-  }
-  function signOut(){
-    if(confirm('Sign out?')) location.reload();
-  }
-
-  // ========== CLOCK ==========
-  function startClock(){
-    function update(){ nowDisplay.textContent = (new Date()).toLocaleString(); }
-    update();
-    setInterval(update, 1000);
-  }
-
-  // ========== TASK CRUD ==========
-  function saveTask(){
-    // read form
-    const t = {
-      ata: document.getElementById('f_ata').value.trim(),
-      tc: document.getElementById('f_tc').value.trim(),
-      desc: document.getElementById('f_desc').value.trim(),
-      tools: document.getElementById('f_tools').value.trim(),
-      cons: document.getElementById('f_cons').value.trim(),
-      rem: document.getElementById('f_rem').value.trim(),
-      dur: document.getElementById('f_dur').value.trim(),
-      mh: document.getElementById('f_mh').value.trim(),
-      due: toYMD(document.getElementById('f_due').value || '')
-    };
-    if(!t.ata || !t.tc){ alert('Please fill ATA and Task Card Number'); return; }
-
-    // if edit exists, update; else create
-    if(state.editingId){
-      const idx = state.tasks.findIndex(x=>x.id===state.editingId);
-      if(idx>-1){ state.tasks[idx] = {...state.tasks[idx], ...t}; }
-      state.editingId = null;
+  function login() {
+    const name = nameSelect.value;
+    const staffId = document.getElementById("staffId").value;
+    const role = document.getElementById("roleSelect").value;
+    currentUser = { name, staffId, role };
+    document.getElementById("loginSection").style.display = "none";
+    if (role === "Officer") {
+      document.getElementById("officerSection").style.display = "block";
     } else {
-      state.tasks.unshift(normalizeTask(t));
-    }
-    saveLocal();
-    refreshUI();
-    alert('Saved.');
-    checkDueNotifications();
-    resetForm();
-  }
-  function editTask(id){
-    const t = state.tasks.find(x=>x.id===id); if(!t) return;
-    state.editingId = id;
-    document.getElementById('f_ata').value = t.ata;
-    document.getElementById('f_tc').value = t.tc;
-    document.getElementById('f_desc').value = t.desc;
-    document.getElementById('f_tools').value = t.tools;
-    document.getElementById('f_cons').value = t.cons;
-    document.getElementById('f_rem').value = t.rem;
-    document.getElementById('f_dur').value = t.dur;
-    document.getElementById('f_mh').value = t.mh;
-    document.getElementById('f_due').value = t.due;
-    document.getElementById('formMode') && (document.getElementById('formMode').textContent = 'Mode: Edit');
-  }
-  function resetForm(){
-    state.editingId = null;
-    ['f_ata','f_tc','f_desc','f_tools','f_cons','f_rem','f_dur','f_mh','f_due'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('formMode') && (document.getElementById('formMode').textContent = 'Mode: Create');
-  }
-  function deleteTask(id){
-    if(!confirm('Delete this task?')) return;
-    state.tasks = state.tasks.filter(x=>x.id!==id);
-    saveLocal();
-    refreshUI();
-  }
-
-  // ========== MARK DONE ==========
-  function toggleDone(id, checkbox){
-    const t = state.tasks.find(x=>x.id===id); if(!t) return;
-    t.done = checkbox.checked;
-    if(t.done){
-      t.doneBy = state.user ? state.user.staffId : 'unknown';
-      t.doneAt = new Date().toISOString();
-    } else {
-      t.doneBy = '';
-      t.doneAt = '';
-    }
-    saveLocal();
-    refreshUI();
-  }
-
-  // ========== RENDER / FILTER ==========
-  function refreshUI(){
-    // repopulate ATA filter
-    const atas = Array.from(new Set(state.tasks.map(t=>t.ata).filter(Boolean))).sort((a,b)=> a.localeCompare(b,undefined,{numeric:true}));
-    ataFilter.innerHTML = '<option value="">All ATA</option>' + atas.map(a=><option value="${escapeHTML(a)}">${'ATA '+escapeHTML(a)}</option>).join('');
-    renderSearch();
-    renderDoneList();
-    updateStats();
-  }
-
-  function renderSearch(){
-    const q = (searchInput.value||'').toLowerCase();
-    const ata = (ataFilter.value||'').trim();
-    const show = document.getElementById('showSelect').value;
-    let list = state.tasks.slice();
-
-    // filters
-    if(ata) list = list.filter(x=>x.ata === ata);
-    if(q) list = list.filter(x=>(x.tc||'').toLowerCase().includes(q) || (x.desc||'').toLowerCase().includes(q));
-    if(show==='open') list = list.filter(x=>!x.done);
-    if(show==='done') list = list.filter(x=>x.done);
-
-    // render
-    if(!list.length){ resultsDiv.innerHTML = '<div class="card small">No matching tasks.</div>'; return; }
-    resultsDiv.innerHTML = list.map(renderTaskCard).join('');
-  }
-
-  // helper: build HTML for a task card (list view)
-  function renderTaskCard(t){
-    // due badge
-    const badge = dueBadgeHTML(t.due);
-    const tools = t.tools ? <div><strong>Tools:</strong><div class="scroller">${nl2br(escapeHTML(t.tools))}</div></div> : '';
-    const cons = t.cons ? <div><strong>Consumables:</strong><div class="scroller">${nl2br(escapeHTML(t.cons))}</div></div> : '';
-    const rem = t.rem ? <div style="margin-top:8px"><strong>Remarks:</strong><div class="scroller">${nl2br(escapeHTML(t.rem))}</div></div> : '';
-    const doneChecked = t.done ? 'checked' : '';
-    // show man hours and due date
-    const mh = t.mh ? <div class="task-meta"><strong>Man hrs:</strong> ${escapeHTML(t.mh)}</div> : '';
-    const dur = t.dur ? <div class="task-meta"><strong>Duration:</strong> ${escapeHTML(t.dur)}</div> : '';
-    const due = t.due ? <div class="task-meta"><strong>Due:</strong> ${escapeHTML(t.due)} </div> : '';
-
-    // Actions: only Officer can edit/delete
-    const actions = (state.user && state.user.role==='OFFICER')
-      ? `<div style="display:flex;gap:8px;margin-top:8px">
-           <button class="btn-ghost" onclick="editTask('${t.id}')">Edit</button>
-           <button class="btn-ghost" onclick="deleteTask('${t.id}')">Delete</button>
-         </div>`
-      : '';
-
-    // checkbox to mark done
-    const check = `<label style="display:flex;align-items:center;gap:8px;margin-top:8px">
-      <input class="chk" type="checkbox" ${doneChecked} onchange="toggleDone('${t.id}', this)">
-      <span style="font-weight:700">Mark as done</span>
-    </label>`;
-
-    return `<div class="task-card card">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="flex:1">
-          <div class="task-title">${escapeHTML('ATA '+(t.ata||'—') + ' • ' + (t.tc||'—'))} ${badge?badge:''}</div>
-          <div class="task-meta">${escapeHTML(t.desc||'')}</div>
-        </div>
-        <div style="text-align:right">
-          ${mh}
-          ${due}
-        </div>
-      </div>
-      <div style="margin-top:10px">${tools}${cons}${rem}</div>
-      <div style="display:flex;align-items:center;gap:12px;justify-content:space-between">
-        <div style="margin-top:8px">${check}</div>
-        <div style="margin-left:auto">${actions}</div>
-      </div>
-    </div>`;
-  }
-
-  // Done list rendering
-  function renderDoneList(){
-    const done = state.tasks.filter(t=>t.done).sort((a,b)=> (b.doneAt||'').localeCompare(a.doneAt||''));
-    if(!done.length){ doneListDiv.innerHTML = 'No tasks completed yet.'; updateStats(); return; }
-    doneListDiv.innerHTML = done.map(t=><div style="padding:8px;border-bottom:1px dashed var(--border)"><strong>${escapeHTML(t.tc)}</strong> — done by ${escapeHTML(t.doneBy)} at ${escapeHTML(new Date(t.doneAt).toLocaleString())}</div>).join('');
-    updateStats();
-  }
-
-  function updateStats(){
-    const remaining = state.tasks.filter(t=>!t.done).length;
-    const done = state.tasks.filter(t=>t.done).length;
-    statRemaining.textContent = 'Remaining: ' + remaining;
-    statDone.textContent = 'Done: ' + done;
-  }
-
-  // ========== DUE DATE / BADGE LOGIC ==========
-  // returns a small badge HTML depending on due date
-  function dueBadgeHTML(dueYMD){
-    if(!dueYMD) return '';
-    const today = toYMD(new Date());
-    const due = dueYMD.toString();
-    const diffDays = daysBetween(today, due);
-    if(diffDays < 0) return <span class="badge overdue">OVERDUE</span>;
-    if(diffDays === 0) return <span class="badge today">DUE TODAY</span>;
-    if(diffDays <= 3) return <span class="badge soon">Due in ${diffDays}d</span>;
-    return '';
-  }
-
-  // check all tasks and send notifications for due/today/overdue ones
-  function checkDueNotifications(){
-    if(!('Notification' in window)) return;
-    if(Notification.permission !== 'granted') return;
-    const now = toYMD(new Date());
-    for(const t of state.tasks){
-      if(!t.due || t.done) continue;
-      const diff = daysBetween(now, t.due);
-      if(diff < 0){
-        // overdue
-        notify(OVERDUE: ${t.tc}, ${t.desc || ''} (Due ${t.due}));
-      } else if(diff === 0){
-        notify(DUE TODAY: ${t.tc}, ${t.desc || ''});
-      } else if(diff <= 1){
-        notify(Due soon: ${t.tc}, Due in ${diff} day(s));
-      }
+      document.getElementById("laeSection").style.display = "block";
+      renderLAEView();
     }
   }
 
-  // request notification permission if not yet allowed
-  function requestNotifications(){
-    if(!('Notification' in window)) return;
-    if(Notification.permission === 'default'){
-      Notification.requestPermission().then(perm=>{
-        if(perm === 'granted') console.log('Notifications allowed');
-      });
-    }
-  }
-
-  function notify(title, body){
-    try{
-      if(Notification.permission === 'granted'){
-        new Notification(title, { body, icon: '' });
-      }
-    }catch(e){ console.warn('notify err', e); }
-  }
-
-  // ========== EXCEL IMPORT (.xlsx) ==========
-  // parse Excel file; supports ATA header row that applies to following rows
-  function handleExcelFile(ev){
-    const file = ev.target.files[0];
-    if(!file) return;
+  document.getElementById("excelFile").addEventListener("change", handleFile);
+  function handleFile(e) {
+    const file = e.target.files[0];
     const reader = new FileReader();
-    reader.onload = e=>{
-      try{
-        const data = new Uint8Array(e.target.result);
-        const wb = XLSX.read(data, {type:'array'});
-        const sheetName = wb.SheetNames[0];
-        const ws = wb.Sheets[sheetName];
-        // parse to rows to detect ATA header rows
-        const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-        const parsed = parseExcelRows(rows);
-        if(!parsed.length){ alert('No rows parsed from Excel. Check sheet format.'); return; }
-        // put parsed tasks at front
-        const normalized = parsed.map(normalizeTask);
-        state.tasks = [...normalized, ...state.tasks];
-        saveLocal();
-        refreshUI();
-        alert('Imported ' + normalized.length + ' tasks.');
-        // clear input so same file can be reimported
-        excelFileInput.value = '';
-        checkDueNotifications();
-      }catch(err){
-        console.error(err); alert('Failed to parse Excel: ' + err.message);
+    reader.onload = function(evt) {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      allTaskCards = XLSX.utils.sheet_to_json(sheet);
+      buildATAList();
+      assignTasks();
+      renderOfficerView();
+      if (currentUser && currentUser.role === "LAE") {
+        renderLAEView();
       }
     };
     reader.readAsArrayBuffer(file);
   }
 
-  /*
-    parseExcelRows:
-    - expects columns similar to screenshot:
-      - Some rows may contain "ATA 12" (in column A) which we treat as current ATA for following rows
-      - We detect header row by searching for 'TASK CARD' or 'AMM' in first row values.
-      - Column mapping: TASK CARD (tc), TASK DESCRIPTION (desc), TOOLS (tools), CONSUMABLES (cons), REMARKS (rem), MAN HOURS (mh), DUE DATE (due), DURATION (dur)
-  */
-  function parseExcelRows(rows){
-    let currentATA = '';
-    let headerIdx = -1;
-    let cols = {}; // map of column indexes
-    const out = [];
-    for(let r=0;r<rows.length;r++){
-      const row = rows[r].map(c => String(c||'').trim());
-      if(row.every(c=>c==='')) continue;
-      const first = (row[0]||'').toUpperCase();
-      // detect "ATA X" row (e.g. "ATA 12")
-      const m = first.match(/^ATA\s*([0-9A-Z.]+)/);
-      if(m){ currentATA = m[1]; continue; }
-      // find header row (contains TASK CARD or AMM)
-      if(headerIdx < 0 && (first.includes('TASK CARD') || first.includes('AMM') || first.includes('TASK DESCRIPTION'))){
-        headerIdx = r;
-        for(let i=0;i<row.length;i++){
-          const name = row[i].toUpperCase();
-          if(name.includes('TASK CARD') || name.includes('AMM')) cols.tc = i;
-          else if(name.includes('TASK DESCRIPTION')) cols.desc = i;
-          else if(name.includes('TOOLS')) cols.tools = i;
-          else if(name.includes('CONSUMABLES')) cols.cons = i;
-          else if(name.includes('REMARKS')) cols.rem = i;
-          else if(name.includes('MAN') && name.includes('HOUR')) cols.mh = i;
-          else if(name.includes('DUE')) cols.due = i;
-          else if(name.includes('DURATION')) cols.dur = i;
-          else if(name === 'ATA') cols.ata = i;
-        }
-        continue;
-      }
-      if(headerIdx < 0) continue; // haven't found header yet
-      // determine ATA for this row: prefer dedicated column, else currentATA
-      let ata = '';
-      if(cols.ata != null) ata = row[cols.ata] || currentATA;
-      else ata = currentATA;
-      ata = String(ata||'').trim();
-      // read values
-      const tc = getCell(row, cols.tc);
-      const desc = getCell(row, cols.desc);
-      const tools = getCell(row, cols.tools);
-      const cons = getCell(row, cols.cons);
-      const rem = getCell(row, cols.rem);
-      const mh = getCell(row, cols.mh);
-      let due = getCell(row, cols.due);
-      // normalize dates: Excel might put dates as numbers; SheetJS returned strings because defval:''; try parse
-      if(due){
-        // if looks like Excel date (number), try to convert; else try Date parse
-        const n = Number(due);
-        if(!isNaN(n) && n > 30000){ // likely Excel serial
-          due = XLSX.SSF.parse_date_code(n);
-          if(due) due = toYMD(new Date(due.y, due.m-1, due.d));
-        } else {
-          // try parse using Date
-          const dt = new Date(due);
-          if(!isNaN(dt)) due = toYMD(dt);
-          // else keep raw string (app will ignore if invalid)
-        }
-      }
-      const dur = getCell(row, cols.dur);
-      // if there's no task card and no desc, skip row
-      if(!(tc||desc)) continue;
-      out.push({ ata, tc, desc, tools, cons, rem, mh, due, dur, done:false });
-    }
-    return out;
-  }
-
-  function getCell(row, idx){ return (idx==null) ? '' : (String(row[idx]||'').trim()); }
-
-  // ========== EXPORT JSON ==========
-  function exportJSON(){
-    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'taskcards-export.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  // ========== UTILITIES ==========
-  function escapeHTML(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function nl2br(s){ return escapeHTML(s).replace(/\n/g,'<br>'); }
-  function toYMD(d){
-    if(!d) return '';
-    const D = (d instanceof Date) ? d : new Date(d);
-    if(isNaN(D)) return '';
-    const y = D.getFullYear();
-    const m = String(D.getMonth()+1).padStart(2,'0');
-    const day = String(D.getDate()).padStart(2,'0');
-    return ${y}-${m}-${day};
-  }
-  function daysBetween(aYMD, bYMD){
-    // returns integer b - a (days). aYMD and bYMD are 'YYYY-MM-DD' or Date
-    const a = typeof aYMD === 'string' ? new Date(aYMD+'T00:00:00') : new Date(aYMD);
-    const b = typeof bYMD === 'string' ? new Date(bYMD+'T00:00:00') : new Date(bYMD);
-    const diff = Math.floor((b - a) / (1000*60*60*24));
-    return diff;
-  }
-
-  // ========= DUE / NOTIFICATION POLLING =========
-  // call this periodically if you want (e.g., every 30 minutes). For now we call on sign-in and after imports.
-  function scheduleDueChecks(){
-    setInterval(checkDueNotifications, 1000*60*30); // every 30 min
-  }
-
-  // ========== SIMPLE PERSISTED BOOT ==========
-  // load existing tasks if any and update UI when page loaded (but keep login required)
-  (function init(){
-    loadLocal();
-  })();
-
-  // ========== HELPERS for UI ==========
-  function updateStatsAndCounts(){
-    updateStats();
-  }
-  function updateStats(){
-    const remaining = state.tasks.filter(t=>!t.done).length;
-    const done = state.tasks.filter(t=>t.done).length;
-    statRemaining.textContent = 'Remaining: ' + remaining;
-    statDone.textContent = 'Done: ' + done;
-  }
-
-  // ====== utility: small wrapper used in render ======
-  function escape(s){ return escapeHTML(s||''); }
-
-  // ==================== START APP UI HANDLERS ====================
-  // called after load/sign-in to refresh view elements
-  function renderAll(){
-    refreshUI();
-    updateStatsAndCounts();
-  }
-
-  // mount initial UI on sign in
-  function refreshUI(){ loadLocal(); refreshUIControlled(); }
-  function refreshUIControlled(){
-    refreshUIInternal();
-  }
-  function refreshUIInternal(){
-    // repopulate filters and render results/done list
-    refreshUINoLoad();
-  }
-  function refreshUINoLoad(){
-    // populate A T A filter
-    const atas = Array.from(new Set(state.tasks.map(t=>t.ata).filter(Boolean))).sort((a,b)=> a.localeCompare(b,undefined,{numeric:true}));
-    ataFilter.innerHTML = '<option value="">All ATA</option>' + atas.map(a=><option value="${escapeHTML(a)}">${'ATA '+escapeHTML(a)}</option>).join('');
-    renderSearch();
-    renderDoneList();
-    updateStats();
-  }
-
-  // alias: convenience wrapper
-  function renderSearchImmediate(){ renderSearch(); }
-
-  // ======= small helpers to expose to global for inline handlers =======
-  window.saveTask = saveTask;
-  window.resetForm = resetForm;
-  window.editTask = editTask;
-  window.deleteTask = deleteTask;
-  window.toggleDone = toggleDone;
-  window.exportJSON = exportJSON;
-
-  // request notifications once user signs in
-  // already implemented in signIn()
-
-  // ========== Simple keyboard convenience: Enter to trigger search ==========
-  searchInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') renderSearch(); });
-
-  // initial UI: hide app until sign in (done already)
-  // schedule periodic checks
-  scheduleDueChecks();
-
-  // small helper used above for base date diff
-  // returns YYYY-MM-DD for current date
-  function todayYMD(){ return toYMD(new Date()); }
-
-  // END of script
-  </script>
-
-  <!-- Optional: register service-worker for PWA (put before </body>) -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/service-worker.js').then(()=>console.log('SW registered')).catch(()=>console.log('SW fail'));
+  function buildATAList() {
+    const set = new Set(allTaskCards.map(t => t["ATA"]).filter(Boolean));
+    ataList = ["All ATA", ...Array.from(set).sort()];
+    ["ataFilterOfficer", "ataFilterMy", "ataFilterAll"].forEach(id => {
+      const sel = document.getElementById(id);
+      sel.innerHTML = "";
+      ataList.forEach(ata => {
+        const opt = document.createElement("option");
+        opt.value = ata;
+        opt.textContent = ata;
+        sel.appendChild(opt);
       });
+    });
+  }
+
+  function assignTasks() {
+    assignedTasks = {};
+    malaysianNames.forEach(name => assignedTasks[name] = []);
+    allTaskCards.forEach(task => {
+      const randomName = malaysianNames[Math.floor(Math.random() * malaysianNames.length)];
+      assignedTasks[randomName].push(task);
+    });
+  }
+
+  function renderOfficerView() {
+    const container = document.getElementById("officerTasks");
+    container.innerHTML = "";
+    filterAndDisplay(allTaskCards, container, document.getElementById("searchOfficer").value, document.getElementById("ataFilterOfficer").value);
+  }
+
+  function renderLAEView() {
+    const myTasksContainer = document.getElementById("myTasks");
+    const allTasksContainer = document.getElementById("allTasks");
+    myTasksContainer.innerHTML = "";
+    allTasksContainer.innerHTML = "";
+
+    const myTasks = assignedTasks[currentUser.name] || [];
+    document.getElementById("taskCount").textContent = `My Tasks: ${myTasks.length}`;
+
+    filterAndDisplay(myTasks.sort(sortByDueDate), myTasksContainer, document.getElementById("searchMy").value, document.getElementById("ataFilterMy").value);
+    filterAndDisplay(allTaskCards, allTasksContainer, document.getElementById("searchAll").value, document.getElementById("ataFilterAll").value);
+  }
+
+  function filterAndDisplay(tasks, container, searchValue, ataValue) {
+    const s = (searchValue || "").toLowerCase();
+    const a = ataValue || "All ATA";
+    tasks.filter(t => {
+      const matchesSearch = Object.values(t).some(v => v && v.toString().toLowerCase().includes(s));
+      const matchesATA = a === "All ATA" || t["ATA"] === a;
+      return matchesSearch && matchesATA;
+    }).forEach(task => {
+      container.appendChild(createTaskCard(task));
+    });
+  }
+
+  function createTaskCard(task) {
+    const card = document.createElement("div");
+    card.className = "task-card";
+    let dueClass = "";
+    if (task["DUE DATE"]) {
+      const today = new Date();
+      const dueDate = new Date(task["DUE DATE"]);
+      const diffDays = Math.ceil((dueDate - today) / (1000*60*60*24));
+      if (diffDays < 0) dueClass = "warning-red";
+      else if (diffDays === 0) dueClass = "warning-orange";
+      else if (diffDays <= 3) dueClass = "warning-yellow";
     }
-  </script>
+    if (dueClass) card.classList.add(dueClass);
+    card.innerHTML = `
+      <strong>${task["TASK CARD NUM/ AMM REF"] || ""}</strong><br>
+      ${task["TASK DESCRIPTION"] || ""}<br>
+      <em>Tools:</em> ${task["TOOLS / TESTSET"] || ""}<br>
+      <em>Consumables:</em> ${task["CONSUMABLES / MSL"] || ""}<br>
+      <em>Remarks:</em> ${task["REMARKS"] || ""}<br>
+      <em>Duration:</em> ${task["DURATION"] || ""}<br>
+      <em>Man Hours:</em> ${task["MANHOURS NEEDED"] || ""}<br>
+      <em>Due Date:</em> ${task["DUE DATE"] || ""}<br>
+      <label><input type="checkbox" onchange="markDone(this)"> Done</label>
+    `;
+    return card;
+  }
+
+  function markDone(checkbox) {
+    if (checkbox.checked) {
+      checkbox.closest(".task-card").classList.add("task-done");
+    } else {
+      checkbox.closest(".task-card").classList.remove("task-done");
+    }
+  }
+
+  function sortByDueDate(a, b) {
+    const ad = new Date(a["DUE DATE"] || "2100-01-01");
+    const bd = new Date(b["DUE DATE"] || "2100-01-01");
+    return ad - bd;
+  }
+
+  ["searchOfficer","ataFilterOfficer"].forEach(id => document.getElementById(id).addEventListener("input", renderOfficerView));
+  ["searchMy","ataFilterMy","searchAll","ataFilterAll"].forEach(id => document.getElementById(id).addEventListener("input", renderLAEView));
+
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById("datetime").textContent =
+      now.toLocaleDateString("en-MY", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) +
+      " " + now.toLocaleTimeString();
+  }, 1000);
+</script>
+
 </body>
 </html>
