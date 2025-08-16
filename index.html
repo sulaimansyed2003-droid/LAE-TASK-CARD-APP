@@ -1,217 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LAE Task Card App</title>
-  <meta name="theme-color" content="#b20b4d">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAE Task Card System</title>
   <style>
-    :root{
-      --bg:#faf7fb;--panel:#fff;--border:#e6d6e1;--ink:#2a2430;--muted:#6b6171;
-      --brand:#b20b4d;--brand-2:#f3b500;--ok:#16a34a;--warn:#f59e0b;
-      --done:#e8fff0;--shadow:0 10px 30px rgba(178,11,77,.12);
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f6ff;
+      margin: 0;
+      padding: 0;
     }
-    body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--ink)}
-    .container{max-width:1100px;margin:0 auto;padding:18px}
-    header{display:flex;align-items:center;justify-content:space-between;margin:6px 0 16px}
-    .brand{font-weight:700;color:var(--brand)}
-    .glass{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow)}
-    .card{padding:16px;border-radius:16px}
-    label{display:block;margin:10px 0 4px;font-size:.9rem;color:var(--muted)}
-    input,select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border)}
-    .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:600;cursor:pointer}
-    .btn.brand{background:var(--brand);color:#fff}
-    .btn.ghost{background:#fff;border:1px solid var(--border);color:var(--ink)}
-    .btn.warn{background:var(--brand-2);color:#3b2600}
-    .tabbar{display:flex;gap:8px;margin:10px 0}
-    .tab{padding:8px 12px;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:#fff}
-    .tab.active{outline:2px solid var(--brand)}
-    .doneCard{background:var(--done);border:1px solid #bfe9cc}
-    .badge{padding:4px 8px;border-radius:8px;font-size:.8rem}
-    .b-warn{background:#fff7eb;border:1px solid #ffe2b8}
+    header {
+      background: #8a1538; /* Batik Air maroon */
+      color: white;
+      text-align: center;
+      padding: 15px;
+    }
+    .container {
+      padding: 20px;
+    }
+    .card {
+      border: 1px solid #ccc;
+      background: white;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .done {
+      background: #d4edda;
+    }
+    button {
+      background: #8a1538;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      margin-top: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #a61c44;
+    }
+    .hidden { display: none; }
+    .flex { display: flex; gap: 10px; }
   </style>
 </head>
 <body>
-<div class="container">
   <header>
-    <div class="brand">LAE Task Card App</div>
-    <div id="clockPill">—</div>
+    <h1>LAE Task Card System</h1>
+    <p id="dateTime"></p>
   </header>
 
-  <!-- LOGIN -->
-  <div id="auth" class="glass card">
-    <h2 style="color:var(--brand)">Sign In</h2>
-    <label>Select Role</label>
-    <select id="roleInput">
-      <option value="">Choose role</option>
-      <option value="OFFICER">OFFICER</option>
-      <option value="LAE">LAE</option>
-    </select>
-    <label>Select Name</label>
-    <select id="nameInput"></select>
-    <label>Staff ID</label>
-    <input id="staffIdInput" placeholder="e.g. BID1234"/>
-    <div style="margin-top:12px">
-      <button class="btn brand" onclick="signIn()">Continue</button>
-      <button class="btn ghost" onclick="seedDemo()">Load Demo</button>
+  <div class="container">
+    <!-- LOGIN SECTION -->
+    <div id="loginSection">
+      <h2>Login</h2>
+      <label for="nameInput">Select Your Name:</label><br>
+      <select id="nameInput"></select><br><br>
+
+      <label for="idInput">Enter Your ID:</label><br>
+      <input type="text" id="idInput"><br><br>
+
+      <label for="roleInput">Select Role:</label><br>
+      <select id="roleInput">
+        <option value="">Select Role</option>
+        <option value="Officer">Officer</option>
+        <option value="LAE">LAE</option>
+      </select><br><br>
+
+      <button onclick="login()">Login</button>
+    </div>
+
+    <!-- OFFICER SECTION -->
+    <div id="officerSection" class="hidden">
+      <h2>Officer Panel</h2>
+      <p>Upload Task Card Excel File:</p>
+      <input type="file" id="excelFile" accept=".xlsx" />
+      <div id="officerTasks"></div>
+    </div>
+
+    <!-- LAE SECTION -->
+    <div id="laeSection" class="hidden">
+      <h2>LAE Task Cards</h2>
+      <button onclick="showAssignedOnly()">Show Assigned Tasks</button>
+      <button onclick="showAllTasks()">Show All Tasks</button>
+      <h3>Pending Tasks</h3>
+      <div id="taskList"></div>
+      <h3>Completed Tasks</h3>
+      <div id="doneTasks"></div>
     </div>
   </div>
 
-  <!-- APP -->
-  <div id="app" class="glass card" style="display:none">
-    <div class="tabbar" id="tabs"></div>
-    <section id="tab-all" style="display:none">
-      <h3>All Task Cards</h3>
-      <div id="allResults"></div>
-    </section>
-    <section id="tab-completed" style="display:none">
-      <h3>Completed Task Cards</h3>
-      <div id="completedResults"></div>
-    </section>
-    <div style="margin-top:16px">
-      <input type="file" id="excelFile" accept=".xlsx" style="display:none"/>
-      <button id="uploadBtn" class="btn warn" style="display:none" onclick="document.getElementById('excelFile').click()">Import Excel</button>
-      <button class="btn ghost" onclick="signOut()">Sign Out</button>
-    </div>
-  </div>
-</div>
+  <!-- SCRIPT -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    /* =========================
+       1. STAFF NAME LIST
+    ========================== */
+    const staffNames = [
+      "ABDUL FATAH BIN IBRAHIM",
+      "MOHD HAFIZ SAZWAN BIN ZAM ZAM",
+      "MOHAMMAD ZULKIFLEE BIN HUSSIN",
+      "DING JU SHENG",
+      "LEE YOONG JUN",
+      "MUHAMMAD NAZIF BIN ABDUL MALEK",
+      "UMEIR BIN SHUKRY OMAR TALIB",
+      "MOHD MAHDIR BIN ABDUL MANAN",
+      "ABU NOR RAZY BIN ABDULLAH @ ANBARASU",
+      "ZARIN DARUS BIN ABDUL RAHMAN",
+      "MOHAMMAD ZAHID BIN AFTAB",
+      "AJMER SINGH A/L SUKHBIR SINGH",
+      "MOHD SYAKIR BIN ROSLE",
+      "SASHVIREN SINGH A/L SUKHDEV SINGH",
+      "MADIHAH BINTI MOHAMED KHAZIN",
+      // ⚡ continue adding the rest of your list here...
+    ];
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script>
-const STORAGE_KEY="lae_taskcards_v5";
-let state={user:null,tasks:[]};
+    function populateNames() {
+      const sel = document.getElementById("nameInput");
+      sel.innerHTML = '<option value="">Select your name</option>';
+      staffNames.forEach(name => {
+        let opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+      });
+    }
+    document.addEventListener("DOMContentLoaded", populateNames);
 
-/* CLOCK */
-setInterval(()=>{document.getElementById("clockPill").textContent=new Date().toLocaleString()},1000);
+    /* =========================
+       2. LOGIN FUNCTION
+    ========================== */
+    let currentUser = null;
+    let currentRole = null;
+    let allTasks = [];
+    let assignedTasks = {};
 
-/* Names */
-const demoNames=["Aiman","Farhan","Syafiq","Zul","Rashid","Hakim","Amir","Hafiz","Faiz","Danial","Azim","Iqbal","Rafiq","Imran","Firdaus","Shahrul","Ridzuan","Haziq","Nabil","Khalid","Hafeez","Amran","Azhar","Nasir","Shah","Rizal","Hilmi","Arif","Zaki","Faizal","Rahman","Hanif","Shamil","Rauf","Zain","Luqman","Faris","Kamarul","Hakimi","Syed","Nash","Hasif","Ashraf","Ridwan","Amzar","Firhan","Adam","Haikal","Muaz","Khairul"];
-function populateNames(){
-  const sel=document.getElementById("nameInput");
-  sel.innerHTML='<option value="">Select your name</option>';
-  demoNames.forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)});
-}
-populateNames();
+    function login() {
+      const name = document.getElementById("nameInput").value;
+      const role = document.getElementById("roleInput").value;
+      if (!name || !role) { alert("Please select name and role"); return; }
 
-/* Storage */
-function saveLocal(){localStorage.setItem(STORAGE_KEY,JSON.stringify({tasks:state.tasks}))}
-function loadLocal(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw) state.tasks=JSON.parse(raw).tasks||[]}catch{}}
+      currentUser = name;
+      currentRole = role;
 
-/* Auth */
-function signIn(){
-  const role=document.getElementById("roleInput").value;
-  const name=document.getElementById("nameInput").value;
-  const staffId=document.getElementById("staffIdInput").value.trim();
-  if(!role||!name||!staffId){alert("Fill all fields");return;}
-  state.user={role,name,staffId};
-  document.getElementById("auth").style.display="none";
-  document.getElementById("app").style.display="block";
-  if(role==="OFFICER") document.getElementById("uploadBtn").style.display="inline-block";
-  loadLocal(); buildTabs(); renderAll();
-}
-function signOut(){location.reload();}
+      document.getElementById("loginSection").classList.add("hidden");
 
-/* Tabs */
-function buildTabs(){
-  const tabs=document.getElementById("tabs");
-  tabs.innerHTML="";
-  const make=(id,label)=>{let b=document.createElement("button");b.className="tab";b.textContent=label;b.onclick=()=>setTab(id);tabs.appendChild(b)}
-  make("all","All Task Cards"); make("completed","Completed");
-  setTab("all");
-}
-function setTab(id){
-  ["all","completed"].forEach(x=>document.getElementById("tab-"+x).style.display="none");
-  document.getElementById("tab-"+id).style.display="block";
-  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
-  document.querySelectorAll(".tab")[id==="all"?0:1].classList.add("active");
-  if(id==="all") renderAll(); else renderCompleted();
-}
+      if (role === "Officer") {
+        document.getElementById("officerSection").classList.remove("hidden");
+      } else {
+        document.getElementById("laeSection").classList.remove("hidden");
+        displayTasks();
+      }
+    }
 
-/* Demo Data */
-function seedDemo(){
-  state.tasks=[
-    {id:uid(),ata:"12",tc:"32-07-00-01",desc:"Service the nose landing gear.",mh:2,due:"2025-08-20",assignedTo:"",done:false},
-    {id:uid(),ata:"20",tc:"CHK-POWER-AC",desc:"Pitot probe power check",mh:1,due:"2025-08-18",assignedTo:"",done:false}
-  ];
-  saveLocal(); alert("Demo loaded");
-}
+    /* =========================
+       3. OFFICER UPLOAD EXCEL
+    ========================== */
+    document.getElementById("excelFile").addEventListener("change", handleFile, false);
 
-/* Render */
-function renderAll(){
-  const wrap=document.getElementById("allResults");
-  if(!state.tasks.length){wrap.innerHTML="<p>No tasks yet.</p>";return;}
-  wrap.innerHTML=state.tasks.map(card).join("");
-}
-function renderCompleted(){
-  const wrap=document.getElementById("completedResults");
-  const results=state.tasks.filter(t=>t.done);
-  if(!results.length){wrap.innerHTML="<p>No completed tasks.</p>";return;}
-  wrap.innerHTML=results.map(card).join("");
-}
+    function handleFile(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        allTasks = XLSX.utils.sheet_to_json(sheet);
+        alert("Excel uploaded successfully!");
+        displayOfficerTasks();
+      };
+      reader.readAsArrayBuffer(file);
+    }
 
-function card(t){
-  const isOfficer=state.user.role==="OFFICER";
-  const assignedInfo=t.assignedTo?`<span class="badge b-warn">Assigned to ${esc(t.assignedTo)}</span>`:"";
-  const assignBtn=isOfficer&&!t.assignedTo?assignDropdown(t.id):"";
-  const doneBox=!isOfficer?`<label><input type="checkbox" ${t.done?"checked":""} onchange="toggleDone('${t.id}',this.checked)"/> Done</label>`:"";
-  return `<div class="card ${t.done?"doneCard":""}" style="margin-top:12px;border:1px solid var(--border)">
-    <b>ATA ${esc(t.ata)} • ${esc(t.tc)}</b>
-    <p>${esc(t.desc)}</p>
-    <div><label>MH:</label> ${esc(t.mh||"—")} • <label>Due:</label> ${esc(t.due||"—")}</div>
-    <div style="margin-top:6px">${assignedInfo} ${assignBtn} ${doneBox}</div>
-  </div>`;
-}
+    function displayOfficerTasks() {
+      const container = document.getElementById("officerTasks");
+      container.innerHTML = "";
+      allTasks.forEach((task, index) => {
+        let div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <b>Task ${index+1}</b><br>
+          ${Object.entries(task).map(([k,v])=>`${k}: ${v}`).join("<br>")}<br>
+          <label>Assign to:</label>
+          <select onchange="assignTask(${index}, this.value)">
+            <option value="">Unassigned</option>
+            ${staffNames.map(n=>`<option value="${n}">${n}</option>`).join("")}
+          </select>
+        `;
+        container.appendChild(div);
+      });
+    }
 
-function assignDropdown(id){
-  let opts=demoNames.map(n=>`<option value="${n}">${n}</option>`).join("");
-  return `<select onchange="assignTask('${id}',this.value)"><option value="">Assign...</option>${opts}</select>`;
-}
-function assignTask(id,name){
-  const t=state.tasks.find(x=>x.id===id); if(!t)return;
-  t.assignedTo=name; saveLocal(); renderAll();
-}
-function toggleDone(id,val){
-  const t=state.tasks.find(x=>x.id===id); if(!t)return;
-  if(t.assignedTo!==state.user.name){alert("You can only tick your own tasks");return;}
-  t.done=val; saveLocal(); renderAll(); renderCompleted();
-}
+    function assignTask(taskIndex, name) {
+      if (!assignedTasks[name]) assignedTasks[name] = [];
+      assignedTasks[name].push(allTasks[taskIndex]);
+      alert(`Task assigned to ${name}`);
+    }
 
-/* Excel Import */
-document.getElementById("excelFile").addEventListener("change",handleExcelFile);
-function handleExcelFile(ev){
-  const file=ev.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
-    const ws=wb.Sheets[wb.SheetNames[0]];
-    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
-    const parsed=parseExcelRows(rows);
-    for(const t of parsed){t.id=uid();t.done=false;t.assignedTo="";}
-    state.tasks=[...parsed,...state.tasks];
-    saveLocal();renderAll();alert("Imported "+parsed.length+" tasks");
-  };
-  reader.readAsArrayBuffer(file); ev.target.value="";
-}
-function parseExcelRows(rows){
-  const out=[];let header=null;
-  for(const row of rows){
-    if(!header){header=row.map(c=>c.toUpperCase());continue;}
-    if(row.every(c=>!c))continue;
-    out.push({
-      ata:row[header.indexOf("ATA")]||"",
-      tc:row[header.findIndex(h=>h.includes("TASK CARD")||h.includes("AMM"))]||"",
-      desc:row[header.findIndex(h=>h.includes("DESCRIPTION"))]||"",
-      mh:row[header.findIndex(h=>h.includes("MAN"))]||"",
-      due:row[header.findIndex(h=>h.includes("DUE"))]||""
-    });
-  }
-  return out;
-}
+    /* =========================
+       4. LAE VIEW TASKS
+    ========================== */
+    function displayTasks() {
+      const container = document.getElementById("taskList");
+      container.innerHTML = "";
+      const userTasks = assignedTasks[currentUser] || allTasks; // show assigned or all
+      userTasks.forEach((task, index) => {
+        let div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <input type="checkbox" onchange="markDone(this, ${index})"> 
+          <b>Task ${index+1}</b><br>
+          ${Object.entries(task).map(([k,v])=>`${k}: ${v}`).join("<br>")}
+        `;
+        container.appendChild(div);
+      });
+    }
 
-/* Helpers */
-const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
-function esc(s){return (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
-</script>
+    function markDone(checkbox, index) {
+      if (checkbox.checked) {
+        const task = (assignedTasks[currentUser] || allTasks)[index];
+        let div = document.createElement("div");
+        div.className = "card done";
+        div.innerHTML = `<b>DONE:</b><br>${Object.entries(task).map(([k,v])=>`${k}: ${v}`).join("<br>")}`;
+        document.getElementById("doneTasks").appendChild(div);
+        checkbox.parentElement.remove();
+      }
+    }
+
+    function showAssignedOnly() {
+      if (assignedTasks[currentUser]) {
+        allTasks = assignedTasks[currentUser];
+        displayTasks();
+      } else {
+        alert("No tasks assigned to you.");
+      }
+    }
+
+    function showAllTasks() {
+      displayTasks();
+    }
+
+    /* =========================
+       5. DATE & TIME
+    ========================== */
+    function updateDateTime() {
+      const now = new Date();
+      document.getElementById("dateTime").textContent = now.toLocaleString("en-MY", { dateStyle:"full", timeStyle:"short" });
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+  </script>
 </body>
 </html>
