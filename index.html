@@ -3,715 +3,446 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LAE Task Card — Supreme System</title>
-
-  <!-- (Optional PWA hooks if you already have these files) -->
+  <title>LAE Task Card App</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#b20b4d">
 
   <style>
-    /* ===== Bright Batik Air theme ===== */
     :root{
-      --bg:#faf7fb;
-      --panel:#ffffff;
-      --border:#e6d6e1;
-      --ink:#2a2430;
-      --muted:#6b6171;
-      --brand:#b20b4d;   /* Batik magenta */
-      --accent:#f3b500;  /* Batik gold */
-      --ok:#16a34a;
-      --warn:#f59e0b;
-      --danger:#dc2626;
-      --due:#e57900;
-      --done-bg:#e8fff0;
-      --shadow:0 10px 30px rgba(178,11,77,.12);
+      --bg:#faf7fb;--panel:#fff;--border:#e6d6e1;--ink:#2a2430;--muted:#6b6171;
+      --brand:#b20b4d;--brand-2:#f3b500;--ok:#16a34a;--warn:#f59e0b;
+      --due:#e57900;--danger:#dc2626;--done:#e8fff0;--shadow:0 10px 30px rgba(178,11,77,.12);
     }
-    html,body{height:100%}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:var(--bg);color:var(--ink)}
-    .container{max-width:1150px;margin:0 auto;padding:18px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 16px}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--brand)}
-    .brand .dot{width:12px;height:12px;border-radius:50%;background:var(--brand)}
-    h1{font-size:1.25rem;margin:0}
-    .pill{font-size:.8rem;color:var(--ink);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#fff}
+    body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+    .container{max-width:1100px;margin:0 auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:6px 0 16px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--brand)}
+    .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
+    .pill{font-size:.8rem;border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#fff}
     .glass{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow)}
     .card{padding:16px;border-radius:16px}
     .row{display:flex;gap:16px;flex-wrap:wrap}
     .col{flex:1;min-width:280px}
     label{display:block;font-size:.85rem;color:var(--muted);margin:12px 0 6px}
-    input,textarea,select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--ink)}
+    input,textarea,select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#fff}
     textarea{min-height:90px}
     .btn{border:0;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer}
     .btn.brand{background:var(--brand);color:#fff}
     .btn.ghost{background:#fff;border:1px solid var(--border);color:var(--ink)}
-    .btn.warn{background:var(--accent);color:#3b2600}
+    .btn.warn{background:var(--brand-2);color:#3b2600}
     .btn.danger{background:var(--danger);color:#fff}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .muted{color:var(--muted)}
-    .grid{display:grid;gap:12px}
-    .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
-    @media (max-width:900px){.grid.two,.grid.three{grid-template-columns:1fr}}
     .tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
     .tab{padding:10px 12px;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:#fff}
     .tab.active{outline:2px solid var(--brand)}
-    table{width:100%;border-collapse:collapse;margin-top:8px}
-    th,td{border-bottom:1px solid var(--border);text-align:left;padding:10px;vertical-align:top}
-    th{font-size:.85rem;color:var(--muted);font-weight:700}
-    tr:hover{background:#faf3f7}
-    .center{display:flex;align-items:center;justify-content:center}
-    .scroller{max-height:180px;overflow:auto;padding:8px;border-radius:10px;background:#fff;border:1px solid var(--border)}
     .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.75rem;font-weight:700}
     .b-ok{background:#eaf8ef;color:#065f2a;border:1px solid #ccebd6}
     .b-warn{background:#fff7eb;color:#6b3b00;border:1px solid #ffe2b8}
     .b-due{background:#fff1e6;color:#6b2e00;border:1px solid #ffd1aa}
     .b-danger{background:#ffeff0;color:#7a0f16;border:1px solid #ffc9ce}
-    .doneCard{background:var(--done-bg);border:1px solid #bfe9cc}
-    .countBar{display:flex;gap:8px;flex-wrap:wrap}
-    .split{display:flex;gap:12px;flex-wrap:wrap}
-    .split > *{flex:1 1 260px}
-    .tiny{font-size:.8rem}
+    .doneCard{background:var(--done);border:1px solid #bfe9cc}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{border-bottom:1px solid var(--border);text-align:left;padding:10px}
+    tr:hover{background:#faf3f7}
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <div class="brand">
-        <span class="dot"></span>
-        <span>LAE Task Card — Supreme</span>
-      </div>
-      <div class="toolbar">
-        <span class="pill" id="clockPill">—</span>
-        <span class="pill" id="rolePill">Not signed in</span>
-      </div>
+      <div class="brand"><span class="dot"></span><span>LAE Task Card App</span></div>
+      <div class="pill" id="clockPill">—</div>
     </header>
 
-    <!-- AUTH -->
+    <!-- LOGIN -->
     <div id="auth" class="glass card">
-      <div class="row" style="align-items:center">
-        <div class="col" style="max-width:520px">
-          <h2 style="margin:0 0 8px;color:var(--brand)">Sign in</h2>
-          <p class="muted" style="margin:0 0 12px">Enter your details to continue.</p>
-          <label>Name</label>
-          <input id="nameInput" placeholder="e.g. Aiman" />
-          <label>Staff ID</label>
-          <input id="staffIdInput" placeholder="e.g. BID1234" />
-          <label>Role</label>
-          <select id="roleSelect">
-            <option value="LAE">LAE</option>
-            <option value="OFFICER">OFFICER</option>
-          </select>
-          <div class="toolbar" style="margin-top:12px">
-            <button class="btn brand" onclick="signIn()">Continue</button>
-            <button class="btn ghost" onclick="seedDemo()">Load demo data</button>
-          </div>
-        </div>
-        <div class="col" style="text-align:center">
-          <!-- Replace with your local logo filename -->
-          <img src="batik-air-logo.png" alt="Batik Air" style="max-width:220px;width:60%;height:auto"/>
-        </div>
+      <h2 style="color:var(--brand)">Sign in</h2>
+      <label>Select Name</label>
+      <select id="nameInput"></select>
+      <label>Staff ID</label>
+      <input id="staffIdInput" placeholder="e.g. BID1234"/>
+      <div class="toolbar" style="margin-top:12px">
+        <button class="btn brand" onclick="signIn()">Continue</button>
+        <button class="btn ghost" onclick="seedDemo()">Load demo tasks</button>
       </div>
     </div>
 
     <!-- APP -->
     <div id="app" class="glass card" style="display:none">
-      <div class="toolbar" style="justify-content:space-between">
-        <div class="toolbar">
-          <button class="btn ghost" onclick="goBack()">◀ Back</button>
-          <div class="pill" id="whoPill">—</div>
-        </div>
-        <div class="tabbar" id="tabs"></div>
+      <div class="tabbar" id="tabs"></div>
+      <section id="tab-all" style="display:none">
+        <h3>All Task Cards</h3>
+        <div id="allResults"></div>
+      </section>
+      <section id="tab-completed" style="display:none">
+        <h3>Completed Task Cards</h3>
+        <div id="completedResults"></div>
+      </section>
+      <div style="margin-top:16px">
+        <input type="file" id="excelFile" accept=".xlsx" style="display:none"/>
+        <button class="btn warn" onclick="document.getElementById('excelFile').click()">Import Excel</button>
+        <button class="btn ghost" onclick="signOut()">Sign Out</button>
       </div>
-
-      <!-- Global counters -->
-      <div class="countBar" id="counts" style="margin:4px 0 8px;display:none"></div>
-
-      <!-- LAE / Officer: search & view -->
-      <section id="tab-search" style="display:none">
-        <div class="split">
-          <div>
-            <label>ATA Chapter</label>
-            <select id="ataFilter" onchange="renderSearch()"></select>
-          </div>
-          <div>
-            <label>Search by Task Card / AMM / Description</label>
-            <input id="searchInput" placeholder="e.g. 32-07-00-01, AMM 32-11-00, strut" oninput="renderSearch()" />
-          </div>
-          <div>
-            <label>Assigned filter</label>
-            <select id="assignFilter" onchange="renderSearch()"></select>
-          </div>
-        </div>
-
-        <div class="toolbar" style="margin:8px 0">
-          <label class="tiny" style="display:inline-flex;align-items:center;gap:8px">
-            <input type="checkbox" id="onlyMine" onchange="renderSearch()"> Show only my tasks
-          </label>
-          <label class="tiny" style="display:inline-flex;align-items:center;gap:8px">
-            <input type="checkbox" id="hideDone" checked onchange="renderSearch()"> Hide done
-          </label>
-        </div>
-
-        <div id="searchResults"></div>
-
-        <div style="margin-top:18px">
-          <h3 style="margin:0 0 6px">Archive (Done)</h3>
-          <p class="muted tiny" style="margin:0 0 8px">Completed task cards are kept here. They won’t show in the main list.</p>
-          <div id="archiveWrap" class="grid"></div>
-          <div class="toolbar" style="margin-top:8px">
-            <button class="btn ghost" onclick="exportArchive()">Export Done (JSON)</button>
-            <button class="btn danger" onclick="clearArchive()">Clear Archive</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Officer: manage -->
-      <section id="tab-manage" style="display:none">
-        <div class="grid two">
-          <div class="card" style="border:1px solid var(--border)">
-            <h3 style="margin:0 0 6px">Add / Edit Task Card</h3>
-            <p id="formMode" class="muted" style="margin:0 0 12px">Mode: Create</p>
-            <div class="grid">
-              <label>ATA</label><input id="f_ata" placeholder="e.g. 12 or 32" />
-              <label>Task Card Number / AMM Ref</label><input id="f_tc" placeholder="e.g. 32-07-00-01 / AMM 32-11-00" />
-              <label>Task Description</label><textarea id="f_desc" placeholder="Short description"></textarea>
-              <label>Tools / Test Set</label><textarea id="f_tools" placeholder="List tools or test equipment"></textarea>
-              <label>Consumables / MSL</label><textarea id="f_cons" placeholder="Consumables, materials, MSL"></textarea>
-              <label>Remarks</label><textarea id="f_rem" placeholder="Notes, cautions, references"></textarea>
-              <label>Duration</label><input id="f_dur" placeholder="e.g. 4HRS or 2h 30m" />
-              <label>Man Hours</label><input id="f_mh" type="number" step="0.1" placeholder="e.g. 3.5" />
-              <label>Due Date</label><input id="f_due" type="date" />
-              <label>Assigned To (Name or Staff ID)</label><input id="f_assigned" placeholder="e.g. Aiman / BID1234" />
-            </div>
-            <div class="toolbar" style="margin-top:12px">
-              <button class="btn brand" onclick="saveTask()">Save</button>
-              <button class="btn ghost" onclick="resetForm()">Reset</button>
-            </div>
-          </div>
-
-          <div class="card" style="border:1px solid var(--border)">
-            <div class="toolbar" style="justify-content:space-between;align-items:center">
-              <h3 style="margin:0">All Task Cards</h3>
-              <div class="toolbar">
-                <input type="file" id="excelFile" accept=".xlsx" style="display:none" />
-                <button class="btn warn" onclick="document.getElementById('excelFile').click()">Import Excel (.xlsx)</button>
-                <button class="btn ghost" onclick="exportJSON()">Export JSON</button>
-              </div>
-            </div>
-            <p class="muted" style="margin:6px 0">
-              Columns supported (flexible names OK): <i>ATA</i>, <i>TASK CARD NUM / AMM REF</i>, <i>TASK DESCRIPTION</i>,
-              <i>TOOLS / TESTSET</i>, <i>CONSUMABLES / MSL</i>, <i>REMARKS</i>, <i>DURATION</i>, <i>MAN HOURS</i>,
-              <i>DUE DATE</i>, <i>ASSIGNED TO</i>.
-            </p>
-            <div id="listWrap"></div>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <div class="center" style="margin-top:16px">
-      <button class="btn ghost" onclick="signOut()">Sign out</button>
     </div>
   </div>
 
-  <!-- SheetJS for .xlsx parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
   <script>
-    /************ STATE ************/
-    const STORAGE_KEY = 'lae_supreme_v1';
-    const STORAGE_ARCH = 'lae_supreme_done_v1';
-    let state = {
-      user: null,         // { name, staffId, role }
-      tasks: [],          // active tasks
-      archive: [],        // done tasks
-      editId: null,
-      history: []
-    };
-    const uid = () => 'id-' + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(2);
+    const STORAGE_KEY="lae_taskcards_v4";
+    let state={user:null,tasks:[]};
 
-    /************ CLOCK ************/
+    /* ===== CLOCK ===== */
     function startClock(){
-      const pill = document.getElementById('clockPill');
-      const tick = () => {
-        const d = new Date();
-        const opts = { weekday:'long', year:'numeric', month:'short', day:'numeric',
-                       hour:'2-digit', minute:'2-digit', second:'2-digit' };
-        pill.textContent = d.toLocaleString(undefined, opts);
-      };
-      tick(); setInterval(tick, 1000);
-    }
-    startClock();
+      const pill=document.getElementById("clockPill");
+      setInterval(()=>{pill.textContent=new Date().toLocaleString()},1000);
+    } startClock();
 
-    /************ STORAGE ************/
-    function loadLocal(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){ state.tasks = JSON.parse(raw).tasks || []; }
-        const ar = localStorage.getItem(STORAGE_ARCH);
-        if(ar){ state.archive = JSON.parse(ar).tasks || []; }
-      }catch(e){ console.warn('Local load failed', e); }
-    }
-    function saveLocal(){
-      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({tasks: state.tasks})) }catch(e){}
-      try{ localStorage.setItem(STORAGE_ARCH, JSON.stringify({tasks: state.archive})) }catch(e){}
-    }
+    /* ===== LOGIN NAMES ===== */
+    const demoNames=[
+      "Aiman","Farhan","Syafiq","Zul","Rashid","Hakim","Amir","Hafiz","Faiz","Danial",
+      "Azim","Iqbal","Rafiq","Imran","Firdaus","Shahrul","Ridzuan","Haziq","Nabil","Khalid",
+      "Hafeez","Amran","Azhar","Nasir","Shah","Rizal","Hilmi","Arif","Zaki","Faizal",
+      "Rahman","Hanif","Shamil","Rauf","Zain","Luqman","Faris","Kamarul","Hakimi","Syed",
+      "Nash","Hasif","Ashraf","Ridwan","Amzar","Firhan","Adam","Haikal","Muaz","Khairul"
+    ];
+    function populateNames(){
+      const sel=document.getElementById("nameInput");
+      sel.innerHTML='<option value="">Select your name</option>';
+      demoNames.forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)});
+    } populateNames();
 
-    /************ DEMO ************/
-    function seedDemo(){
-      state.tasks = [
-        {id:uid(), ata:'12', tc:'32-07-00-01', desc:'Service nose landing gear shock strut.', tools:'COM-1532 Cart', cons:'AEROSHELL-LGF', rem:'Use container as alternate.', dur:'4HRS', mh:4, due:addDaysStr(1), assignedTo:'BID1234', done:false},
-        {id:uid(), ata:'20', tc:'CHK-POWER-AC', desc:'Pitot probe power consumption check', tools:'KW05-287 / Clamp Meter', cons:'-', rem:'-', dur:'1H', mh:1, due:addDaysStr(3), assignedTo:'Aiman', done:false}
-      ];
-      state.archive = [];
-      saveLocal(); renderAll();
-      alert('Demo data loaded.');
-    }
-    function addDaysStr(n){ const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+    /* ===== STORAGE ===== */
+    function saveLocal(){localStorage.setItem(STORAGE_KEY,JSON.stringify({tasks:state.tasks}))}
+    function loadLocal(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw) state.tasks=JSON.parse(raw).tasks||[]}catch{}}
 
-    /************ AUTH ************/
+    /* ===== AUTH ===== */
     function signIn(){
-      const name=(document.getElementById('nameInput').value||'User').trim();
-      const staffId=(document.getElementById('staffIdInput').value||'').trim();
-      const role=document.getElementById('roleSelect').value;
-      if(!staffId){ alert('Please enter Staff ID'); return; }
-      state.user = {name, staffId, role};
-      document.getElementById('rolePill').textContent = role+ ' — ' + name;
-      document.getElementById('whoPill').textContent = role + ' • ' + staffId;
-      document.getElementById('auth').style.display='none';
-      document.getElementById('app').style.display='block';
-      state.history=['home'];
-      loadLocal();
-      buildTabs();
-      requestNotifyPermission();
-      renderAll();
+      const name=document.getElementById("nameInput").value;
+      const staffId=document.getElementById("staffIdInput").value.trim();
+      if(!name||!staffId){alert("Select name and staff ID");return;}
+      state.user={name,staffId};
+      document.getElementById("auth").style.display="none";
+      document.getElementById("app").style.display="block";
+      loadLocal(); buildTabs(); renderAll();
     }
-    function signOut(){ location.reload(); }
+    function signOut(){location.reload();}
 
-    /************ NAV ************/
-    function goBack(){
-      if(state.history.length>1){
-        state.history.pop();
-        setTab(state.history[state.history.length-1]);
-      }else{
-        setTab(state.user.role==='OFFICER'?'manage':'search');
-      }
-    }
+    /* ===== NAV ===== */
     function buildTabs(){
-      const tabs = document.getElementById('tabs');
-      tabs.innerHTML='';
-      const make=(id,label)=>{const a=document.createElement('button');a.className='tab';a.textContent=label;a.onclick=()=>setTab(id);return a}
-      if(state.user.role==='LAE'){
-        tabs.appendChild(make('search','Search & View'));
-        setTab('search');
-      }else{
-        tabs.appendChild(make('manage','Manage'));
-        tabs.appendChild(make('search','Search & View'));
-        setTab('manage');
-      }
+      const tabs=document.getElementById("tabs");
+      tabs.innerHTML="";
+      const make=(id,label)=>{let b=document.createElement("button");b.className="tab";b.textContent=label;b.onclick=()=>setTab(id);tabs.appendChild(b)}
+      make("all","All Task Cards"); make("completed","Completed");
+      setTab("all");
     }
     function setTab(id){
-      for(const el of document.querySelectorAll('[id^="tab-"]')) el.style.display='none';
-      const btns = document.querySelectorAll('.tabbar .tab');
-      btns.forEach(b=>b.classList.remove('active'));
-      const show=document.getElementById('tab-'+id); if(show) show.style.display='block';
-      const map = (state.user.role==='OFFICER')?[ 'manage','search']:[ 'search' ];
-      const idx = map.indexOf(id); if(idx>-1) btns[idx]?.classList.add('active');
-      if(state.history[state.history.length-1]!==id) state.history.push(id);
-      if(id==='search') { populateFilters(); renderSearch(); renderArchive(); }
-      else if(id==='manage') { renderList(); }
-      renderCounts();
+      ["all","completed"].forEach(x=>document.getElementById("tab-"+x).style.display="none");
+      document.getElementById("tab-"+id).style.display="block";
+      document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".tab")[id==="all"?0:1].classList.add("active");
+      if(id==="all") renderAll(); else renderCompleted();
     }
 
-    /************ COUNTS ************/
-    function renderCounts(){
-      const wrap = document.getElementById('counts');
-      const list = activeVisibleToUser(state.tasks);
-      if(!list.length){ wrap.style.display='none'; wrap.innerHTML=''; return; }
-      const total = list.length;
-      const done = list.filter(t=>t.done).length; // should be 0 in active
-      const overdue = list.filter(t=>daysToDue(t.due)<0).length;
-      const dueToday = list.filter(t=>daysToDue(t.due)===0).length;
-      wrap.style.display='flex';
-      wrap.innerHTML = `
-        <span class="badge b-warn">Overdue: ${overdue}</span>
-        <span class="badge b-due">Due today: ${dueToday}</span>
-        <span class="badge b-ok">Active: ${total}</span>
-      `;
+    /* ===== DEMO ===== */
+    function seedDemo(){
+      state.tasks=[
+        {id:uid(),ata:"12",tc:"32-07-00-01",desc:"Service the nose landing gear.",tools:"Tool A",cons:"Cons A",rem:"-",dur:"2H",mh:2,due:"2025-08-20",done:false},
+        {id:uid(),ata:"20",tc:"CHK-POWER-AC",desc:"Pitot probe power check",tools:"Meter",cons:"-",rem:"-",dur:"1H",mh:1,due:"2025-08-18",done:false}
+      ];
+      saveLocal(); renderAll(); alert("Demo tasks loaded");
     }
 
-    /************ OFFICER CRUD ************/
-    function resetForm(){
-      state.editId=null;
-      document.getElementById('formMode').textContent='Mode: Create';
-      ['f_ata','f_tc','f_desc','f_tools','f_cons','f_rem','f_dur','f_mh','f_due','f_assigned'].forEach(id=>document.getElementById(id).value='');
+    /* ===== RENDER ===== */
+    function renderAll(){
+      const wrap=document.getElementById("allResults");
+      if(!state.tasks.length){wrap.innerHTML="<p>No tasks yet.</p>";return;}
+      wrap.innerHTML=state.tasks.map(card).join("");
     }
-    function fillForm(t){
-      state.editId=t.id;
-      document.getElementById('formMode').textContent='Mode: Edit #'+t.tc;
-      f_ata.value=t.ata||''; f_tc.value=t.tc||''; f_desc.value=t.desc||'';
-      f_tools.value=t.tools||''; f_cons.value=t.cons||''; f_rem.value=t.rem||'';
-      f_dur.value=t.dur||''; f_mh.value=(t.mh??''); f_due.value=(t.due||'');
-      f_assigned.value=t.assignedTo||'';
-    }
-    function saveTask(){
-      const t={
-        ata:f_ata.value.trim(),
-        tc:f_tc.value.trim(),
-        desc:f_desc.value.trim(),
-        tools:f_tools.value.trim(),
-        cons:f_cons.value.trim(),
-        rem:f_rem.value.trim(),
-        dur:f_dur.value.trim(),
-        mh: f_mh.value? Number(f_mh.value):null,
-        due: f_due.value || '',
-        assignedTo: f_assigned.value.trim()
-      };
-      if(!t.ata || !t.tc || !t.desc){ alert('Please fill ATA, Task Card / AMM Ref, and Description.'); return; }
-      if(state.editId){
-        const i=state.tasks.findIndex(x=>x.id===state.editId);
-        if(i>-1) state.tasks[i]={...state.tasks[i],...t};
-      }else{
-        t.id=uid(); t.done=false;
-        state.tasks.unshift(t);
-      }
-      saveLocal(); resetForm(); renderList(); renderCounts(); populateFilters();
-      alert('Saved.');
-    }
-    function removeTask(id){
-      if(!confirm('Delete this task?')) return;
-      state.tasks = state.tasks.filter(x=>x.id!==id);
-      saveLocal(); renderList(); renderCounts(); populateFilters();
-    }
-    function editById(id){ const t=state.tasks.find(x=>x.id===id); if(t) fillForm(t); }
-    function renderList(){
-      const wrap=document.getElementById('listWrap');
-      if(!state.tasks.length){ wrap.innerHTML='<p class="muted">No task cards yet.</p>'; return; }
-      let html='<table><thead><tr><th>ATA</th><th>Task Card / AMM</th><th>Description</th><th>MH</th><th>Due</th><th>Assigned</th><th>Duration</th><th></th></tr></thead><tbody>';
-      for(const t of state.tasks){
-        html+=`<tr>
-          <td>${esc(t.ata||'')}</td>
-          <td>${esc(t.tc||'')}</td>
-          <td>${esc(t.desc||'')}</td>
-          <td>${esc(t.mh??'—')}</td>
-          <td>${esc(t.due||'—')}</td>
-          <td>${esc(t.assignedTo||'—')}</td>
-          <td>${esc(t.dur||'—')}</td>
-          <td style="text-align:right">
-            <button class="btn ghost" onclick='editById("${t.id}")'>Edit</button>
-            <button class="btn danger" onclick='removeTask("${t.id}")'>Delete</button>
-          </td>
-        </tr>`;
-      }
-      html+='</tbody></table>';
-      wrap.innerHTML=html;
-    }
-
-    /************ SEARCH / VIEW ************/
-    function populateFilters(){
-      // ATA
-      const select = document.getElementById('ataFilter');
-      const atas = Array.from(new Set(state.tasks.map(t=>String(t.ata||'').trim()).filter(Boolean)))
-        .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
-      select.innerHTML = '<option value="">All ATA</option>' + atas.map(a=>`<option value="${esc(a)}">ATA ${esc(a)}</option>`).join('');
-
-      // Assigned
-      const assignSel = document.getElementById('assignFilter');
-      const names = Array.from(new Set(state.tasks.map(t=>String(t.assignedTo||'').trim()).filter(Boolean)))
-        .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
-      assignSel.innerHTML = '<option value="">All assignees</option>' + names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
-
-      // Defaults for LAE
-      document.getElementById('onlyMine').checked = (state.user?.role==='LAE');
-      document.getElementById('hideDone').checked = true;
-    }
-
-    function renderSearch(){
-      const q=(document.getElementById('searchInput').value||'').toLowerCase();
-      const ataSel=(document.getElementById('ataFilter').value||'').trim();
-      const assSel=(document.getElementById('assignFilter').value||'').trim();
-      const onlyMine=document.getElementById('onlyMine').checked;
-      const hideDone=document.getElementById('hideDone').checked;
-
-      let results = state.tasks.slice();
-
-      // role-based visibility: LAE prefers only own tasks, Officer sees all
-      if(onlyMine){
-        results = results.filter(t => isMine(t));
-      }
-
-      if(ataSel) results = results.filter(t=>String(t.ata||'')===ataSel);
-      if(assSel) results = results.filter(t=>(t.assignedTo||'')===assSel);
-      if(q) results = results.filter(t=>
-        (t.tc||'').toLowerCase().includes(q) ||
-        (t.desc||'').toLowerCase().includes(q) ||
-        (t.assignedTo||'').toLowerCase().includes(q)
-      );
-      if(hideDone) results = results.filter(t=>!t.done);
-
-      const wrap=document.getElementById('searchResults');
-      if(!results.length){ wrap.innerHTML='<p class="muted">No matching task cards.</p>'; return; }
-      wrap.innerHTML = results.map(card).join('');
-
-      renderCounts();
-    }
-
-    function isMine(t){
-      const me = (state.user?.name||'').toLowerCase();
-      const id = (state.user?.staffId||'').toLowerCase();
-      const asg = (t.assignedTo||'').toLowerCase();
-      // match if assignedTo contains staffId or name substring
-      return !!asg && (asg.includes(id) || (me && asg.includes(me)));
+    function renderCompleted(){
+      const wrap=document.getElementById("completedResults");
+      const results=state.tasks.filter(t=>t.done);
+      if(!results.length){wrap.innerHTML="<p>No completed tasks.</p>";return;}
+      wrap.innerHTML=results.map(card).join("");
     }
 
     function card(t){
-      const dueInfo = dueBadge(t.due, t.done);
-      const doneCls = t.done ? 'doneCard' : '';
-      const mineStar = isMine(t) ? '⭐ ' : '';
-      const mark = t.done ? 'checked' : '';
-      return `
-        <div class="card ${doneCls}" style="margin-top:12px;border:1px solid var(--border)">
-          <div class="grid two">
-            <div>
-              <b>${mineStar}ATA ${esc(t.ata||'—')} • ${esc(t.tc||'')}</b>
-              <p class="muted" style="margin:6px 0">${esc(t.desc||'—')}</p>
-            </div>
-            <div style="text-align:right">
-              ${dueInfo.badge}
-              <div style="margin-top:6px">
-                <label style="display:inline-flex;align-items:center;gap:8px">
-                  <input type="checkbox" ${mark} onchange="toggleDone('${t.id}', this.checked)" />
-                  Mark as done
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid three" style="margin-top:10px">
-            <div>
-              <label>Tools / Test Set</label>
-              <div class="scroller">${nl2br(esc(t.tools||'-'))}</div>
-            </div>
-            <div>
-              <label>Consumables / MSL</label>
-              <div class="scroller">${nl2br(esc(t.cons||'-'))}</div>
-            </div>
-            <div>
-              <label>Remarks</label>
-              <div class="scroller">${nl2br(esc(t.rem||'-'))}</div>
-            </div>
-          </div>
-
-          <div class="grid three" style="margin-top:10px">
-            <div><label>Duration</label><div class="pill">${esc(t.dur||'—')}</div></div>
-            <div><label>Man Hours</label><div class="pill">${esc(t.mh??'—')}</div></div>
-            <div><label>Due Date</label><div class="pill">${esc(t.due||'—')}</div></div>
-          </div>
-
-          <div class="grid two" style="margin-top:10px">
-            <div><label>Assigned To</label><div class="pill">${esc(t.assignedTo||'—')}</div></div>
-            <div><label>Owner</label><div class="pill">${esc(t.done ? (t.doneBy||'—') : (isMine(t)? (state.user?.name||'You') : '—'))}</div></div>
-          </div>
+      const doneCls=t.done?"doneCard":"";
+      return `<div class="card ${doneCls}" style="margin-top:12px;border:1px solid var(--border)">
+        <b>ATA ${esc(t.ata)} • ${esc(t.tc)}</b>
+        <p class="muted">${esc(t.desc)}</p>
+        <div><label>Duration:</label> ${esc(t.dur||"—")} • <label>MH:</label> ${esc(t.mh||"—")} • <label>Due:</label> ${esc(t.due||"—")}</div>
+        <div style="margin-top:6px">
+          ${t.assignedTo?`<span class="badge b-warn">Assigned to ${esc(t.assignedTo)}</span>`:`<button class="btn brand" onclick="assignToMe('${t.id}')">Assign to Me</button>`}
+          <label style="margin-left:12px"><input type="checkbox" ${t.done?"checked":""} onchange="toggleDone('${t.id}',this.checked)"/> Done</label>
         </div>
-      `;
+      </div>`;
     }
 
-    /************ DONE / ARCHIVE ************/
-    function toggleDone(id, val){
-      const idx = state.tasks.findIndex(x=>x.id===id);
-      if(idx<0) return;
-      const t = state.tasks[idx];
-      if(val){
-        // move to archive
-        const doneItem = {...t, done:true, doneBy:(state.user?.staffId||''), doneAt:new Date().toISOString()};
-        state.archive.unshift(doneItem);
-        state.tasks.splice(idx,1);
-        saveLocal(); renderSearch(); renderArchive(); renderCounts();
-        maybeNotify(`Task done: ${t.tc}`, `Archived • ${t.desc||''}`);
-      }else{
-        // (edge) unmark not supported from active list
-      }
-    }
-    function renderArchive(){
-      const wrap = document.getElementById('archiveWrap');
-      if(!state.archive.length){ wrap.innerHTML='<p class="muted tiny">No completed tasks yet.</p>'; return; }
-      wrap.innerHTML = state.archive.map(a => `
-        <div class="card doneCard" style="border:1px solid #bfe9cc">
-          <div class="grid two">
-            <div><b>ATA ${esc(a.ata||'')} • ${esc(a.tc||'')}</b><div class="tiny muted">${esc(a.desc||'')}</div></div>
-            <div style="text-align:right" class="tiny">Done by ${esc(a.doneBy||'-')} @ ${esc(a.doneAt||'-')}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-    function clearArchive(){
-      if(!confirm('Clear all archived (done) tasks?')) return;
-      state.archive = []; saveLocal(); renderArchive();
-    }
-    function exportArchive(){
-      const blob = new Blob([JSON.stringify(state.archive, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href=url; a.download='taskcards_done.json'; a.click();
-      URL.revokeObjectURL(url);
-    }
+    function assignToMe(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;t.assignedTo=state.user.name;saveLocal();renderAll();}
+    function toggleDone(id,val){const t=state.tasks.find(x=>x.id===id);if(!t)return;t.done=val;saveLocal();renderAll();renderCompleted();}
 
-    /************ NOTIFICATIONS ************/
-    function requestNotifyPermission(){
-      if(!('Notification' in window)) return;
-      if(Notification.permission==='default'){
-        Notification.requestPermission();
-      }
-      // simple periodic check each 60s
-      setInterval(checkDueNotifications, 60000);
-      checkDueNotifications();
-    }
-    function daysToDue(dueStr){
-      if(!dueStr) return 9999;
-      const today = new Date(); today.setHours(0,0,0,0);
-      const due = parseDateFlexible(dueStr);
-      if(!due) return 9999;
-      return Math.floor((due - today)/(1000*60*60*24));
-    }
-    function checkDueNotifications(){
-      if(!('Notification' in window) || Notification.permission!=='granted') return;
-      const list = activeVisibleToUser(state.tasks);
-      for(const t of list){
-        const d = daysToDue(t.due);
-        if(d<0){ maybeNotify(`Overdue: ${t.tc}`, `${t.desc||''}`); }
-        else if(d===0){ maybeNotify(`Due today: ${t.tc}`, `${t.desc||''}`); }
-        else if(d<=3){ maybeNotify(`Due in ${d}d: ${t.tc}`, `${t.desc||''}`); }
-      }
-    }
-    function maybeNotify(title, body){
-      try{ new Notification(title, { body }); }catch(e){}
-    }
-    function activeVisibleToUser(arr){
-      // return active tasks; if LAE, prefer "only mine" if that toggle is checked
-      const onlyMine = document.getElementById('onlyMine');
-      const mine = onlyMine ? onlyMine.checked : (state.user?.role==='LAE');
-      return arr.filter(t => !t.done).filter(t => mine ? isMine(t) : true);
-    }
-
-    /************ HELPERS ************/
-    function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-    function nl2br(s){ return (s||'').replace(/\n/g,'<br>'); }
-    function parseDateFlexible(s){
-      if(!s) return null;
-      if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s+'T00:00:00');
-      const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-      if(m){ const [_,d,mo,y]=m; return new Date(`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}T00:00:00`); }
-      const d2 = new Date(s);
-      return isNaN(d2.getTime()) ? null : d2;
-    }
-
-    /************ EXCEL IMPORT ************/
-    document.getElementById('excelFile')?.addEventListener('change', handleExcelFile);
-
+    /* ===== EXCEL IMPORT ===== */
+    document.getElementById("excelFile").addEventListener("change",handleExcelFile);
     function handleExcelFile(ev){
-      const file = ev.target.files[0];
-      if(!file){ alert('No file selected'); return; }
-      const reader = new FileReader();
-      reader.onload = (e)=>{
-        try{
-          const data = new Uint8Array(e.target.result);
-          const wb = XLSX.read(data, { type: 'array' });
-          const ws = wb.Sheets[wb.SheetNames[0]];
-          const rows = XLSX.utils.sheet_to_json(ws, { header:1, blankrows:false, defval:'' });
-          const parsed = parseExcelRows(rows);
-          if(!parsed.length){ alert('No rows parsed. Check your sheet format.'); return; }
-          for(const t of parsed){ t.id = uid(); t.done = !!t.done; }
-          state.tasks = [...parsed, ...state.tasks];
-          saveLocal();
-          renderList(); populateFilters(); renderCounts(); renderSearch();
-          alert('Excel imported: '+parsed.length+' task(s).');
-        }catch(err){ console.error(err); alert('Failed to parse Excel.'); }
+      const file=ev.target.files[0];if(!file)return;
+      const reader=new FileReader();
+      reader.onload=e=>{
+        const data=new Uint8Array(e.target.result);
+        const wb=XLSX.read(data,{type:"array"});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+        const parsed=parseExcelRows(rows);
+        for(const t of parsed){t.id=uid();t.done=false;}
+        state.tasks=[...parsed,...state.tasks];
+        saveLocal();renderAll();alert("Imported "+parsed.length+" tasks");
       };
-      reader.readAsArrayBuffer(file);
-      ev.target.value='';
+      reader.readAsArrayBuffer(file); ev.target.value="";
     }
-
-    // Flexible header detection for your roster/task sheet
     function parseExcelRows(rows){
-      let currentATA = '';
-      let headerIdx = -1; let cols = {};
-      const out = [];
-      for(let r=0;r<rows.length;r++){
-        const row = rows[r].map(v=>String(v).trim());
-        if(row.length===0) continue;
-        const first = (row[0]||'').toUpperCase();
-
-        // ATA line like "ATA 12"
-        const m = first.match(/^ATA\s*([0-9A-Z.]+)$/);
-        if(m){ currentATA = m[1]; continue; }
-
-        // header row detection
-        if(headerIdx<0 && row.some(c => /TASK|AMM|DESCRIPTION|TOOLS|CONSUM|REMARK|DURATION|MAN|DUE|ASSIGNED/i.test(c))){
-          headerIdx=r;
-          for(let i=0;i<row.length;i++){
-            const name = row[i].toUpperCase();
-            if(name.includes('ATA')) cols.ata=i;
-            if(name.includes('TASK CARD') || name.includes('AMM')) cols.tc=i;
-            if(name.includes('DESCRIPTION')) cols.desc=i;
-            if(name.includes('TOOLS')) cols.tools=i;
-            if(name.includes('CONSUM')) cols.cons=i;
-            if(name.includes('REMARK')) cols.rem=i;
-            if(name.includes('DURATION')) cols.dur=i;
-            if(name.includes('MAN') && name.includes('HOUR')) cols.mh=i;
-            if(name.includes('DUE')) cols.due=i;
-            if(name.includes('ASSIGNED')) cols.assigned=i; // "ASSIGNED TO"
-          }
-          continue;
-        }
-        if(headerIdx<0) continue;
-        if(row.every(c=>c==='')) continue;
-
-        let ata = cols.ata!=null ? (row[cols.ata]||currentATA||'') : (currentATA||'');
-        ata = String(ata).trim();
-        const tc   = cell(row, cols.tc);
-        const desc = cell(row, cols.desc);
-        const tools= cell(row, cols.tools);
-        const cons = cell(row, cols.cons);
-        const rem  = cell(row, cols.rem);
-        const dur  = cell(row, cols.dur);
-        const mh   = cell(row, cols.mh);
-        const due  = cell(row, cols.due);
-        const asg  = cell(row, cols.assigned);
-
-        if(!(tc||desc)) continue;
+      const out=[];let header=null;
+      for(const row of rows){
+        if(!header){header=row.map(c=>c.toUpperCase());headerFound=true;continue;}
+        if(row.every(c=>!c))continue;
         out.push({
-          ata, tc, desc, tools, cons, rem, dur,
-          mh: mh? Number(mh): null,
-          due: due || '',
-          assignedTo: asg || ''
+          ata:row[header.indexOf("ATA")]||"",
+          tc:row[header.findIndex(h=>h.includes("TASK CARD")||h.includes("AMM"))]||"",
+          desc:row[header.findIndex(h=>h.includes("DESCRIPTION"))]||"",
+          tools:row[header.findIndex(h=>h.includes("TOOLS"))]||"",
+          cons:row[header.findIndex(h=>h.includes("CONSUMABLE"))]||"",
+          rem:row[header.findIndex(h=>h.includes("REMARKS"))]||"",
+          dur:row[header.findIndex(h=>h.includes("DURATION"))]||"",
+          mh:row[header.findIndex(h=>h.includes("MAN"))]||"",
+          due:row[header.findIndex(h=>h.includes("DUE"))]||""
         });
       }
       return out;
     }
-    function cell(row, idx){ if(idx==null) return ''; return String(row[idx]||'').trim(); }
 
-    /************ EXPORT (JSON) ************/
-    function exportJSON(){
-      const blob = new Blob([JSON.stringify(state.tasks, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href=url; a.download='taskcards_active.json'; a.click();
-      URL.revokeObjectURL(url);
+    /* ===== HELPERS ===== */
+    const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+    function esc(s){return (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LAE Task Card App</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#b20b4d">
+
+  <style>
+    :root{
+      --bg:#faf7fb;--panel:#fff;--border:#e6d6e1;--ink:#2a2430;--muted:#6b6171;
+      --brand:#b20b4d;--brand-2:#f3b500;--ok:#16a34a;--warn:#f59e0b;
+      --due:#e57900;--danger:#dc2626;--done:#e8fff0;--shadow:0 10px 30px rgba(178,11,77,.12);
+    }
+    body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+    .container{max-width:1100px;margin:0 auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:6px 0 16px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--brand)}
+    .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
+    .pill{font-size:.8rem;border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#fff}
+    .glass{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow)}
+    .card{padding:16px;border-radius:16px}
+    .row{display:flex;gap:16px;flex-wrap:wrap}
+    .col{flex:1;min-width:280px}
+    label{display:block;font-size:.85rem;color:var(--muted);margin:12px 0 6px}
+    input,textarea,select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#fff}
+    textarea{min-height:90px}
+    .btn{border:0;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer}
+    .btn.brand{background:var(--brand);color:#fff}
+    .btn.ghost{background:#fff;border:1px solid var(--border);color:var(--ink)}
+    .btn.warn{background:var(--brand-2);color:#3b2600}
+    .btn.danger{background:var(--danger);color:#fff}
+    .tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+    .tab{padding:10px 12px;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:#fff}
+    .tab.active{outline:2px solid var(--brand)}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.75rem;font-weight:700}
+    .b-ok{background:#eaf8ef;color:#065f2a;border:1px solid #ccebd6}
+    .b-warn{background:#fff7eb;color:#6b3b00;border:1px solid #ffe2b8}
+    .b-due{background:#fff1e6;color:#6b2e00;border:1px solid #ffd1aa}
+    .b-danger{background:#ffeff0;color:#7a0f16;border:1px solid #ffc9ce}
+    .doneCard{background:var(--done);border:1px solid #bfe9cc}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{border-bottom:1px solid var(--border);text-align:left;padding:10px}
+    tr:hover{background:#faf3f7}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand"><span class="dot"></span><span>LAE Task Card App</span></div>
+      <div class="pill" id="clockPill">—</div>
+    </header>
+
+    <!-- LOGIN -->
+    <div id="auth" class="glass card">
+      <h2 style="color:var(--brand)">Sign in</h2>
+      <label>Select Name</label>
+      <select id="nameInput"></select>
+      <label>Staff ID</label>
+      <input id="staffIdInput" placeholder="e.g. BID1234"/>
+      <div class="toolbar" style="margin-top:12px">
+        <button class="btn brand" onclick="signIn()">Continue</button>
+        <button class="btn ghost" onclick="seedDemo()">Load demo tasks</button>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app" class="glass card" style="display:none">
+      <div class="tabbar" id="tabs"></div>
+      <section id="tab-all" style="display:none">
+        <h3>All Task Cards</h3>
+        <div id="allResults"></div>
+      </section>
+      <section id="tab-completed" style="display:none">
+        <h3>Completed Task Cards</h3>
+        <div id="completedResults"></div>
+      </section>
+      <div style="margin-top:16px">
+        <input type="file" id="excelFile" accept=".xlsx" style="display:none"/>
+        <button class="btn warn" onclick="document.getElementById('excelFile').click()">Import Excel</button>
+        <button class="btn ghost" onclick="signOut()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script>
+    const STORAGE_KEY="lae_taskcards_v4";
+    let state={user:null,tasks:[]};
+
+    /* ===== CLOCK ===== */
+    function startClock(){
+      const pill=document.getElementById("clockPill");
+      setInterval(()=>{pill.textContent=new Date().toLocaleString()},1000);
+    } startClock();
+
+    /* ===== LOGIN NAMES ===== */
+    const demoNames=[
+      "Aiman","Farhan","Syafiq","Zul","Rashid","Hakim","Amir","Hafiz","Faiz","Danial",
+      "Azim","Iqbal","Rafiq","Imran","Firdaus","Shahrul","Ridzuan","Haziq","Nabil","Khalid",
+      "Hafeez","Amran","Azhar","Nasir","Shah","Rizal","Hilmi","Arif","Zaki","Faizal",
+      "Rahman","Hanif","Shamil","Rauf","Zain","Luqman","Faris","Kamarul","Hakimi","Syed",
+      "Nash","Hasif","Ashraf","Ridwan","Amzar","Firhan","Adam","Haikal","Muaz","Khairul"
+    ];
+    function populateNames(){
+      const sel=document.getElementById("nameInput");
+      sel.innerHTML='<option value="">Select your name</option>';
+      demoNames.forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)});
+    } populateNames();
+
+    /* ===== STORAGE ===== */
+    function saveLocal(){localStorage.setItem(STORAGE_KEY,JSON.stringify({tasks:state.tasks}))}
+    function loadLocal(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw) state.tasks=JSON.parse(raw).tasks||[]}catch{}}
+
+    /* ===== AUTH ===== */
+    function signIn(){
+      const name=document.getElementById("nameInput").value;
+      const staffId=document.getElementById("staffIdInput").value.trim();
+      if(!name||!staffId){alert("Select name and staff ID");return;}
+      state.user={name,staffId};
+      document.getElementById("auth").style.display="none";
+      document.getElementById("app").style.display="block";
+      loadLocal(); buildTabs(); renderAll();
+    }
+    function signOut(){location.reload();}
+
+    /* ===== NAV ===== */
+    function buildTabs(){
+      const tabs=document.getElementById("tabs");
+      tabs.innerHTML="";
+      const make=(id,label)=>{let b=document.createElement("button");b.className="tab";b.textContent=label;b.onclick=()=>setTab(id);tabs.appendChild(b)}
+      make("all","All Task Cards"); make("completed","Completed");
+      setTab("all");
+    }
+    function setTab(id){
+      ["all","completed"].forEach(x=>document.getElementById("tab-"+x).style.display="none");
+      document.getElementById("tab-"+id).style.display="block";
+      document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".tab")[id==="all"?0:1].classList.add("active");
+      if(id==="all") renderAll(); else renderCompleted();
     }
 
-    /************ INITIAL ************/
+    /* ===== DEMO ===== */
+    function seedDemo(){
+      state.tasks=[
+        {id:uid(),ata:"12",tc:"32-07-00-01",desc:"Service the nose landing gear.",tools:"Tool A",cons:"Cons A",rem:"-",dur:"2H",mh:2,due:"2025-08-20",done:false},
+        {id:uid(),ata:"20",tc:"CHK-POWER-AC",desc:"Pitot probe power check",tools:"Meter",cons:"-",rem:"-",dur:"1H",mh:1,due:"2025-08-18",done:false}
+      ];
+      saveLocal(); renderAll(); alert("Demo tasks loaded");
+    }
+
+    /* ===== RENDER ===== */
     function renderAll(){
-      if(document.getElementById('tab-search').style.display!=='none'){ populateFilters(); renderSearch(); renderArchive(); }
-      if(document.getElementById('tab-manage').style.display!=='none') renderList();
-      renderCounts();
+      const wrap=document.getElementById("allResults");
+      if(!state.tasks.length){wrap.innerHTML="<p>No tasks yet.</p>";return;}
+      wrap.innerHTML=state.tasks.map(card).join("");
+    }
+    function renderCompleted(){
+      const wrap=document.getElementById("completedResults");
+      const results=state.tasks.filter(t=>t.done);
+      if(!results.length){wrap.innerHTML="<p>No completed tasks.</p>";return;}
+      wrap.innerHTML=results.map(card).join("");
     }
 
-    // Optional PWA service worker register (if you add service-worker.js at site root)
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("/service-worker.js");
-      });
+    function card(t){
+      const doneCls=t.done?"doneCard":"";
+      return `<div class="card ${doneCls}" style="margin-top:12px;border:1px solid var(--border)">
+        <b>ATA ${esc(t.ata)} • ${esc(t.tc)}</b>
+        <p class="muted">${esc(t.desc)}</p>
+        <div><label>Duration:</label> ${esc(t.dur||"—")} • <label>MH:</label> ${esc(t.mh||"—")} • <label>Due:</label> ${esc(t.due||"—")}</div>
+        <div style="margin-top:6px">
+          ${t.assignedTo?`<span class="badge b-warn">Assigned to ${esc(t.assignedTo)}</span>`:`<button class="btn brand" onclick="assignToMe('${t.id}')">Assign to Me</button>`}
+          <label style="margin-left:12px"><input type="checkbox" ${t.done?"checked":""} onchange="toggleDone('${t.id}',this.checked)"/> Done</label>
+        </div>
+      </div>`;
     }
+
+    function assignToMe(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;t.assignedTo=state.user.name;saveLocal();renderAll();}
+    function toggleDone(id,val){const t=state.tasks.find(x=>x.id===id);if(!t)return;t.done=val;saveLocal();renderAll();renderCompleted();}
+
+    /* ===== EXCEL IMPORT ===== */
+    document.getElementById("excelFile").addEventListener("change",handleExcelFile);
+    function handleExcelFile(ev){
+      const file=ev.target.files[0];if(!file)return;
+      const reader=new FileReader();
+      reader.onload=e=>{
+        const data=new Uint8Array(e.target.result);
+        const wb=XLSX.read(data,{type:"array"});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+        const parsed=parseExcelRows(rows);
+        for(const t of parsed){t.id=uid();t.done=false;}
+        state.tasks=[...parsed,...state.tasks];
+        saveLocal();renderAll();alert("Imported "+parsed.length+" tasks");
+      };
+      reader.readAsArrayBuffer(file); ev.target.value="";
+    }
+    function parseExcelRows(rows){
+      const out=[];let header=null;
+      for(const row of rows){
+        if(!header){header=row.map(c=>c.toUpperCase());headerFound=true;continue;}
+        if(row.every(c=>!c))continue;
+        out.push({
+          ata:row[header.indexOf("ATA")]||"",
+          tc:row[header.findIndex(h=>h.includes("TASK CARD")||h.includes("AMM"))]||"",
+          desc:row[header.findIndex(h=>h.includes("DESCRIPTION"))]||"",
+          tools:row[header.findIndex(h=>h.includes("TOOLS"))]||"",
+          cons:row[header.findIndex(h=>h.includes("CONSUMABLE"))]||"",
+          rem:row[header.findIndex(h=>h.includes("REMARKS"))]||"",
+          dur:row[header.findIndex(h=>h.includes("DURATION"))]||"",
+          mh:row[header.findIndex(h=>h.includes("MAN"))]||"",
+          due:row[header.findIndex(h=>h.includes("DUE"))]||""
+        });
+      }
+      return out;
+    }
+
+    /* ===== HELPERS ===== */
+    const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+    function esc(s){return (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
   </script>
 </body>
 </html>
