@@ -1,230 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Batik Air Task Card System</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background:#f5f9ff; color:#222; margin:20px; }
-    h1 { color:#8B0000; margin-top:0; text-align:center; }
-    .hidden { display:none; }
-    .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px; gap:10px; }
-    .stats { margin-top:6px; font-weight:600; }
-    button { margin:5px; padding:8px 14px; border:none; border-radius:8px; cursor:pointer; }
-    .logout { background:#8B0000; color:white; }
-    .back { background:#555; color:white; }
-    .tab-btn { background:#317EFB; color:white; }
-    .filter-section { margin:10px 0 6px; }
-    .task-card { border:1px solid #d7e1f5; border-radius:12px; padding:14px; margin:14px 0;
-      background:#ffffff; box-shadow:0 2px 6px rgba(0,0,0,0.06); line-height:1.55; }
-    .done { background:#dff8e3 !important; border-color:#bfe8c6; }
-    .task-header { font-weight:bold; font-size:16px; color:#8B0000; margin-bottom:8px; }
-    .row { display:flex; flex-wrap:wrap; gap:8px; }
-    .meta-pill { background:#eef7ff; padding:6px 10px; border-radius:999px; border:1px solid #d9ebff;
-      font-size:13px; white-space:nowrap; }
-    .block { margin-top:8px; }
-    .task-meta    { background:#eef7ff; padding:8px; border-radius:10px; border:1px solid #d9ebff; }
-    .task-desc    { background:#fff3e6; padding:8px; border-radius:10px; border:1px solid #ffe0c2; }
-    .task-tools   { background:#e6ffe6; padding:8px; border-radius:10px; border:1px solid #c8efc8; }
-    .task-cons    { background:#e6f7ff; padding:8px; border-radius:10px; border:1px solid #cfeaff; }
-    .task-remarks { background:#fff0f0; padding:8px; border-radius:10px; border:1px solid #ffd6d9; }
-    .task-actions { margin-top:10px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-    .assigned-bold { font-weight:bold; color:#000; }
-    select, input[type="text"] { padding:8px 10px; border:1px solid #cfd9ee; border-radius:8px; background:#fff; }
-    #loginSection { display:flex; flex-direction:column; align-items:center; justify-content:center;
-      margin-top:60px; text-align:center; }
-    #loginSection .block { margin:10px 0; }
-    #loginSection select, #loginSection input { width:220px; }
-    .lbl { font-weight:bold; }
-  </style>
-</head>
-<body>
+card.innerHTML = `
+  <div class="task-header">ATA ${t.ata}</div>
 
-<h1>Batik Air Task Card System</h1>
-
-<!-- Login -->
-<div id="loginSection">
-  <h3>Login</h3>
-  <div class="block"><label>Name: <select id="nameInput"></select></label></div>
-  <div class="block"><label>ID: <input type="text" id="idInput" placeholder="e.g. BID1234"></label></div>
-  <div class="block"><label>Role:
-    <select id="roleInput">
-      <option value="LAE">LAE</option>
-      <option value="OFFICER">OFFICER</option>
-    </select></label>
-  </div>
-  <div id="loginDateTime" style="margin:10px 0; font-weight:bold;"></div>
-  <button onclick="login()">Sign In</button>
-</div>
-
-<!-- App -->
-<div id="appSection" class="hidden">
-  <div class="header">
-    <div>
-      <div id="welcome" style="font-weight:bold;"></div>
-      <div id="dateTime" class="stats"></div>
-      <div class="stats">Task Done: <span id="taskDone">0</span> | Remaining: <span id="taskRemaining">0</span></div>
-    </div>
-    <div>
-      <button class="back" onclick="back()">Back</button>
-      <button class="logout" onclick="logout()">Sign Out</button>
-    </div>
+  <div class="block task-meta"><b>Task Card Num / AMM Ref:</b> ${t.card}</div>
+  <div class="block task-desc"><b>Task Description:</b> ${t.description}</div>
+  <div class="block task-tools"><b>Tools / Testset:</b> ${t.tools}</div>
+  <div class="block task-cons"><b>Consumables / MSL:</b> ${t.consumables}</div>
+  <div class="block task-remarks"><b>Remarks:</b> ${t.remarks}</div>
+  
+  <div class="row">
+    <div class="meta-pill">Duration / Manhour: ${t.manhour || "N/A"}</div>
+    <div class="meta-pill">Due: ${t.due || "N/A"}</div>
+    <div class="meta-pill">Assigned To: <span class="${t.assignedTo ? 'assigned-bold':''}">${t.assignedTo || "None"}</span></div>
   </div>
 
-  <!-- Officer panel -->
-  <div id="officerSection" class="hidden">
-    <h3>Officer Panel</h3>
-    <input type="file" id="excelFile" accept=".xlsx" onchange="loadExcel(event)">
+  <div class="task-actions">
+    ${ currentUser?.role==="OFFICER"
+      ? `Assign:
+          <select onchange="assign(${indexInAll(i,filtered)}, this.value)">
+            <option value="">Assign to...</option>
+            ${staffNames.map(n=>`<option value="${n}" ${t.assignedTo===n?'selected':''}>${n}</option>`).join("")}
+          </select>` : `` }
+    ${ canMark
+      ? `<label><input type="checkbox" ${t.done?"checked":""}
+            onchange="markDone(${indexInAll(i,filtered)}, this.checked)"> Mark Done</label>` : `` }
   </div>
-
-  <!-- Filters -->
-  <div class="filter-section">
-    <label>Filter by ATA:
-      <select id="ataFilter" onchange="renderTasks()">
-        <option value="ALL">All ATA</option>
-      </select>
-    </label>
-  </div>
-
-  <!-- Tabs (LAE only) -->
-  <div id="tabs" class="hidden">
-    <button class="tab-btn" onclick="setTab('ALL')">All Task Cards</button>
-    <button class="tab-btn" onclick="setTab('ASSIGNED')">Assigned To Me</button>
-    <button class="tab-btn" onclick="setTab('DONE')">Done Task Cards</button>
-  </div>
-
-  <!-- Task list -->
-  <div id="taskList"></div>
-</div>
-
-<script>
-const staffNames = ["ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN"];
-const TASKS_KEY = "batik_tasks_v1";
-let tasks = [];
-let currentUser = null;
-let currentTab = "ALL";
-
-function populateNames(){
-  const sel=document.getElementById("nameInput");
-  sel.innerHTML='<option value="">Select your name</option>';
-  staffNames.forEach(n=>{
-    const o=document.createElement("option");
-    o.value=n; o.textContent=n; sel.appendChild(o);
-  });
-}
-populateNames();
-
-function startClock(){
-  function update(){
-    const now = new Date();
-    const nice = now.toLocaleDateString("en-GB", { weekday:"long", year:"numeric", month:"short", day:"numeric" })
-               + " " + now.toLocaleTimeString();
-    document.getElementById("dateTime").textContent = nice;
-    document.getElementById("loginDateTime").textContent = "Now: " + nice;
-  }
-  update(); setInterval(update, 1000);
-}
-startClock();
-
-function saveTasks(){ localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); }
-function loadTasks(){ const raw = localStorage.getItem(TASKS_KEY); if(raw){ tasks = JSON.parse(raw) || []; } }
-
-function login(){
-  const name=document.getElementById("nameInput").value;
-  const id=document.getElementById("idInput").value.trim();
-  const role=document.getElementById("roleInput").value;
-  if(!name || !id){ alert("Please select your name and enter ID"); return; }
-  currentUser={ name, id, role };
-  document.getElementById("loginSection").classList.add("hidden");
-  document.getElementById("appSection").classList.remove("hidden");
-  document.getElementById("welcome").textContent=`Welcome ${name} (${role})`;
-  if(role==="OFFICER"){ document.getElementById("officerSection").classList.remove("hidden"); document.getElementById("tabs").classList.add("hidden"); }
-  else { document.getElementById("officerSection").classList.add("hidden"); document.getElementById("tabs").classList.remove("hidden"); }
-  loadTasks(); populateATAFilter(); renderTasks();
-}
-function logout(){ currentUser=null; currentTab="ALL"; document.getElementById("appSection").classList.add("hidden");
-  document.getElementById("taskList").innerHTML=""; document.getElementById("loginSection").classList.remove("hidden"); }
-
-function back(){ renderTasks(); }
-
-function loadExcel(e){
-  const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=function(ev){
-    const data=new Uint8Array(ev.target.result);
-    const workbook=XLSX.read(data,{type:"array"});
-    const sheet=workbook.Sheets[workbook.SheetNames[0]];
-    const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:""});
-    const body=rows.slice(1);
-    tasks=body.map(r=>({ ata:String(r[0]||""), card:String(r[1]||""), description:String(r[2]||""),
-      tools:String(r[3]||""), consumables:String(r[4]||""), remarks:String(r[5]||""),
-      manhour:String(r[6]||""), due:String(r[7]||""), assignedTo:String(r[8]||""), done:false, markedBy:"" }));
-    saveTasks(); populateATAFilter(); renderTasks();
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function populateATAFilter(){
-  const sel=document.getElementById("ataFilter");
-  const atas=[...new Set(tasks.map(t=>t.ata).filter(Boolean))].sort();
-  sel.innerHTML='<option value="ALL">All ATA</option>';
-  atas.forEach(a=>{ const o=document.createElement("option"); o.value=a; o.textContent=a; sel.appendChild(o); });
-}
-function setTab(tab){ currentTab=tab; renderTasks(); }
-
-function assign(i,name){ tasks[i].assignedTo=name; saveTasks(); renderTasks(); }
-function markDone(i,checked){
-  if(currentUser?.role!=="LAE"){ alert("Only LAE can mark tasks as done."); return; }
-  if(tasks[i].assignedTo!==currentUser.name){ alert("You can only mark your own assigned tasks."); return; }
-  tasks[i].done=!!checked; tasks[i].markedBy=checked?currentUser.name:""; saveTasks(); renderTasks();
-}
-
-function renderTasks(){
-  const filter=document.getElementById("ataFilter").value;
-  const container=document.getElementById("taskList"); container.innerHTML="";
-  let doneCount=0, remainCount=0;
-  const filtered=tasks.filter(t=>{
-    if(filter!=="ALL"&&t.ata!==filter) return false;
-    if(currentUser?.role==="LAE"){ if(currentTab==="ASSIGNED") return t.assignedTo===currentUser.name;
-      if(currentTab==="DONE") return !!t.done; return true; } else return true;
-  });
-  filtered.forEach((t,i)=>{
-    if(t.done) doneCount++; else remainCount++;
-    const canMark = currentUser?.role==="LAE" && t.assignedTo===currentUser.name;
-    const card=document.createElement("div");
-    card.className="task-card"+(t.done?" done":"");
-    card.innerHTML=`
-      <div class="task-header">${t.ata}</div>
-      <div class="row">
-        <div class="meta-pill">ATA: ${t.ata}</div>
-        <div class="meta-pill">Manhour: ${t.manhour||"N/A"}</div>
-        <div class="meta-pill">Due: ${t.due||"N/A"}</div>
-        <div class="meta-pill">Assigned To: <span class="${t.assignedTo?'assigned-bold':''}">${t.assignedTo||"None"}</span></div>
-      </div>
-      <div class="block task-meta">Task Card: ${t.card}</div>
-      <div class="block task-desc">Description: ${t.description}</div>
-      <div class="block task-tools">Tools: ${t.tools}</div>
-      <div class="block task-cons">Consumables: ${t.consumables}</div>
-      <div class="block task-remarks">Remarks: ${t.remarks}</div>
-      <div class="task-actions">
-        ${ currentUser?.role==="OFFICER"
-          ? `Assign:
-              <select onchange="assign(${indexInAll(i,filtered)}, this.value)">
-                <option value="">Assign to...</option>
-                ${staffNames.map(n=>`<option value="${n}" ${t.assignedTo===n?'selected':''}>${n}</option>`).join("")}
-              </select>` : `` }
-        ${ canMark
-          ? `<label><input type="checkbox" ${t.done?"checked":""}
-                onchange="markDone(${indexInAll(i,filtered)}, this.checked)"> Mark Done</label>` : `` }
-      </div>
-    `;
-    container.appendChild(card);
-  });
-  document.getElementById("taskDone").textContent=doneCount;
-  document.getElementById("taskRemaining").textContent=remainCount;
-}
-function indexInAll(filteredIndex,filteredArray){ const obj=filteredArray[filteredIndex]; return tasks.indexOf(obj); }
-</script>
-</body>
-</html>
+`;
