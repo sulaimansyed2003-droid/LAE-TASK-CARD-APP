@@ -1,275 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LAE Task Card App (Officer & LAE)</title>
+  <meta charset="UTF-8">
+  <title>Batik Air Task Card System</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f2f6fc; margin:0; padding:0; }
-    header { background: #8b0020; color: white; padding: 10px; text-align: center; }
-    .container { padding: 20px; }
+    body { font-family: Arial, sans-serif; background:#f7f9fc; margin:0; padding:0; }
+    header { background:#6c1d45; color:white; padding:10px; text-align:center; }
+    .container { padding:20px; }
+    .task { border:1px solid #ccc; border-radius:8px; padding:12px; margin-bottom:12px; background:white; }
+    .task.done { background:#d4edda; border-color:#28a745; }
+    h3 { margin-top:0; }
     .hidden { display:none; }
-    .task { border:1px solid #ccc; border-radius:8px; margin:10px 0; padding:10px; background:white; }
-    .task.done { background:#d4edda; }
-    .task h4 { margin:0 0 5px; }
-    .task small { color:#555; display:block; margin-top:5px; }
-    button { margin:5px; padding:8px 12px; border:none; border-radius:6px; background:#8b0020; color:white; cursor:pointer; }
-    button:hover { background:#a61e34; }
-    select, input { padding:5px; margin:5px 0; }
-    #stats, #officerStats { margin:10px 0; font-weight:bold; }
-    #dateTime { margin-bottom: 10px; font-size:14px; color:#444; }
+    .stats { margin:10px 0; padding:10px; background:#eee; border-radius:6px; }
+    select, input, button { padding:6px; margin:4px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+    .btn { background:#6c1d45; color:white; border:none; border-radius:5px; padding:8px 14px; cursor:pointer; }
+    .btn:hover { background:#9c2d68; }
   </style>
 </head>
 <body>
   <header>
-    <h2>LAE Task Card App</h2>
-    <button id="signOutBtn" class="hidden" onclick="signOut()">Sign Out</button>
-    <button id="backBtn" class="hidden" onclick="goBack()">Back</button>
+    <h2>Batik Air Task Card System</h2>
   </header>
+
   <div class="container">
-    <!-- Login Screen -->
-    <div id="loginScreen">
-      <h3>Login</h3>
-      <label>Name:</label>
-      <select id="nameInput"></select><br>
-      <label>Staff ID:</label>
-      <input type="text" id="idInput"><br>
-      <label>Role:</label>
-      <select id="roleInput">
-        <option value="">Select Role</option>
-        <option value="officer">Officer</option>
-        <option value="lae">LAE</option>
-      </select><br>
-      <button onclick="login()">Login</button>
+    <!-- Login Section -->
+    <div id="loginSection">
+      <h3>Sign In</h3>
+      <label>Name: 
+        <select id="nameInput"></select>
+      </label><br>
+      <label>ID: <input type="text" id="idInput"></label><br>
+      <label>Role:
+        <select id="roleInput">
+          <option value="">Select Role</option>
+          <option value="LAE">LAE</option>
+          <option value="OFFICER">Officer</option>
+        </select>
+      </label><br>
+      <button class="btn" onclick="login()">Login</button>
     </div>
 
-    <!-- Officer Screen -->
-    <div id="officerScreen" class="hidden">
-      <h3>Officer Dashboard</h3>
-      <input type="file" id="excelFile" accept=".xlsx" />
-      <button onclick="uploadExcel()">Upload Excel</button>
-      <h3>Filter by ATA</h3>
-      <select id="officerAtaFilter" onchange="applyOfficerFilter()"></select>
-      <div id="officerStats"></div>
+    <!-- Officer Section -->
+    <div id="officerSection" class="hidden">
+      <div class="topbar">
+        <div>
+          <input type="file" id="excelFile" accept=".xlsx">
+          <button class="btn" onclick="loadExcel()">Upload Excel</button>
+          <select id="officerAtaFilter" onchange="filterOfficerATA()">
+            <option value="All">All ATA</option>
+            ${[...Array(40)].map((_,i)=>`<option value="ATA${String(i+1).padStart(2,'0')}">ATA${String(i+1).padStart(2,'0')}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <span id="dateTime"></span>
+          <button class="btn" onclick="signOut()">Sign Out</button>
+        </div>
+      </div>
+      <div class="stats" id="officerStats"></div>
       <h3>All Task Cards</h3>
       <div id="officerTaskList"></div>
     </div>
 
-    <!-- LAE Screen -->
-    <div id="laeScreen" class="hidden">
-      <h3>Task Cards</h3>
-      <div id="dateTime"></div>
-      <div id="stats"></div>
-      <h3>Filter by ATA</h3>
-      <select id="laeAtaFilter" onchange="applyLaeFilter()"></select><br>
-      <button onclick="renderTasks(uploadedTasks)">All Tasks</button>
-      <button onclick="showMyTasks()">My Assigned Tasks</button>
-      <button onclick="showDoneTasks()">View Done Tasks</button>
+    <!-- LAE Section -->
+    <div id="laeSection" class="hidden">
+      <div class="topbar">
+        <div>
+          <button class="btn" onclick="showAllTasks()">All Tasks</button>
+          <button class="btn" onclick="showMyTasks()">Assigned to Me</button>
+          <select id="laeAtaFilter" onchange="filterLaeATA()">
+            <option value="All">All ATA</option>
+            ${[...Array(40)].map((_,i)=>`<option value="ATA${String(i+1).padStart(2,'0')}">ATA${String(i+1).padStart(2,'0')}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <span id="dateTime"></span>
+          <button class="btn" onclick="signOut()">Sign Out</button>
+        </div>
+      </div>
+      <div class="stats" id="laeStats"></div>
+      <h3>Remaining Task Cards</h3>
       <div id="taskList"></div>
-      <h3>Completed Tasks</h3>
+      <h3>Done Task Cards</h3>
       <div id="doneList"></div>
     </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
-    // === Names (you’ll paste the full ~400 list here) ===
+    // ===== Names (from roster you gave, shortened example) =====
     const demoNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
-      "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
-      // ... rest of names
+      "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK",
+      "UMEIR BIN SHUKRY OMAR TALIB","MOHD MAHDIR BIN ABDUL MANAN","ABU NOR RAZY BIN ABDULLAH @ ANBARASU",
+      "ZARIN DARUS BIN ABDUL RAHMAN","MOHAMMAD ZAHID BIN AFTAB","AJMER SINGH A/L SUKHBIR SINGH",
+      // ... (continue with your full ~400 names here)
     ];
 
+    let tasks = [];
+    let currentUser = null;
+    let currentLaeFilter = "All";
+    let currentOfficerFilter = "All";
+
+    // Populate names in dropdown
     function populateNames(){
       const sel=document.getElementById("nameInput");
       sel.innerHTML='<option value="">Select your name</option>';
       demoNames.forEach(n=>{
         let o=document.createElement("option");
-        o.value=n; o.textContent=n; sel.appendChild(o);
+        o.value=n; o.textContent=n;
+        sel.appendChild(o);
       });
     }
     populateNames();
-
-    let uploadedTasks = [];
-    let currentUser = { name:"", role:"" };
-    let currentOfficerFilter = "All";
-    let currentLaeFilter = "All";
 
     function login(){
       const name=document.getElementById("nameInput").value;
       const id=document.getElementById("idInput").value;
       const role=document.getElementById("roleInput").value;
-      if(!name||!id||!role){ alert("Fill all fields"); return; }
-      currentUser={ name, role };
-      document.getElementById("loginScreen").classList.add("hidden");
-      document.getElementById("signOutBtn").classList.remove("hidden");
-      if(role==="officer"){ 
-        document.getElementById("officerScreen").classList.remove("hidden"); 
-        renderOfficerTasks(uploadedTasks);
-      }
-      else{
-        document.getElementById("laeScreen").classList.remove("hidden"); 
-        renderTasks(uploadedTasks);
-        updateDateTime();
-      }
+      if(!name||!id||!role){alert("Fill all fields"); return;}
+      currentUser={name,id,role};
+      document.getElementById("loginSection").classList.add("hidden");
+      if(role==="OFFICER") document.getElementById("officerSection").classList.remove("hidden");
+      if(role==="LAE") document.getElementById("laeSection").classList.remove("hidden");
+      updateDateTime();
     }
 
     function signOut(){
-      document.getElementById("loginScreen").classList.remove("hidden");
-      document.getElementById("officerScreen").classList.add("hidden");
-      document.getElementById("laeScreen").classList.add("hidden");
-      document.getElementById("signOutBtn").classList.add("hidden");
-      document.getElementById("backBtn").classList.add("hidden");
-      document.getElementById("idInput").value="";
-      document.getElementById("roleInput").value="";
-      document.getElementById("nameInput").value="";
-      currentUser={ name:"", role:"" };
+      currentUser=null;
+      document.getElementById("officerSection").classList.add("hidden");
+      document.getElementById("laeSection").classList.add("hidden");
+      document.getElementById("loginSection").classList.remove("hidden");
     }
 
-    function uploadExcel(){
+    // update date and time continuously
+    function updateDateTime(){
+      setInterval(()=>{
+        const now=new Date();
+        const options={ weekday:'long', year:'numeric', month:'long', day:'numeric', 
+          hour:'2-digit', minute:'2-digit', second:'2-digit' };
+        document.querySelectorAll("#dateTime").forEach(el=>{
+          el.innerText="Today: "+now.toLocaleDateString("en-MY",options);
+        });
+      },1000);
+    }
+
+    // Load Excel file
+    function loadExcel(){
       const file=document.getElementById("excelFile").files[0];
-      if(!file){ alert("Select Excel file"); return; }
+      if(!file) return;
       const reader=new FileReader();
-      reader.onload=function(e){
+      reader.onload=(e)=>{
         const data=new Uint8Array(e.target.result);
-        const wb=XLSX.read(data,{type:'array'});
+        const wb=XLSX.read(data,{type:"array"});
         const ws=wb.Sheets[wb.SheetNames[0]];
         const json=XLSX.utils.sheet_to_json(ws,{header:1});
-        uploadedTasks=[];
-        json.slice(1).forEach(row=>{
-          if(row.length){
-            uploadedTasks.push({
-              card: row[0],
-              description: row[1],
-              ata: row[2],
-              manhour: row[3]||"",
-              due: row[4]||"",
-              assignedTo: row[5]||"",
-              done:false,
-              markedBy:""
-            });
-          }
-        });
-        alert("Excel uploaded successfully!");
-        buildAtaFilters();
-        renderOfficerTasks(uploadedTasks);
+        tasks=json.slice(1).map(r=>({
+          ata:r[0]||"", card:r[1]||"", description:r[2]||"",
+          tools:r[3]||"", consumables:r[4]||"", remarks:r[5]||"",
+          manhour:r[6]||"", due:r[7]||"", assignedTo:r[8]||"",
+          done:false, markedBy:""
+        }));
+        renderOfficerTasks(tasks);
       };
       reader.readAsArrayBuffer(file);
     }
 
-    function buildAtaFilters(){
-      // ATA01 – ATA40
-      const atas = Array.from({length:40},(_,i)=>"ATA"+String(i+1).padStart(2,"0"));
-      const officerSel=document.getElementById("officerAtaFilter");
-      const laeSel=document.getElementById("laeAtaFilter");
-      officerSel.innerHTML='<option value="All">All ATA</option>';
-      laeSel.innerHTML='<option value="All">All ATA</option>';
-      atas.forEach(a=>{
-        let o1=document.createElement("option"); o1.value=a; o1.textContent=a; officerSel.appendChild(o1);
-        let o2=document.createElement("option"); o2.value=a; o2.textContent=a; laeSel.appendChild(o2);
-      });
-    }
-
-    function renderOfficerTasks(tasks){
-      const list=document.getElementById("officerTaskList");
-      list.innerHTML="";
-      let filtered = currentOfficerFilter==="All"?tasks:tasks.filter(t=>t.ata===currentOfficerFilter);
-      filtered.forEach((t,i)=>{
-        const div=document.createElement("div");
-        div.className="task"+(t.done?" done":"");
-        let dropdown = `<select onchange="assignTask(${i}, this.value)">
-            <option value="">Assign to...</option>
-            ${demoNames.map(n=>`<option value="${n}" ${t.assignedTo===n?"selected":""}>${n}</option>`).join("")}
-          </select>`;
-        div.innerHTML=`<h4>${t.card||"Task Card"}</h4>
-          <p>${t.description||""}</p>
-          <small>ATA: ${t.ata||""} | Manhour: ${t.manhour} | Due: ${t.due}</small><br>
-          <b>Assigned To:</b> ${t.assignedTo||"None"} ${dropdown}
-          ${t.done?`<br><b>Marked done by:</b> ${t.markedBy}`:""}`;
-        list.appendChild(div);
-      });
-      updateOfficerStats(filtered);
-    }
-
-    function assignTask(index, name){
-      uploadedTasks[index].assignedTo=name;
-      renderOfficerTasks(uploadedTasks);
-    }
-
-    function renderTasks(tasks){
+    // Render LAE tasks
+    function renderTasks(ts){
       const list=document.getElementById("taskList");
       const doneList=document.getElementById("doneList");
       list.innerHTML=""; doneList.innerHTML="";
-      let filtered = currentLaeFilter==="All"?tasks:tasks.filter(t=>t.ata===currentLaeFilter);
-      if(!filtered.length){ list.innerHTML="<p>No tasks</p>"; return; }
+      let filtered = currentLaeFilter==="All"?ts:ts.filter(t=>t.ata===currentLaeFilter);
       filtered.forEach((t,i)=>{
         const div=document.createElement("div");
         div.className="task"+(t.done?" done":"");
         let checkbox="";
-        if(t.assignedTo===currentUser.name){ 
+        if(t.assignedTo===currentUser.name){
           checkbox=`<label><input type="checkbox" ${t.done?"checked":""} onchange="toggleDone(${i})"> Done</label>`;
         }
-        div.innerHTML=`<h4>${t.card||"Task Card"}</h4>
-          <p>${t.description||""}</p>
-          <small>ATA: ${t.ata||""} | Manhour: ${t.manhour} | Due: ${t.due} | Assigned To: ${t.assignedTo}</small><br>
+        div.innerHTML=`
+          <h4>${t.ata}</h4>
+          <small>ATA: ${t.ata} | Manhour: ${t.manhour} | Due: ${t.due} | Assigned To: ${t.assignedTo||"None"}</small>
+          <p><b>Task Card:</b> ${t.card}</p>
+          <p><b>Description:</b> ${t.description}</p>
+          ${t.tools?`<p><b>Tools:</b> ${t.tools}</p>`:""}
+          ${t.consumables?`<p><b>Consumables:</b> ${t.consumables}</p>`:""}
+          ${t.remarks?`<p><b>Remarks:</b> ${t.remarks}</p>`:""}
           ${checkbox}
-          ${t.done?`<br><b>Marked done by:</b> ${t.markedBy}`:""}`;
+          ${t.done?`<br><b>Marked done by:</b> ${t.markedBy}`:""}
+        `;
         if(t.done) doneList.appendChild(div); else list.appendChild(div);
       });
       updateStats(filtered);
     }
 
-    function toggleDone(index){
-      uploadedTasks[index].done=true;
-      uploadedTasks[index].markedBy=currentUser.name;
-      renderTasks(uploadedTasks);
+    // Render Officer tasks
+    function renderOfficerTasks(ts){
+      const list=document.getElementById("officerTaskList");
+      list.innerHTML="";
+      let filtered = currentOfficerFilter==="All"?ts:ts.filter(t=>t.ata===currentOfficerFilter);
+      filtered.forEach((t,i)=>{
+        const div=document.createElement("div");
+        div.className="task"+(t.done?" done":"");
+        let dropdown=`<select onchange="assignTask(${i}, this.value)">
+            <option value="">Assign to...</option>
+            ${demoNames.map(n=>`<option value="${n}" ${t.assignedTo===n?"selected":""}>${n}</option>`).join("")}
+          </select>`;
+        div.innerHTML=`
+          <h4>${t.ata}</h4>
+          <small>ATA: ${t.ata} | Manhour: ${t.manhour} | Due: ${t.due} | Assigned To: ${t.assignedTo||"None"}</small>
+          <p><b>Task Card:</b> ${t.card}</p>
+          <p><b>Description:</b> ${t.description}</p>
+          ${t.tools?`<p><b>Tools:</b> ${t.tools}</p>`:""}
+          ${t.consumables?`<p><b>Consumables:</b> ${t.consumables}</p>`:""}
+          ${t.remarks?`<p><b>Remarks:</b> ${t.remarks}</p>`:""}
+          <div><b>Assign:</b> ${dropdown}</div>
+          ${t.done?`<br><b>Marked done by:</b> ${t.markedBy}`:""}
+        `;
+        list.appendChild(div);
+      });
+      updateOfficerStats(filtered);
     }
 
-    function showDoneTasks(){
-      const done=uploadedTasks.filter(t=>t.done);
-      renderTasks(done);
-      document.getElementById("backBtn").classList.remove("hidden");
+    // Assign task to LAE
+    function assignTask(i,name){
+      tasks[i].assignedTo=name;
+      renderOfficerTasks(tasks);
     }
 
-    function showMyTasks(){
-      const mine=uploadedTasks.filter(t=>t.assignedTo===currentUser.name);
-      renderTasks(mine);
-      document.getElementById("backBtn").classList.remove("hidden");
+    // Toggle LAE done
+    function toggleDone(i){
+      tasks[i].done=!tasks[i].done;
+      if(tasks[i].done) tasks[i].markedBy=currentUser.name;
+      renderTasks(tasks);
     }
 
-    function goBack(){
-      renderTasks(uploadedTasks);
-      document.getElementById("backBtn").classList.add("hidden");
+    // Stats
+    function updateStats(ts){
+      const total=ts.length, done=ts.filter(t=>t.done).length, remaining=total-done, assigned=ts.filter(t=>t.assignedTo===currentUser.name).length;
+      document.getElementById("laeStats").innerText=`Total: ${total} | Done: ${done} | Remaining: ${remaining} | Assigned to You: ${assigned}`;
     }
-
-    function updateDateTime(){
-      const now=new Date();
-      const options={ weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' };
-      document.getElementById("dateTime").innerText="Today: "+now.toLocaleDateString("en-MY",options);
-    }
-
-    function updateStats(filtered){
-      const total=filtered.length;
-      const done=filtered.filter(t=>t.done).length;
-      const remaining=total-done;
-      document.getElementById("stats").innerText=`Total: ${total} | Done: ${done} | Remaining: ${remaining}`;
-    }
-
-    function updateOfficerStats(filtered){
-      const total=filtered.length;
-      const done=filtered.filter(t=>t.done).length;
-      const remaining=total-done;
+    function updateOfficerStats(ts){
+      const total=ts.length, done=ts.filter(t=>t.done).length, remaining=total-done;
       document.getElementById("officerStats").innerText=`Total: ${total} | Done: ${done} | Remaining: ${remaining}`;
     }
 
-    function applyOfficerFilter(){
-      currentOfficerFilter=document.getElementById("officerAtaFilter").value;
-      renderOfficerTasks(uploadedTasks);
-    }
-    function applyLaeFilter(){
-      currentLaeFilter=document.getElementById("laeAtaFilter").value;
-      renderTasks(uploadedTasks);
-    }
+    // Filters
+    function filterLaeATA(){ currentLaeFilter=document.getElementById("laeAtaFilter").value; renderTasks(tasks); }
+    function filterOfficerATA(){ currentOfficerFilter=document.getElementById("officerAtaFilter").value; renderOfficerTasks(tasks); }
+
+    // Show all tasks or my tasks
+    function showAllTasks(){ renderTasks(tasks); }
+    function showMyTasks(){ renderTasks(tasks.filter(t=>t.assignedTo===currentUser.name)); }
+
   </script>
 </body>
 </html>
