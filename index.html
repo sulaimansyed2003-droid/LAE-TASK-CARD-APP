@@ -68,11 +68,11 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
-    // === Names from roster (shortened for demo) ===
+    // === Names (cut short for demo, you will paste the full 400+ list) ===
     const demoNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
-      // ... full list here
+      // ... rest of names
     ];
 
     function populateNames(){
@@ -137,8 +137,9 @@
               ata: row[2],
               manhour: row[3]||"",
               due: row[4]||"",
-              assignedTo: row[5]||"", // assume officer fills this column for assignment
-              done:false
+              assignedTo: row[5]||"",
+              done:false,
+              markedBy:""
             });
           }
         });
@@ -151,14 +152,25 @@
     function renderOfficerTasks(tasks){
       const list=document.getElementById("officerTaskList");
       list.innerHTML="";
-      tasks.forEach((t)=>{
+      tasks.forEach((t,i)=>{
         const div=document.createElement("div");
         div.className="task"+(t.done?" done":"");
+        let dropdown = `<select onchange="assignTask(${i}, this.value)">
+            <option value="">Assign to...</option>
+            ${demoNames.map(n=>`<option value="${n}" ${t.assignedTo===n?"selected":""}>${n}</option>`).join("")}
+          </select>`;
         div.innerHTML=`<h4>${t.card||"Task Card"}</h4>
           <p>${t.description||""}</p>
-          <small>ATA: ${t.ata||""} | Manhour: ${t.manhour} | Due: ${t.due} | Assigned To: ${t.assignedTo}</small>`;
+          <small>ATA: ${t.ata||""} | Manhour: ${t.manhour} | Due: ${t.due}</small><br>
+          <b>Assigned To:</b> ${t.assignedTo||"None"} ${dropdown}
+          ${t.done?`<br><b>Marked done by:</b> ${t.markedBy}`:""}`;
         list.appendChild(div);
       });
+    }
+
+    function assignTask(index, name){
+      uploadedTasks[index].assignedTo=name;
+      renderOfficerTasks(uploadedTasks);
     }
 
     function renderTasks(tasks){
@@ -169,17 +181,23 @@
       tasks.forEach((t,i)=>{
         const div=document.createElement("div");
         div.className="task"+(t.done?" done":"");
+        let checkbox="";
+        if(t.assignedTo===currentUser.name){ 
+          checkbox=`<label><input type="checkbox" ${t.done?"checked":""} onchange="toggleDone(${i})"> Done</label>`;
+        }
         div.innerHTML=`<h4>${t.card||"Task Card"}</h4>
           <p>${t.description||""}</p>
           <small>ATA: ${t.ata||""} | Manhour: ${t.manhour} | Due: ${t.due} | Assigned To: ${t.assignedTo}</small><br>
-          <label><input type="checkbox" ${t.done?"checked":""} onchange="toggleDone(${i})"> Done</label>`;
+          ${checkbox}
+          ${t.done?`<br><b>Marked done by:</b> ${t.markedBy}`:""}`;
         if(t.done) doneList.appendChild(div); else list.appendChild(div);
       });
       updateStats();
     }
 
     function toggleDone(index){
-      uploadedTasks[index].done=!uploadedTasks[index].done;
+      uploadedTasks[index].done=true;
+      uploadedTasks[index].markedBy=currentUser.name;
       renderTasks(uploadedTasks);
     }
 
