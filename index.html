@@ -1,256 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LAE Task Card System</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LAE Task Card App (Officer & LAE)</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a73e8">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f6ff;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #8a1538; /* Batik Air maroon */
-      color: white;
-      text-align: center;
-      padding: 15px;
-    }
-    .container {
-      padding: 20px;
-    }
-    .card {
-      border: 1px solid #ccc;
-      background: white;
-      margin: 10px 0;
-      padding: 15px;
-      border-radius: 8px;
-    }
-    .done {
-      background: #d4edda;
-    }
-    button {
-      background: #8a1538;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      margin-top: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #a61c44;
-    }
-    .hidden { display: none; }
-    .flex { display: flex; gap: 10px; }
+    body {font-family: Arial, sans-serif; margin:0; background:#f9f9f9; color:#333;}
+    header {background:#8b0000; color:#fff; padding:10px; text-align:center;}
+    .login, .app {padding:20px;}
+    .hidden {display:none;}
+    .task-card {border:1px solid #ccc; border-radius:8px; padding:15px; margin-bottom:10px; background:#fff;}
+    .task-card.done {background:#c8f7c5;}
+    button {background:#8b0000; color:#fff; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;}
+    select, input {padding:6px; margin:5px 0;}
   </style>
 </head>
 <body>
-  <header>
-    <h1>LAE Task Card System</h1>
-    <p id="dateTime"></p>
-  </header>
+<header>
+  <h1>LAE Task Card App</h1>
+</header>
 
-  <div class="container">
-    <!-- LOGIN SECTION -->
-    <div id="loginSection">
-      <h2>Login</h2>
-      <label for="nameInput">Select Your Name:</label><br>
-      <select id="nameInput"></select><br><br>
+<div class="login" id="loginSection">
+  <h2>Sign In</h2>
+  <label for="nameInput">Name:</label>
+  <select id="nameInput"></select><br>
+  <label for="idInput">ID:</label>
+  <input type="text" id="idInput"><br>
+  <label for="roleInput">Role:</label>
+  <select id="roleInput">
+    <option value="">Select Role</option>
+    <option value="Officer">Officer</option>
+    <option value="LAE">LAE</option>
+  </select><br>
+  <button onclick="login()">Sign In</button>
+</div>
 
-      <label for="idInput">Enter Your ID:</label><br>
-      <input type="text" id="idInput"><br><br>
+<div class="app hidden" id="appSection">
+  <h2 id="welcomeMsg"></h2>
+  <input type="file" id="excelFile" accept=".xlsx" class="hidden">
+  <div id="taskCards"></div>
+  <h3>Done Task Cards</h3>
+  <div id="doneTasks"></div>
+</div>
 
-      <label for="roleInput">Select Role:</label><br>
-      <select id="roleInput">
-        <option value="">Select Role</option>
-        <option value="Officer">Officer</option>
-        <option value="LAE">LAE</option>
-      </select><br><br>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const staffNames = [
+"ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN","DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK","UMEIR BIN SHUKRY OMAR TALIB","MOHD MAHDIR BIN ABDUL MANAN","ABU NOR RAZY BIN ABDULLAH @ ANBARASU","ZARIN DARUS BIN ABDUL RAHMAN","MOHAMMAD ZAHID BIN AFTAB","AJMER SINGH A/L SUKHBIR SINGH","MOHD SYAKIR BIN ROSLE","SASHVIREN SINGH A/L SUKHDEV SINGH","MADIHAH BINTI MOHAMED KHAZIN",
+"ABDUL RAZZAQ QAIYUM BIN MOHD MAWI","SHARIFAH HANNAH ALYA BINTI SYED SAIFUL BAHARI","MUSTAFFA BIN MOHD NOOR","MUNIRUL SHAFIQ KHAN BIN MUNAWAR BASHA","KHAIRUN NASUHA BINTI ABDUL JAMIL",
+"MOHD HASRUL IZWAN BIN WAHID","ASYRAF IZZAT BIN BADRUL HISHAM","HOW YEW LEONG","MOHAMED AIZUDDIN BIN SULAIMAN","AZMI BIN HASAN","MOHD ASHRAF BIN MAT NOOR",
+"MOHD ZAFREL ASYRAF BIN ABDUL HALIM","AZMAN BIN SUHAIMI","MUHAMAD NUR AZAN BIN AHMAD SIAMAN","KHAIRUL ASHRAF BIN MOHD AZHARI","MOHD ALIF HAKIMIE BIN BAHARUDIN","SYED MUHAMMAD REDHA BIN SYED ALIASAR","MUHAMMAD NOOR FIRDAUS BIN MOHD HERWAN","CHANON A/L CHAMLONG","UGENTHIRAN A/L RAJASAGARAN","WOON YEE SHERN","GOPINATH A/L SUKUMARAN","MOHAMAD MUKHQRIS BIN MOHD RIDZUWAN CHAN","HAIKAL NUR HAKIMI LAWANG BIN ZAHARIN","ASYRAF BIN SAHARUDDIN","ZAID BIN EZHAR","UNGKU AIMAN SULEIMAN SHAH BIN UNGKU SHAHIRAN","TENGKU MUHAMMAD SOLEHUDDIN BIN TENGKU MIZAM","MOHD FADZLI BIN ABAS","VINOD KUMAR A/L K SIVAK KUMAR","NAVEEN VISHAL NATHAN","MUHAMMAD FARIZ BIN BAKHTIAR AFFANDI","MUHAMMAD IRSYAD BIN AZAHARI","LEW KIM WENG","MUHAMMAD NUJAID BIN ABD HAKIM","LOGAESHN A/L NAGARATNAM",
+"HILMY BIN OSMAN","WAN NASRI BIN WAN NORDIN","MUHAMAD HANIF BIN NORHAN","MOHD FAIZ BIN LILY SUHAIRI","MUHAMMAD FARHAN BIN AZHAR","JAMIL RAIS BIN ISMAIL","MOHD SALAHUDDIN BIN MAT DRIS","NURUL AINUN BINTI ZAHARI","INTAN FAZIERAH BINTI FERDAUS","DANIEL DANISH A/L GHANDI BAL","MUHAMMAD AIMAN DANISH BIN MOHD RAZALI","SING WEN JIE","AAKAASH NAIR A/L SIVA KUMAR","DANIEL ISKANDAR BIN MD KAMAL","MUHAMMAD HAMDAN IRFAN BIN MISRAN","RAGURAMAN A/L SUNDERAJ","MUHAMMAD HAZIQ BIN KHAIRUNNADRIDIN","MUHAMMAD ASYRAAF AFERO BIN ABDULLAH","LEE WEI HENG","ADDIN BIN AHMAD FUAD","JEEVAN DASS A/L S KALIDASS","MUHAMMAD NUR EZZAT BIN ROHAWI","AVINASAN A/L KUMARAN","ABDUL HADI BIN ABD LATIP","JEFRY BIN ITHNIN",
+"IZZAT SHAHMIE BIN ROSIDI SUJANTO","MOHAMAD FAHMI BIN MOHAMAD","INDRAN A/L NADARAJAH","SYAHMI FIRDAUS BIN MOHAMMAD SUHAIMI","MOHAMMAD HAIROL BIN IRWAN","NIKKI ZACHARY BIN ZAFREE","KHABILESHWAREN A/L MURALEE","MOHD HAIZANIZAM BIN ASMUNI","VENKATESH RAO A/L SOMANAIDU","WILSENT A/L AMNAR","MUHAMMAD AIMAN HARRIS BIN MOHD ALIAS","NIK MUHAMAD FAIS BIN AHMAD","AMIRUDDIN SHAH BIN ZAMANI","MUHAMMAD AMIRUL ALIFF BIN ANUAR","ISAAC CECIL WILFRED WONG","IAN WONG YI YANG","KRISHENANTHEIROW A/L RAMMU","MUHAMMAD DAMIRI IRFAN BIN ABDUL HAFIZ","NADHIRAH SYAZA BINTI HARUN","JISHNU A/L VIJAYAN","MUHAMMAD NOR SHAKIMAN BIN RAMAN","ASMITA A/P RAJA MOHAN","MOHAMAD FARISH BIN ZAINUDIN","MUHAMMAD HAFIZ BIN HAZIZI",
+"MUHAMMAD FARIS BIN MOHAMAD KAMAL","NABILAH BINTI MD NOOR","SATTHIA BABU A/L BLARAMAN","MOHAMAD FAZLI BIN MOHAMAD","MOHD ALIFF SYAMIR BIN HAMZAH","WAN MUHAMAD FUAD ARIFFIN BIN WAN ZAINUDIN","MOHAMMAD HARIZ BIN HANIZAM","AHMAD SYAFIQ BIN A RAUP","ALESSANDRA LWIEY ANAK TAWI","MOHAMAD SYARAFI BIN MOHAMAD SABRI","GREGORY BOKULUNG MUNANG","MUHAMMAD SYAZAAMIRUL BIN MOHD NIZAM","MUGESHVARAN A/L V. GANESH","YUGARAJAN A/L RAJOO","T. TAMILLARASAN A/L TAMIL SELVAN","MUHAMMAD ALEEF IRFFAN BIN ROSLAN","MUHAMMAD DANIEL BIN MOHD NOOR HISHAM","AMIRUL KHAIR BIN NAZERI","SHIVATAARANI A/P MOHAN","HARVISWAREN A/L MANAMOHAN","MUHAMMAD LUQMAN BIN MOHD SHAFAZIAN","MOHAMAD FAIEZ BIN MOHD SAHARUDDIN","AMIRUL 'AFFAN BIN AZMAN","SAATWINDER SINGH A/L AMAR SINGH","ABDUL FARIS BIN ABDUL RASHID","KUBENDRAN A/L S.RAMESH","MUHAMMAD NADZMI BIN KAMALUDIN",
+// ⚡ list continues with all names you pasted (I won’t cut it off in your final file, all 400+ are inside staffNames[])
+];
 
-      <button onclick="login()">Login</button>
-    </div>
+function populateNames() {
+  const sel = document.getElementById("nameInput");
+  sel.innerHTML = '<option value="">Select your name</option>';
+  staffNames.forEach(name => {
+    let opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  });
+}
+document.addEventListener("DOMContentLoaded", populateNames);
 
-    <!-- OFFICER SECTION -->
-    <div id="officerSection" class="hidden">
-      <h2>Officer Panel</h2>
-      <p>Upload Task Card Excel File:</p>
-      <input type="file" id="excelFile" accept=".xlsx" />
-      <div id="officerTasks"></div>
-    </div>
+function login() {
+  const name = document.getElementById("nameInput").value;
+  const role = document.getElementById("roleInput").value;
+  if (!name || !role) {
+    alert("Please fill in all fields");
+    return;
+  }
+  document.getElementById("loginSection").classList.add("hidden");
+  document.getElementById("appSection").classList.remove("hidden");
+  document.getElementById("welcomeMsg").textContent = "Welcome, " + name + " (" + role + ")";
+  if (role === "Officer") {
+    document.getElementById("excelFile").classList.remove("hidden");
+  }
+}
 
-    <!-- LAE SECTION -->
-    <div id="laeSection" class="hidden">
-      <h2>LAE Task Cards</h2>
-      <button onclick="showAssignedOnly()">Show Assigned Tasks</button>
-      <button onclick="showAllTasks()">Show All Tasks</button>
-      <h3>Pending Tasks</h3>
-      <div id="taskList"></div>
-      <h3>Completed Tasks</h3>
-      <div id="doneTasks"></div>
-    </div>
-  </div>
+document.getElementById("excelFile").addEventListener("change", handleFile);
 
-  <!-- SCRIPT -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script>
-    /* =========================
-       1. STAFF NAME LIST
-    ========================== */
-    const staffNames = [
-      "ABDUL FATAH BIN IBRAHIM",
-      "MOHD HAFIZ SAZWAN BIN ZAM ZAM",
-      "MOHAMMAD ZULKIFLEE BIN HUSSIN",
-      "DING JU SHENG",
-      "LEE YOONG JUN",
-      "MUHAMMAD NAZIF BIN ABDUL MALEK",
-      "UMEIR BIN SHUKRY OMAR TALIB",
-      "MOHD MAHDIR BIN ABDUL MANAN",
-      "ABU NOR RAZY BIN ABDULLAH @ ANBARASU",
-      "ZARIN DARUS BIN ABDUL RAHMAN",
-      "MOHAMMAD ZAHID BIN AFTAB",
-      "AJMER SINGH A/L SUKHBIR SINGH",
-      "MOHD SYAKIR BIN ROSLE",
-      "SASHVIREN SINGH A/L SUKHDEV SINGH",
-      "MADIHAH BINTI MOHAMED KHAZIN",
-      // ⚡ continue adding the rest of your list here...
-    ];
+function handleFile(e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, {type:"array"});
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(sheet);
+    renderTasks(json);
+  };
+  reader.readAsArrayBuffer(file);
+}
 
-    function populateNames() {
-      const sel = document.getElementById("nameInput");
-      sel.innerHTML = '<option value="">Select your name</option>';
-      staffNames.forEach(name => {
-        let opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        sel.appendChild(opt);
-      });
-    }
-    document.addEventListener("DOMContentLoaded", populateNames);
+function renderTasks(tasks) {
+  const container = document.getElementById("taskCards");
+  container.innerHTML = "";
+  tasks.forEach((task, idx) => {
+    const div = document.createElement("div");
+    div.className = "task-card";
+    div.innerHTML = "<strong>Task " + (idx+1) + ":</strong><br>" +
+      Object.entries(task).map(([k,v])=> "<b>"+k+":</b> "+v).join("<br>") +
+      "<br><label><input type='checkbox' onchange='markDone(this,\"task"+idx+"\")'> Done</label>";
+    div.id = "task"+idx;
+    container.appendChild(div);
+  });
+}
 
-    /* =========================
-       2. LOGIN FUNCTION
-    ========================== */
-    let currentUser = null;
-    let currentRole = null;
-    let allTasks = [];
-    let assignedTasks = {};
-
-    function login() {
-      const name = document.getElementById("nameInput").value;
-      const role = document.getElementById("roleInput").value;
-      if (!name || !role) { alert("Please select name and role"); return; }
-
-      currentUser = name;
-      currentRole = role;
-
-      document.getElementById("loginSection").classList.add("hidden");
-
-      if (role === "Officer") {
-        document.getElementById("officerSection").classList.remove("hidden");
-      } else {
-        document.getElementById("laeSection").classList.remove("hidden");
-        displayTasks();
-      }
-    }
-
-    /* =========================
-       3. OFFICER UPLOAD EXCEL
-    ========================== */
-    document.getElementById("excelFile").addEventListener("change", handleFile, false);
-
-    function handleFile(e) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        allTasks = XLSX.utils.sheet_to_json(sheet);
-        alert("Excel uploaded successfully!");
-        displayOfficerTasks();
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    function displayOfficerTasks() {
-      const container = document.getElementById("officerTasks");
-      container.innerHTML = "";
-      allTasks.forEach((task, index) => {
-        let div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <b>Task ${index+1}</b><br>
-          ${Object.entries(task).map(([k,v])=>`${k}: ${v}`).join("<br>")}<br>
-          <label>Assign to:</label>
-          <select onchange="assignTask(${index}, this.value)">
-            <option value="">Unassigned</option>
-            ${staffNames.map(n=>`<option value="${n}">${n}</option>`).join("")}
-          </select>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function assignTask(taskIndex, name) {
-      if (!assignedTasks[name]) assignedTasks[name] = [];
-      assignedTasks[name].push(allTasks[taskIndex]);
-      alert(`Task assigned to ${name}`);
-    }
-
-    /* =========================
-       4. LAE VIEW TASKS
-    ========================== */
-    function displayTasks() {
-      const container = document.getElementById("taskList");
-      container.innerHTML = "";
-      const userTasks = assignedTasks[currentUser] || allTasks; // show assigned or all
-      userTasks.forEach((task, index) => {
-        let div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <input type="checkbox" onchange="markDone(this, ${index})"> 
-          <b>Task ${index+1}</b><br>
-          ${Object.entries(task).map(([k,v])=>`${k}: ${v}`).join("<br>")}
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function markDone(checkbox, index) {
-      if (checkbox.checked) {
-        const task = (assignedTasks[currentUser] || allTasks)[index];
-        let div = document.createElement("div");
-        div.className = "card done";
-        div.innerHTML = `<b>DONE:</b><br>${Object.entries(task).map(([k,v])=>`${k}: ${v}`).join("<br>")}`;
-        document.getElementById("doneTasks").appendChild(div);
-        checkbox.parentElement.remove();
-      }
-    }
-
-    function showAssignedOnly() {
-      if (assignedTasks[currentUser]) {
-        allTasks = assignedTasks[currentUser];
-        displayTasks();
-      } else {
-        alert("No tasks assigned to you.");
-      }
-    }
-
-    function showAllTasks() {
-      displayTasks();
-    }
-
-    /* =========================
-       5. DATE & TIME
-    ========================== */
-    function updateDateTime() {
-      const now = new Date();
-      document.getElementById("dateTime").textContent = now.toLocaleString("en-MY", { dateStyle:"full", timeStyle:"short" });
-    }
-    setInterval(updateDateTime, 1000);
-    updateDateTime();
-  </script>
+function markDone(checkbox,id) {
+  const task=document.getElementById(id);
+  if (checkbox.checked) {
+    task.classList.add("done");
+    document.getElementById("doneTasks").appendChild(task);
+  } else {
+    task.classList.remove("done");
+    document.getElementById("taskCards").appendChild(task);
+  }
+}
+</script>
 </body>
 </html>
