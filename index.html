@@ -3,59 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <title>Batik Air Task Card System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- SheetJS for .xlsx parsing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background:#f5f9ff; color:#222; margin:20px; }
-    h1 { color:#8B0000; }
+    h1 { color:#8B0000; margin-top:0; }
+
     .hidden { display:none; }
 
-    .task-card {
-      border:1px solid #ccc; border-radius:10px; padding:15px; margin:15px 0;
-      background:white; box-shadow:0 2px 5px rgba(0,0,0,0.1);
-      line-height:1.5em;
-    }
-    .done { background:#d4f8d4 !important; }
-
-    .task-header { font-weight:bold; font-size:16px; color:#8B0000; margin-bottom:8px; }
-    .task-meta { background:#eef7ff; padding:6px; border-radius:6px; margin:4px 0; }
-    .task-desc { background:#fff3e6; padding:6px; border-radius:6px; margin:4px 0; }
-    .task-tools { background:#e6ffe6; padding:6px; border-radius:6px; margin:4px 0; }
-    .task-cons { background:#e6f7ff; padding:6px; border-radius:6px; margin:4px 0; }
-    .task-remarks { background:#fff0f0; padding:6px; border-radius:6px; margin:4px 0; }
-    .task-actions { margin-top:10px; }
-
-    .header { display:flex; justify-content:space-between; margin-bottom:15px; }
-    button { margin:5px; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; }
+    .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px; gap:10px; }
+    .stats { margin-top:6px; font-weight:600; }
+    button { margin:5px; padding:8px 14px; border:none; border-radius:8px; cursor:pointer; }
     .logout { background:#8B0000; color:white; }
     .back { background:#555; color:white; }
     .tab-btn { background:#317EFB; color:white; }
+
+    .filter-section { margin:10px 0 6px; }
+
+    .task-card {
+      border:1px solid #d7e1f5; border-radius:12px; padding:14px; margin:14px 0;
+      background:#ffffff; box-shadow:0 2px 6px rgba(0,0,0,0.06);
+      line-height:1.55;
+    }
+    .done { background:#dff8e3 !important; border-color:#bfe8c6; }
+
+    .task-header { font-weight:bold; font-size:16px; color:#8B0000; margin-bottom:8px; }
+    .row { display:flex; flex-wrap:wrap; gap:8px; }
+    .meta-pill {
+      background:#eef7ff; padding:6px 10px; border-radius:999px; border:1px solid #d9ebff;
+      font-size:13px; white-space:nowrap;
+    }
+
+    .block { margin-top:8px; }
+    .task-meta    { background:#eef7ff; padding:8px; border-radius:10px; border:1px solid #d9ebff; }
+    .task-desc    { background:#fff3e6; padding:8px; border-radius:10px; border:1px solid #ffe0c2; }
+    .task-tools   { background:#e6ffe6; padding:8px; border-radius:10px; border:1px solid #c8efc8; }
+    .task-cons    { background:#e6f7ff; padding:8px; border-radius:10px; border:1px solid #cfeaff; }
+    .task-remarks { background:#fff0f0; padding:8px; border-radius:10px; border:1px solid #ffd6d9; }
+
+    .task-actions { margin-top:10px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
     .assigned-bold { font-weight:bold; color:#000; }
+
+    select, input[type="text"] {
+      padding:8px 10px; border:1px solid #cfd9ee; border-radius:8px; background:#fff;
+    }
+
+    /* Simple label look for small headings inside blocks */
+    .lbl { font-weight:bold; }
   </style>
 </head>
 <body>
 
 <h1>Batik Air Task Card System</h1>
 
+<!-- Login -->
 <div id="loginSection">
   <h3>Login</h3>
-  <label>Name: <select id="nameInput"></select></label><br>
-  <label>ID: <input type="text" id="idInput"></label><br>
-  <label>Role: 
-    <select id="roleInput">
-      <option value="LAE">LAE</option>
-      <option value="OFFICER">OFFICER</option>
-    </select>
-  </label><br>
+  <div class="block">
+    <label>Name: <select id="nameInput"></select></label>
+  </div>
+  <div class="block">
+    <label>ID: <input type="text" id="idInput" placeholder="e.g. BID1234"></label>
+  </div>
+  <div class="block">
+    <label>Role:
+      <select id="roleInput">
+        <option value="LAE">LAE</option>
+        <option value="OFFICER">OFFICER</option>
+      </select>
+    </label>
+  </div>
   <div id="loginDateTime" style="margin:10px 0; font-weight:bold;"></div>
   <button onclick="login()">Sign In</button>
 </div>
 
+<!-- App -->
 <div id="appSection" class="hidden">
   <div class="header">
     <div>
-      <span id="welcome"></span><br>
-      <span id="dateTime"></span><br>
-      Task Done: <span id="taskDone">0</span> | Remaining: <span id="taskRemaining">0</span>
+      <div id="welcome" style="font-weight:bold;"></div>
+      <div id="dateTime" class="stats"></div>
+      <div class="stats">Task Done: <span id="taskDone">0</span> | Remaining: <span id="taskRemaining">0</span></div>
     </div>
     <div>
       <button class="back" onclick="back()">Back</button>
@@ -63,163 +92,290 @@
     </div>
   </div>
 
+  <!-- Officer panel -->
   <div id="officerSection" class="hidden">
     <h3>Officer Panel</h3>
     <input type="file" id="excelFile" accept=".xlsx" onchange="loadExcel(event)">
   </div>
 
+  <!-- Filters -->
   <div class="filter-section">
-    <label>Filter by ATA: 
+    <label>Filter by ATA:
       <select id="ataFilter" onchange="renderTasks()">
         <option value="ALL">All ATA</option>
       </select>
     </label>
   </div>
 
+  <!-- Tabs (LAE only) -->
   <div id="tabs" class="hidden">
     <button class="tab-btn" onclick="setTab('ALL')">All Task Cards</button>
     <button class="tab-btn" onclick="setTab('ASSIGNED')">Assigned To Me</button>
     <button class="tab-btn" onclick="setTab('DONE')">Done Task Cards</button>
   </div>
 
+  <!-- Task list -->
   <div id="taskList"></div>
 </div>
 
 <script>
-const staffNames=[
+/* ======= Names (you can extend/replace this list with your full roster) ======= */
+const staffNames = [
   "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
-  "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
-  // ... continue with your full list
+  "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK",
+  "UMEIR BIN SHUKRY OMAR TALIB","MOHD MAHDIR BIN ABDUL MANAN","ABU NOR RAZY BIN ABDULLAH @ ANBARASU",
+  "ZARIN DARUS BIN ABDUL RAHMAN","MOHAMMAD ZAHID BIN AFTAB","AJMER SINGH A/L SUKHBIR SINGH",
+  "MOHD SYAKIR BIN ROSLE","SASHVIREN SINGH A/L SUKHDEV SINGH","MADIHAH BINTI MOHAMED KHAZIN"
+  // … add the remaining names from your list here …
 ];
-let tasks=[],currentUser=null,currentTab="ALL";
 
+/* ======= Storage Keys ======= */
+const TASKS_KEY = "batik_tasks_v1";
+
+/* ======= App State ======= */
+let tasks = [];       // { ata, card, description, tools, consumables, remarks, manhour, due, assignedTo, done, markedBy }
+let currentUser = null;
+let currentTab = "ALL";
+
+/* ======= Populate Name Select ======= */
 function populateNames(){
   const sel=document.getElementById("nameInput");
   sel.innerHTML='<option value="">Select your name</option>';
   staffNames.forEach(n=>{
-    let o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o);
+    const o=document.createElement("option");
+    o.value=n; o.textContent=n; sel.appendChild(o);
   });
 }
 populateNames();
 
+/* ======= Clock (login preview + header live clock) ======= */
+function startClock(){
+  function update(){
+    const now = new Date();
+    const nice = now.toLocaleDateString("en-GB", { weekday:"long", year:"numeric", month:"short", day:"numeric" })
+               + " " + now.toLocaleTimeString();
+    document.getElementById("dateTime").textContent = nice;
+    document.getElementById("loginDateTime").textContent = "Now: " + nice;
+  }
+  update();
+  setInterval(update, 1000);
+}
+startClock();
+
+/* ======= Local Storage helpers ======= */
+function saveTasks(){
+  try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch(e){}
+}
+function loadTasks(){
+  try {
+    const raw = localStorage.getItem(TASKS_KEY);
+    if(raw){ tasks = JSON.parse(raw) || []; }
+  } catch(e){ tasks = []; }
+}
+
+/* ======= Auth ======= */
 function login(){
-  let name=document.getElementById("nameInput").value;
-  let id=document.getElementById("idInput").value;
-  let role=document.getElementById("roleInput").value;
-  if(!name||!id){alert("Please enter name and ID");return;}
-  currentUser={name,id,role};
+  const name = document.getElementById("nameInput").value;
+  const id   = document.getElementById("idInput").value.trim();
+  const role = document.getElementById("roleInput").value;
+  if(!name || !id){ alert("Please select your name and enter ID"); return; }
+
+  currentUser = { name, id, role };
+  // show/hide panels
   document.getElementById("loginSection").classList.add("hidden");
   document.getElementById("appSection").classList.remove("hidden");
-  document.getElementById("welcome").textContent=`Welcome ${name} (${role})`;
-  if(role==="OFFICER") document.getElementById("officerSection").classList.remove("hidden");
-  if(role==="LAE") document.getElementById("tabs").classList.remove("hidden");
+  document.getElementById("welcome").textContent = `Welcome ${name} (${role})`;
+  if(role==="OFFICER"){
+    document.getElementById("officerSection").classList.remove("hidden");
+    document.getElementById("tabs").classList.add("hidden");
+  }else{
+    document.getElementById("officerSection").classList.add("hidden");
+    document.getElementById("tabs").classList.remove("hidden");
+  }
+
+  // Load tasks saved previously (so LAE can see what officer uploaded)
+  loadTasks();
+  populateATAFilter();
   renderTasks();
-  startClock();
 }
 
 function logout(){
-  currentUser=null;tasks=[];
+  // keep tasks in storage so the next user (LAE) can see them
+  currentUser = null;
+  currentTab = "ALL";
   document.getElementById("appSection").classList.add("hidden");
   document.getElementById("officerSection").classList.add("hidden");
-  document.getElementById("taskList").innerHTML="";
-  document.getElementById("loginSection").classList.remove("hidden");
+  document.getElementById("taskList").innerHTML = "";
   document.getElementById("tabs").classList.add("hidden");
+  document.getElementById("loginSection").classList.remove("hidden");
 }
 
-function back(){renderTasks();}
+/* ======= Back (simple refresh of current view) ======= */
+function back(){ renderTasks(); }
 
-function startClock(){
-  function update(){
-    let now=new Date();
-    document.getElementById("dateTime").textContent=now.toLocaleString();
-    document.getElementById("loginDateTime").textContent=`${now.toLocaleDateString("en-GB",{weekday:"long"})}, ${now.toLocaleString()}`;
-  }
-  update();setInterval(update,1000);
-}
-
+/* ======= Excel Upload (Officer) ======= */
 function loadExcel(e){
-  let file=e.target.files[0];let reader=new FileReader();
-  reader.onload=function(ev){
-    let data=new Uint8Array(ev.target.result);
-    let workbook=XLSX.read(data,{type:"array"});
-    let sheet=workbook.Sheets[workbook.SheetNames[0]];
-    let json=XLSX.utils.sheet_to_json(sheet,{header:1});
-    let raw=json.slice(1); // skip headers
-    let loaded=[];
-    raw.forEach(r=>{
-      loaded.push({
-        ata:r[0]||"",
-        card:r[1]||"",
-        description:r[2]||"",
-        tools:r[3]||"",
-        consumables:r[4]||"",
-        remarks:r[5]||"",
-        manhour:r[6]||"",
-        due:r[7]||"",
-        assignedTo:r[8]||"",
-        done:false,
-        markedBy:""
-      });
-    });
-    tasks=loaded;
-    populateATAFilter();
-    renderTasks();
+  const file = e.target.files[0];
+  if(!file){ return; }
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const data = new Uint8Array(ev.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header:1, defval:"" });
+
+      // Expecting header in row 0 (adjust if needed)
+      const body = rows.slice(1);
+
+      const loaded = body.map(r => ({
+        ata:         String(r[0]||"").trim(),
+        card:        String(r[1]||"").trim(),
+        description: String(r[2]||"").trim(),
+        tools:       String(r[3]||"").trim(),
+        consumables: String(r[4]||"").trim(),
+        remarks:     String(r[5]||"").trim(),
+        manhour:     String(r[6]||"").trim(),
+        due:         String(r[7]||"").trim(),
+        assignedTo:  String(r[8]||"").trim(),
+        done: false,
+        markedBy: ""
+      }));
+
+      // Replace current tasks with uploaded (or concatenate if you prefer)
+      tasks = loaded;
+      saveTasks();          // persist so LAE can see after sign-in
+      populateATAFilter();
+      renderTasks();
+      alert("Excel imported: " + loaded.length + " task(s).");
+    }catch(err){
+      console.error(err);
+      alert("Failed to parse Excel. Please check the sheet format.");
+    }
   };
   reader.readAsArrayBuffer(file);
 }
 
+/* ======= Filters & Tabs ======= */
 function populateATAFilter(){
-  const sel=document.getElementById("ataFilter");
-  let atas=[...new Set(tasks.map(t=>t.ata).filter(x=>x))];
-  sel.innerHTML='<option value="ALL">All ATA</option>';
-  atas.forEach(a=>{let o=document.createElement("option");o.value=a;o.textContent=a;sel.appendChild(o);});
-}
-
-function setTab(tab){currentTab=tab;renderTasks();}
-
-function renderTasks(){
-  let filter=document.getElementById("ataFilter").value;
-  let container=document.getElementById("taskList");container.innerHTML="";
-  let doneCount=0,remainCount=0;
-  let show=tasks.filter(t=>{
-    if(filter!=="ALL" && t.ata!==filter) return false;
-    if(currentTab==="ASSIGNED" && t.assignedTo!==currentUser.name) return false;
-    if(currentTab==="DONE" && !t.done) return false;
-    if(currentTab==="ALL" && t.done && currentUser.role==="LAE") return false; // hide done from "all" for LAE
-    return true;
+  const sel = document.getElementById("ataFilter");
+  const atas = [...new Set(tasks.map(t => t.ata).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="ALL">All ATA</option>';
+  atas.forEach(a=>{
+    const o = document.createElement("option");
+    o.value = a; o.textContent = a;
+    sel.appendChild(o);
   });
-  show.forEach((t,i)=>{
-    let div=document.createElement("div");
-    div.className="task-card"+(t.done?" done":"");
-    div.innerHTML=`
-      <div class="task-header">${t.ata}</div>
-      <div class="task-meta"><b>ATA:</b> ${t.ata} | <b>Manhour:</b> ${t.manhour||"N/A"} | <b>Due:</b> ${t.due||"N/A"} | 
-        <b>Assigned To:</b> <span class="${t.assignedTo?'assigned-bold':''}">${t.assignedTo||"None"}</span>
-      </div>
-      <div class="task-meta"><b>Task Card:</b> ${t.card}</div>
-      <div class="task-desc"><b>Description:</b> ${t.description}</div>
-      <div class="task-tools"><b>Tools:</b> ${t.tools}</div>
-      <div class="task-cons"><b>Consumables:</b> ${t.consumables}</div>
-      <div class="task-remarks"><b>Remarks:</b> ${t.remarks}</div>
-      <div class="task-actions">
-        ${currentUser.role==="OFFICER"?`Assign: <select onchange="assign(${i},this.value)"><option value="">Assign to...</option>${staffNames.map(n=>`<option value="${n}">${n}</option>`).join("")}</select>`:""}
-        ${currentUser.role==="LAE"?`<label><input type="checkbox" ${t.done?"checked":""} onchange="markDone(${i},this.checked)"> Mark Done</label>`:""}
-      </div>
-    `;
-    container.appendChild(div);
-    if(t.done) doneCount++; else remainCount++;
-  });
-  document.getElementById("taskDone").textContent=doneCount;
-  document.getElementById("taskRemaining").textContent=remainCount;
 }
+function setTab(tab){ currentTab = tab; renderTasks(); }
 
-function markDone(i,checked){
-  if(checked){tasks[i].done=true;tasks[i].markedBy=currentUser.name;}
-  else {tasks[i].done=false;tasks[i].markedBy="";}
+/* ======= Assign & Done ======= */
+function assign(i, name){
+  tasks[i].assignedTo = name;
+  saveTasks();
+  renderTasks();
+}
+function markDone(i, checked){
+  if(currentUser?.role !== "LAE"){
+    alert("Only LAE can mark tasks as done.");
+    // reset checkbox visual if needed by rerender
+  }
+  tasks[i].done = !!checked;
+  tasks[i].markedBy = checked ? currentUser.name : "";
+  saveTasks();
   renderTasks();
 }
 
-function assign(i,name){tasks[i].assignedTo=name;renderTasks();}
+/* ======= Render ======= */
+function renderTasks(){
+  const filter = document.getElementById("ataFilter").value;
+  const container = document.getElementById("taskList");
+  container.innerHTML = "";
+
+  let doneCount = 0, remainCount = 0;
+
+  // filter by tab & ATA
+  const filtered = tasks.filter(t=>{
+    if(filter !== "ALL" && t.ata !== filter) return false;
+    if(currentUser?.role === "LAE"){
+      if(currentTab === "ASSIGNED") return t.assignedTo === currentUser.name;
+      if(currentTab === "DONE")     return !!t.done;
+      // currentTab "ALL" → show everything (done + not done)
+      return true;
+    }else{
+      // OFFICER: always show all (respect ATA filter only)
+      return true;
+    }
+  });
+
+  filtered.forEach((t, i)=>{
+    if(t.done) doneCount++; else remainCount++;
+
+    const card = document.createElement("div");
+    card.className = "task-card" + (t.done ? " done" : "");
+
+    card.innerHTML = `
+      <div class="task-header">${escapeHtml(t.ata || "—")}</div>
+
+      <div class="row">
+        <div class="meta-pill"><span class="lbl">ATA:</span> ${escapeHtml(t.ata || "—")}</div>
+        <div class="meta-pill"><span class="lbl">Manhour:</span> ${escapeHtml(t.manhour || "N/A")}</div>
+        <div class="meta-pill"><span class="lbl">Due:</span> ${escapeHtml(t.due || "N/A")}</div>
+        <div class="meta-pill"><span class="lbl">Assigned To:</span>
+          <span class="${t.assignedTo ? 'assigned-bold' : ''}">
+            ${escapeHtml(t.assignedTo || "None")}
+          </span>
+        </div>
+      </div>
+
+      <div class="block task-meta"><span class="lbl">Task Card:</span> ${escapeHtml(t.card || "—")}</div>
+      <div class="block task-desc"><span class="lbl">Description:</span> ${escapeHtml(t.description || "—")}</div>
+      <div class="block task-tools"><span class="lbl">Tools:</span> ${escapeHtml(t.tools || "—")}</div>
+      <div class="block task-cons"><span class="lbl">Consumables:</span> ${escapeHtml(t.consumables || "—")}</div>
+      <div class="block task-remarks"><span class="lbl">Remarks:</span> ${escapeHtml(t.remarks || "—")}</div>
+
+      <div class="task-actions">
+        ${
+          currentUser?.role === "OFFICER"
+          ? `Assign:
+              <select onchange="assign(${indexInAll(i, filtered)}, this.value)">
+                <option value="">Assign to...</option>
+                ${staffNames.map(n=>`<option value="${escapeHtml(n)}" ${t.assignedTo===n?'selected':''}>${escapeHtml(n)}</option>`).join("")}
+              </select>`
+          : ``
+        }
+        ${
+          currentUser?.role === "LAE"
+          ? `<label><input type="checkbox" ${t.done?"checked":""}
+                onchange="markDone(${indexInAll(i, filtered)}, this.checked)"> Mark Done</label>`
+          : ``
+        }
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+
+  document.getElementById("taskDone").textContent = doneCount;
+  document.getElementById("taskRemaining").textContent = remainCount;
+}
+
+/* Map filtered index back to absolute index in tasks (safe for assign/mark) */
+function indexInAll(filteredIndex, filteredArray){
+  // find by object reference
+  const obj = filteredArray[filteredIndex];
+  return tasks.indexOf(obj);
+}
+
+/* ======= Utils ======= */
+function escapeHtml(s){
+  return String(s ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
 </script>
 
 </body>
