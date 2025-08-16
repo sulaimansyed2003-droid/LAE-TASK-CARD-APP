@@ -3,44 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LAE Task Card App (Officer & LAE)</title>
+  <title>LAE Task Card — Supreme System</title>
 
-  <!-- PWA hooks (keep these files in the same folder) -->
+  <!-- (Optional PWA hooks if you already have these files) -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#b20b4d">
 
   <style>
-    /* ===== Bright Batik Air theme (high-contrast) ===== */
+    /* ===== Bright Batik Air theme ===== */
     :root{
-      --bg:#faf7fb;              /* very light background */
-      --panel:#ffffff;           /* white cards */
-      --border:#e6d6e1;          /* soft border */
-      --ink:#2a2430;             /* dark text */
-      --muted:#6b6171;           /* subtle text */
-      --brand:#b20b4d;           /* Batik magenta */
-      --brand-2:#f3b500;         /* Batik golden accent */
+      --bg:#faf7fb;
+      --panel:#ffffff;
+      --border:#e6d6e1;
+      --ink:#2a2430;
+      --muted:#6b6171;
+      --brand:#b20b4d;   /* Batik magenta */
+      --accent:#f3b500;  /* Batik gold */
       --ok:#16a34a;
       --warn:#f59e0b;
-      --due:#e57900;
       --danger:#dc2626;
-      --done:#e8fff0;
+      --due:#e57900;
+      --done-bg:#e8fff0;
       --shadow:0 10px 30px rgba(178,11,77,.12);
     }
     html,body{height:100%}
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
-      background:var(--bg);
-      color:var(--ink);
-    }
-    .container{max-width:1100px;margin:0 auto;padding:18px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:6px 0 16px}
-    h1{font-size:1.25rem;margin:0;color:var(--ink)}
-    .brand{
-      display:flex;align-items:center;gap:10px;
-      font-weight:700;color:var(--brand)
-    }
-    .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:var(--bg);color:var(--ink)}
+    .container{max-width:1150px;margin:0 auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 16px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--brand)}
+    .brand .dot{width:12px;height:12px;border-radius:50%;background:var(--brand)}
+    h1{font-size:1.25rem;margin:0}
     .pill{font-size:.8rem;color:var(--ink);border:1px solid var(--border);padding:6px 10px;border-radius:999px;background:#fff}
     .glass{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow)}
     .card{padding:16px;border-radius:16px}
@@ -52,21 +44,21 @@
     .btn{border:0;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer}
     .btn.brand{background:var(--brand);color:#fff}
     .btn.ghost{background:#fff;border:1px solid var(--border);color:var(--ink)}
-    .btn.warn{background:var(--brand-2);color:#3b2600}
+    .btn.warn{background:var(--accent);color:#3b2600}
     .btn.danger{background:var(--danger);color:#fff}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .muted{color:var(--muted)}
     .grid{display:grid;gap:12px}
     .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
     .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
-    @media (max-width:860px){.grid.two,.grid.three{grid-template-columns:1fr}}
-    table{width:100%;border-collapse:collapse;margin-top:8px}
-    th,td{border-bottom:1px solid var(--border);text-align:left;padding:10px;vertical-align:top}
-    th{font-size:.85rem;color:var(--muted);font-weight:700;width:220px}
-    tr:hover{background:#faf3f7}
+    @media (max-width:900px){.grid.two,.grid.three{grid-template-columns:1fr}}
     .tabbar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
     .tab{padding:10px 12px;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:#fff}
     .tab.active{outline:2px solid var(--brand)}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{border-bottom:1px solid var(--border);text-align:left;padding:10px;vertical-align:top}
+    th{font-size:.85rem;color:var(--muted);font-weight:700}
+    tr:hover{background:#faf3f7}
     .center{display:flex;align-items:center;justify-content:center}
     .scroller{max-height:180px;overflow:auto;padding:8px;border-radius:10px;background:#fff;border:1px solid var(--border)}
     .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:.75rem;font-weight:700}
@@ -74,8 +66,11 @@
     .b-warn{background:#fff7eb;color:#6b3b00;border:1px solid #ffe2b8}
     .b-due{background:#fff1e6;color:#6b2e00;border:1px solid #ffd1aa}
     .b-danger{background:#ffeff0;color:#7a0f16;border:1px solid #ffc9ce}
-    .doneCard{background:var(--done);border:1px solid #bfe9cc}
+    .doneCard{background:var(--done-bg);border:1px solid #bfe9cc}
     .countBar{display:flex;gap:8px;flex-wrap:wrap}
+    .split{display:flex;gap:12px;flex-wrap:wrap}
+    .split > *{flex:1 1 260px}
+    .tiny{font-size:.8rem}
   </style>
 </head>
 <body>
@@ -83,7 +78,7 @@
     <header>
       <div class="brand">
         <span class="dot"></span>
-        <span>LAE Task Card App</span>
+        <span>LAE Task Card — Supreme</span>
       </div>
       <div class="toolbar">
         <span class="pill" id="clockPill">—</span>
@@ -112,7 +107,7 @@
           </div>
         </div>
         <div class="col" style="text-align:center">
-          <!-- Use your local logo file path if you have it -->
+          <!-- Replace with your local logo filename -->
           <img src="batik-air-logo.png" alt="Batik Air" style="max-width:220px;width:60%;height:auto"/>
         </div>
       </div>
@@ -120,7 +115,7 @@
 
     <!-- APP -->
     <div id="app" class="glass card" style="display:none">
-      <div class="toolbar" style="justify-content:space-between;align-items:center">
+      <div class="toolbar" style="justify-content:space-between">
         <div class="toolbar">
           <button class="btn ghost" onclick="goBack()">◀ Back</button>
           <div class="pill" id="whoPill">—</div>
@@ -128,24 +123,49 @@
         <div class="tabbar" id="tabs"></div>
       </div>
 
+      <!-- Global counters -->
       <div class="countBar" id="counts" style="margin:4px 0 8px;display:none"></div>
 
-      <!-- LAE: SEARCH -->
+      <!-- LAE / Officer: search & view -->
       <section id="tab-search" style="display:none">
-        <div class="grid two">
+        <div class="split">
           <div>
             <label>ATA Chapter</label>
             <select id="ataFilter" onchange="renderSearch()"></select>
           </div>
           <div>
-            <label>Search by Task Card Number / AMM Ref</label>
-            <input id="searchInput" placeholder="e.g. 32-07-00-01 / AMM 32-11-00" oninput="renderSearch()" />
+            <label>Search by Task Card / AMM / Description</label>
+            <input id="searchInput" placeholder="e.g. 32-07-00-01, AMM 32-11-00, strut" oninput="renderSearch()" />
+          </div>
+          <div>
+            <label>Assigned filter</label>
+            <select id="assignFilter" onchange="renderSearch()"></select>
           </div>
         </div>
+
+        <div class="toolbar" style="margin:8px 0">
+          <label class="tiny" style="display:inline-flex;align-items:center;gap:8px">
+            <input type="checkbox" id="onlyMine" onchange="renderSearch()"> Show only my tasks
+          </label>
+          <label class="tiny" style="display:inline-flex;align-items:center;gap:8px">
+            <input type="checkbox" id="hideDone" checked onchange="renderSearch()"> Hide done
+          </label>
+        </div>
+
         <div id="searchResults"></div>
+
+        <div style="margin-top:18px">
+          <h3 style="margin:0 0 6px">Archive (Done)</h3>
+          <p class="muted tiny" style="margin:0 0 8px">Completed task cards are kept here. They won’t show in the main list.</p>
+          <div id="archiveWrap" class="grid"></div>
+          <div class="toolbar" style="margin-top:8px">
+            <button class="btn ghost" onclick="exportArchive()">Export Done (JSON)</button>
+            <button class="btn danger" onclick="clearArchive()">Clear Archive</button>
+          </div>
+        </div>
       </section>
 
-      <!-- OFFICER: MANAGE -->
+      <!-- Officer: manage -->
       <section id="tab-manage" style="display:none">
         <div class="grid two">
           <div class="card" style="border:1px solid var(--border)">
@@ -153,7 +173,7 @@
             <p id="formMode" class="muted" style="margin:0 0 12px">Mode: Create</p>
             <div class="grid">
               <label>ATA</label><input id="f_ata" placeholder="e.g. 12 or 32" />
-              <label>Task Card Number / AMM Ref</label><input id="f_tc" placeholder="e.g. 32-07-00-01 / AMM xx-xx" />
+              <label>Task Card Number / AMM Ref</label><input id="f_tc" placeholder="e.g. 32-07-00-01 / AMM 32-11-00" />
               <label>Task Description</label><textarea id="f_desc" placeholder="Short description"></textarea>
               <label>Tools / Test Set</label><textarea id="f_tools" placeholder="List tools or test equipment"></textarea>
               <label>Consumables / MSL</label><textarea id="f_cons" placeholder="Consumables, materials, MSL"></textarea>
@@ -161,6 +181,7 @@
               <label>Duration</label><input id="f_dur" placeholder="e.g. 4HRS or 2h 30m" />
               <label>Man Hours</label><input id="f_mh" type="number" step="0.1" placeholder="e.g. 3.5" />
               <label>Due Date</label><input id="f_due" type="date" />
+              <label>Assigned To (Name or Staff ID)</label><input id="f_assigned" placeholder="e.g. Aiman / BID1234" />
             </div>
             <div class="toolbar" style="margin-top:12px">
               <button class="btn brand" onclick="saveTask()">Save</button>
@@ -178,8 +199,9 @@
               </div>
             </div>
             <p class="muted" style="margin:6px 0">
-              Columns supported: <i>ATA</i>, <i>TASK CARD NUM / AMM REF</i>, <i>TASK DESCRIPTION</i>, <i>TOOLS / TESTSET</i>,
-              <i>CONSUMABLES / MSL</i>, <i>REMARKS</i>, <i>DURATION</i>, <i>MAN HOURS</i>, <i>DUE DATE</i>.
+              Columns supported (flexible names OK): <i>ATA</i>, <i>TASK CARD NUM / AMM REF</i>, <i>TASK DESCRIPTION</i>,
+              <i>TOOLS / TESTSET</i>, <i>CONSUMABLES / MSL</i>, <i>REMARKS</i>, <i>DURATION</i>, <i>MAN HOURS</i>,
+              <i>DUE DATE</i>, <i>ASSIGNED TO</i>.
             </p>
             <div id="listWrap"></div>
           </div>
@@ -196,17 +218,19 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
   <script>
-    /* ================= STATE ================= */
-    const STORAGE_KEY = 'lae_taskcards_v3';
+    /************ STATE ************/
+    const STORAGE_KEY = 'lae_supreme_v1';
+    const STORAGE_ARCH = 'lae_supreme_done_v1';
     let state = {
-      user: null,             // { name, staffId, role }
-      tasks: [],              // [{id, ata, tc, desc, tools, cons, rem, dur, mh, due, done, doneBy, doneAt}]
+      user: null,         // { name, staffId, role }
+      tasks: [],          // active tasks
+      archive: [],        // done tasks
       editId: null,
       history: []
     };
     const uid = () => 'id-' + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(2);
 
-    /* ============== CLOCK (live) ============== */
+    /************ CLOCK ************/
     function startClock(){
       const pill = document.getElementById('clockPill');
       const tick = () => {
@@ -219,29 +243,33 @@
     }
     startClock();
 
-    /* ============== STORAGE ============== */
+    /************ STORAGE ************/
     function loadLocal(){
       try{
         const raw = localStorage.getItem(STORAGE_KEY);
         if(raw){ state.tasks = JSON.parse(raw).tasks || []; }
+        const ar = localStorage.getItem(STORAGE_ARCH);
+        if(ar){ state.archive = JSON.parse(ar).tasks || []; }
       }catch(e){ console.warn('Local load failed', e); }
     }
     function saveLocal(){
       try{ localStorage.setItem(STORAGE_KEY, JSON.stringify({tasks: state.tasks})) }catch(e){}
+      try{ localStorage.setItem(STORAGE_ARCH, JSON.stringify({tasks: state.archive})) }catch(e){}
     }
 
-    /* ============== DEMO DATA ============== */
+    /************ DEMO ************/
     function seedDemo(){
       state.tasks = [
-        {id:uid(), ata:'12', tc:'32-07-00-01', desc:'Service the nose landing gear shock strut.', tools:'COM-1532 Cart... (sample)', cons:'AEROSHELL-LGF', rem:'Use container as alternate.', dur:'4HRS', mh:4, due:addDaysStr(3), done:false},
-        {id:uid(), ata:'20', tc:'CHK-POWER-AC', desc:'Pitot probe power consumption check', tools:'KW05-287 / Clamp Meter AC 400A', cons:'-', rem:'-', dur:'1H', mh:1, due:addDaysStr(1), done:false}
+        {id:uid(), ata:'12', tc:'32-07-00-01', desc:'Service nose landing gear shock strut.', tools:'COM-1532 Cart', cons:'AEROSHELL-LGF', rem:'Use container as alternate.', dur:'4HRS', mh:4, due:addDaysStr(1), assignedTo:'BID1234', done:false},
+        {id:uid(), ata:'20', tc:'CHK-POWER-AC', desc:'Pitot probe power consumption check', tools:'KW05-287 / Clamp Meter', cons:'-', rem:'-', dur:'1H', mh:1, due:addDaysStr(3), assignedTo:'Aiman', done:false}
       ];
-      saveLocal(); render();
+      state.archive = [];
+      saveLocal(); renderAll();
       alert('Demo data loaded.');
     }
     function addDaysStr(n){ const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
 
-    /* ============== AUTH ============== */
+    /************ AUTH ************/
     function signIn(){
       const name=(document.getElementById('nameInput').value||'User').trim();
       const staffId=(document.getElementById('staffIdInput').value||'').trim();
@@ -255,11 +283,12 @@
       state.history=['home'];
       loadLocal();
       buildTabs();
-      render();
+      requestNotifyPermission();
+      renderAll();
     }
     function signOut(){ location.reload(); }
 
-    /* ============== NAV ============== */
+    /************ NAV ************/
     function goBack(){
       if(state.history.length>1){
         state.history.pop();
@@ -289,30 +318,33 @@
       const map = (state.user.role==='OFFICER')?[ 'manage','search']:[ 'search' ];
       const idx = map.indexOf(id); if(idx>-1) btns[idx]?.classList.add('active');
       if(state.history[state.history.length-1]!==id) state.history.push(id);
-      if(id==='search') { populateATAFilter(); renderSearch(); }
+      if(id==='search') { populateFilters(); renderSearch(); renderArchive(); }
       else if(id==='manage') { renderList(); }
+      renderCounts();
     }
 
-    /* ============== COUNTS (top bar) ============== */
+    /************ COUNTS ************/
     function renderCounts(){
       const wrap = document.getElementById('counts');
-      if(!state.tasks.length){ wrap.style.display='none'; wrap.innerHTML=''; return; }
-      const total = state.tasks.length;
-      const done = state.tasks.filter(t=>t.done).length;
-      const remain = total - done;
+      const list = activeVisibleToUser(state.tasks);
+      if(!list.length){ wrap.style.display='none'; wrap.innerHTML=''; return; }
+      const total = list.length;
+      const done = list.filter(t=>t.done).length; // should be 0 in active
+      const overdue = list.filter(t=>daysToDue(t.due)<0).length;
+      const dueToday = list.filter(t=>daysToDue(t.due)===0).length;
       wrap.style.display='flex';
       wrap.innerHTML = `
-        <span class="badge b-ok">Done: ${done}</span>
-        <span class="badge b-warn">Remaining: ${remain}</span>
-        <span class="badge b-due">Total: ${total}</span>
+        <span class="badge b-warn">Overdue: ${overdue}</span>
+        <span class="badge b-due">Due today: ${dueToday}</span>
+        <span class="badge b-ok">Active: ${total}</span>
       `;
     }
 
-    /* ============== CRUD (Officer) ============== */
+    /************ OFFICER CRUD ************/
     function resetForm(){
       state.editId=null;
       document.getElementById('formMode').textContent='Mode: Create';
-      ['f_ata','f_tc','f_desc','f_tools','f_cons','f_rem','f_dur','f_mh','f_due'].forEach(id=>document.getElementById(id).value='');
+      ['f_ata','f_tc','f_desc','f_tools','f_cons','f_rem','f_dur','f_mh','f_due','f_assigned'].forEach(id=>document.getElementById(id).value='');
     }
     function fillForm(t){
       state.editId=t.id;
@@ -320,6 +352,7 @@
       f_ata.value=t.ata||''; f_tc.value=t.tc||''; f_desc.value=t.desc||'';
       f_tools.value=t.tools||''; f_cons.value=t.cons||''; f_rem.value=t.rem||'';
       f_dur.value=t.dur||''; f_mh.value=(t.mh??''); f_due.value=(t.due||'');
+      f_assigned.value=t.assignedTo||'';
     }
     function saveTask(){
       const t={
@@ -331,7 +364,8 @@
         rem:f_rem.value.trim(),
         dur:f_dur.value.trim(),
         mh: f_mh.value? Number(f_mh.value):null,
-        due: f_due.value || ''
+        due: f_due.value || '',
+        assignedTo: f_assigned.value.trim()
       };
       if(!t.ata || !t.tc || !t.desc){ alert('Please fill ATA, Task Card / AMM Ref, and Description.'); return; }
       if(state.editId){
@@ -341,19 +375,19 @@
         t.id=uid(); t.done=false;
         state.tasks.unshift(t);
       }
-      saveLocal(); resetForm(); renderList(); renderCounts(); alert('Saved.');
+      saveLocal(); resetForm(); renderList(); renderCounts(); populateFilters();
+      alert('Saved.');
     }
     function removeTask(id){
       if(!confirm('Delete this task?')) return;
       state.tasks = state.tasks.filter(x=>x.id!==id);
-      saveLocal(); renderList(); renderCounts();
+      saveLocal(); renderList(); renderCounts(); populateFilters();
     }
     function editById(id){ const t=state.tasks.find(x=>x.id===id); if(t) fillForm(t); }
-
     function renderList(){
       const wrap=document.getElementById('listWrap');
       if(!state.tasks.length){ wrap.innerHTML='<p class="muted">No task cards yet.</p>'; return; }
-      let html='<table><thead><tr><th>ATA</th><th>Task Card / AMM</th><th>Description</th><th>MH</th><th>Due</th><th>Duration</th><th></th></tr></thead><tbody>';
+      let html='<table><thead><tr><th>ATA</th><th>Task Card / AMM</th><th>Description</th><th>MH</th><th>Due</th><th>Assigned</th><th>Duration</th><th></th></tr></thead><tbody>';
       for(const t of state.tasks){
         html+=`<tr>
           <td>${esc(t.ata||'')}</td>
@@ -361,6 +395,7 @@
           <td>${esc(t.desc||'')}</td>
           <td>${esc(t.mh??'—')}</td>
           <td>${esc(t.due||'—')}</td>
+          <td>${esc(t.assignedTo||'—')}</td>
           <td>${esc(t.dur||'—')}</td>
           <td style="text-align:right">
             <button class="btn ghost" onclick='editById("${t.id}")'>Edit</button>
@@ -372,42 +407,80 @@
       wrap.innerHTML=html;
     }
 
-    /* ============== SEARCH (LAE) ============== */
-    function populateATAFilter(){
+    /************ SEARCH / VIEW ************/
+    function populateFilters(){
+      // ATA
       const select = document.getElementById('ataFilter');
-      const ataset = Array.from(new Set(state.tasks.map(t=>String(t.ata||'').trim()).filter(Boolean)))
+      const atas = Array.from(new Set(state.tasks.map(t=>String(t.ata||'').trim()).filter(Boolean)))
         .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
-      select.innerHTML = '<option value="">All ATA</option>' + ataset.map(a=>`<option value="${esc(a)}">ATA ${esc(a)}</option>`).join('');
+      select.innerHTML = '<option value="">All ATA</option>' + atas.map(a=>`<option value="${esc(a)}">ATA ${esc(a)}</option>`).join('');
+
+      // Assigned
+      const assignSel = document.getElementById('assignFilter');
+      const names = Array.from(new Set(state.tasks.map(t=>String(t.assignedTo||'').trim()).filter(Boolean)))
+        .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+      assignSel.innerHTML = '<option value="">All assignees</option>' + names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
+
+      // Defaults for LAE
+      document.getElementById('onlyMine').checked = (state.user?.role==='LAE');
+      document.getElementById('hideDone').checked = true;
     }
+
     function renderSearch(){
-      renderCounts();
       const q=(document.getElementById('searchInput').value||'').toLowerCase();
       const ataSel=(document.getElementById('ataFilter').value||'').trim();
-      let results = state.tasks;
+      const assSel=(document.getElementById('assignFilter').value||'').trim();
+      const onlyMine=document.getElementById('onlyMine').checked;
+      const hideDone=document.getElementById('hideDone').checked;
+
+      let results = state.tasks.slice();
+
+      // role-based visibility: LAE prefers only own tasks, Officer sees all
+      if(onlyMine){
+        results = results.filter(t => isMine(t));
+      }
+
       if(ataSel) results = results.filter(t=>String(t.ata||'')===ataSel);
+      if(assSel) results = results.filter(t=>(t.assignedTo||'')===assSel);
       if(q) results = results.filter(t=>
-        (t.tc||'').toLowerCase().includes(q) || (t.desc||'').toLowerCase().includes(q)
+        (t.tc||'').toLowerCase().includes(q) ||
+        (t.desc||'').toLowerCase().includes(q) ||
+        (t.assignedTo||'').toLowerCase().includes(q)
       );
+      if(hideDone) results = results.filter(t=>!t.done);
+
       const wrap=document.getElementById('searchResults');
       if(!results.length){ wrap.innerHTML='<p class="muted">No matching task cards.</p>'; return; }
       wrap.innerHTML = results.map(card).join('');
+
+      renderCounts();
+    }
+
+    function isMine(t){
+      const me = (state.user?.name||'').toLowerCase();
+      const id = (state.user?.staffId||'').toLowerCase();
+      const asg = (t.assignedTo||'').toLowerCase();
+      // match if assignedTo contains staffId or name substring
+      return !!asg && (asg.includes(id) || (me && asg.includes(me)));
     }
 
     function card(t){
       const dueInfo = dueBadge(t.due, t.done);
       const doneCls = t.done ? 'doneCard' : '';
+      const mineStar = isMine(t) ? '⭐ ' : '';
+      const mark = t.done ? 'checked' : '';
       return `
         <div class="card ${doneCls}" style="margin-top:12px;border:1px solid var(--border)">
           <div class="grid two">
             <div>
-              <b>ATA ${esc(t.ata||'—')} • ${esc(t.tc||'')}</b>
+              <b>${mineStar}ATA ${esc(t.ata||'—')} • ${esc(t.tc||'')}</b>
               <p class="muted" style="margin:6px 0">${esc(t.desc||'—')}</p>
             </div>
             <div style="text-align:right">
               ${dueInfo.badge}
               <div style="margin-top:6px">
                 <label style="display:inline-flex;align-items:center;gap:8px">
-                  <input type="checkbox" ${t.done?'checked':''} onchange="toggleDone('${t.id}', this.checked)" />
+                  <input type="checkbox" ${mark} onchange="toggleDone('${t.id}', this.checked)" />
                   Mark as done
                 </label>
               </div>
@@ -434,49 +507,107 @@
             <div><label>Man Hours</label><div class="pill">${esc(t.mh??'—')}</div></div>
             <div><label>Due Date</label><div class="pill">${esc(t.due||'—')}</div></div>
           </div>
+
+          <div class="grid two" style="margin-top:10px">
+            <div><label>Assigned To</label><div class="pill">${esc(t.assignedTo||'—')}</div></div>
+            <div><label>Owner</label><div class="pill">${esc(t.done ? (t.doneBy||'—') : (isMine(t)? (state.user?.name||'You') : '—'))}</div></div>
+          </div>
         </div>
       `;
     }
 
+    /************ DONE / ARCHIVE ************/
     function toggleDone(id, val){
-      const t = state.tasks.find(x=>x.id===id);
-      if(!t) return;
-      t.done = val;
-      t.doneBy = val ? (state.user?.staffId||'') : null;
-      t.doneAt = val ? new Date().toISOString() : null;
-      saveLocal(); renderSearch(); renderCounts();
+      const idx = state.tasks.findIndex(x=>x.id===id);
+      if(idx<0) return;
+      const t = state.tasks[idx];
+      if(val){
+        // move to archive
+        const doneItem = {...t, done:true, doneBy:(state.user?.staffId||''), doneAt:new Date().toISOString()};
+        state.archive.unshift(doneItem);
+        state.tasks.splice(idx,1);
+        saveLocal(); renderSearch(); renderArchive(); renderCounts();
+        maybeNotify(`Task done: ${t.tc}`, `Archived • ${t.desc||''}`);
+      }else{
+        // (edge) unmark not supported from active list
+      }
+    }
+    function renderArchive(){
+      const wrap = document.getElementById('archiveWrap');
+      if(!state.archive.length){ wrap.innerHTML='<p class="muted tiny">No completed tasks yet.</p>'; return; }
+      wrap.innerHTML = state.archive.map(a => `
+        <div class="card doneCard" style="border:1px solid #bfe9cc">
+          <div class="grid two">
+            <div><b>ATA ${esc(a.ata||'')} • ${esc(a.tc||'')}</b><div class="tiny muted">${esc(a.desc||'')}</div></div>
+            <div style="text-align:right" class="tiny">Done by ${esc(a.doneBy||'-')} @ ${esc(a.doneAt||'-')}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    function clearArchive(){
+      if(!confirm('Clear all archived (done) tasks?')) return;
+      state.archive = []; saveLocal(); renderArchive();
+    }
+    function exportArchive(){
+      const blob = new Blob([JSON.stringify(state.archive, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url; a.download='taskcards_done.json'; a.click();
+      URL.revokeObjectURL(url);
     }
 
-    function dueBadge(dueStr, isDone){
-      if(isDone) return {badge:`<span class="badge b-ok">Done</span>`};
-      if(!dueStr) return {badge:`<span class="badge b-warn">No due set</span>`};
+    /************ NOTIFICATIONS ************/
+    function requestNotifyPermission(){
+      if(!('Notification' in window)) return;
+      if(Notification.permission==='default'){
+        Notification.requestPermission();
+      }
+      // simple periodic check each 60s
+      setInterval(checkDueNotifications, 60000);
+      checkDueNotifications();
+    }
+    function daysToDue(dueStr){
+      if(!dueStr) return 9999;
       const today = new Date(); today.setHours(0,0,0,0);
       const due = parseDateFlexible(dueStr);
-      if(!due) return {badge:`<span class="badge b-warn">Invalid due</span>`};
-      const days = Math.floor((due - today)/(1000*60*60*24));
-      if(days < 0) return {badge:`<span class="badge b-danger">Overdue ${Math.abs(days)}d</span>`};
-      if(days === 0) return {badge:`<span class="badge b-due">Due today</span>`};
-      if(days <= 3) return {badge:`<span class="badge b-warn">Due in ${days}d</span>`};
-      return {badge:`<span class="badge b-ok">Due in ${days}d</span>`};
+      if(!due) return 9999;
+      return Math.floor((due - today)/(1000*60*60*24));
+    }
+    function checkDueNotifications(){
+      if(!('Notification' in window) || Notification.permission!=='granted') return;
+      const list = activeVisibleToUser(state.tasks);
+      for(const t of list){
+        const d = daysToDue(t.due);
+        if(d<0){ maybeNotify(`Overdue: ${t.tc}`, `${t.desc||''}`); }
+        else if(d===0){ maybeNotify(`Due today: ${t.tc}`, `${t.desc||''}`); }
+        else if(d<=3){ maybeNotify(`Due in ${d}d: ${t.tc}`, `${t.desc||''}`); }
+      }
+    }
+    function maybeNotify(title, body){
+      try{ new Notification(title, { body }); }catch(e){}
+    }
+    function activeVisibleToUser(arr){
+      // return active tasks; if LAE, prefer "only mine" if that toggle is checked
+      const onlyMine = document.getElementById('onlyMine');
+      const mine = onlyMine ? onlyMine.checked : (state.user?.role==='LAE');
+      return arr.filter(t => !t.done).filter(t => mine ? isMine(t) : true);
     }
 
+    /************ HELPERS ************/
+    function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function nl2br(s){ return (s||'').replace(/\n/g,'<br>'); }
     function parseDateFlexible(s){
       if(!s) return null;
-      // ISO yyyy-mm-dd
       if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s+'T00:00:00');
-      // dd/mm/yyyy or d/m/yyyy
       const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
       if(m){ const [_,d,mo,y]=m; return new Date(`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}T00:00:00`); }
       const d2 = new Date(s);
       return isNaN(d2.getTime()) ? null : d2;
     }
 
-    /* ============== HELPERS ============== */
-    function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-    function nl2br(s){ return (s||'').replace(/\n/g,'<br>'); }
-
-    /* ============== EXCEL IMPORT ============== */
+    /************ EXCEL IMPORT ************/
     document.getElementById('excelFile')?.addEventListener('change', handleExcelFile);
+
     function handleExcelFile(ev){
       const file = ev.target.files[0];
       if(!file){ alert('No file selected'); return; }
@@ -485,15 +616,14 @@
         try{
           const data = new Uint8Array(e.target.result);
           const wb = XLSX.read(data, { type: 'array' });
-          const sheetName = wb.SheetNames[0];
-          const ws = wb.Sheets[sheetName];
+          const ws = wb.Sheets[wb.SheetNames[0]];
           const rows = XLSX.utils.sheet_to_json(ws, { header:1, blankrows:false, defval:'' });
           const parsed = parseExcelRows(rows);
           if(!parsed.length){ alert('No rows parsed. Check your sheet format.'); return; }
-          for(const t of parsed){ t.id = uid(); if(typeof t.done!=='boolean') t.done=false; }
+          for(const t of parsed){ t.id = uid(); t.done = !!t.done; }
           state.tasks = [...parsed, ...state.tasks];
           saveLocal();
-          renderList(); populateATAFilter(); renderCounts();
+          renderList(); populateFilters(); renderCounts(); renderSearch();
           alert('Excel imported: '+parsed.length+' task(s).');
         }catch(err){ console.error(err); alert('Failed to parse Excel.'); }
       };
@@ -501,6 +631,7 @@
       ev.target.value='';
     }
 
+    // Flexible header detection for your roster/task sheet
     function parseExcelRows(rows){
       let currentATA = '';
       let headerIdx = -1; let cols = {};
@@ -509,30 +640,31 @@
         const row = rows[r].map(v=>String(v).trim());
         if(row.length===0) continue;
         const first = (row[0]||'').toUpperCase();
+
         // ATA line like "ATA 12"
         const m = first.match(/^ATA\s*([0-9A-Z.]+)$/);
         if(m){ currentATA = m[1]; continue; }
 
-        // header row
-        if(headerIdx<0 && (first.includes('TASK CARD') || first.includes('AMM'))){
+        // header row detection
+        if(headerIdx<0 && row.some(c => /TASK|AMM|DESCRIPTION|TOOLS|CONSUM|REMARK|DURATION|MAN|DUE|ASSIGNED/i.test(c))){
           headerIdx=r;
           for(let i=0;i<row.length;i++){
             const name = row[i].toUpperCase();
-            if(name.includes('TASK CARD')) cols.tc=i;
-            else if(name.includes('AMM') && cols.tc==null) cols.tc=i;
-            else if(name.includes('TASK DESCRIPTION')) cols.desc=i;
-            else if(name.includes('TOOLS')) cols.tools=i;
-            else if(name.includes('CONSUMABLES')) cols.cons=i;
-            else if(name.includes('REMARKS')) cols.rem=i;
-            else if(name.includes('DURATION')) cols.dur=i;
-            else if(name.includes('MAN') && name.includes('HOUR')) cols.mh=i;   // "MAN HOURS"
-            else if(name.includes('DUE')) cols.due=i;                          // "DUE DATE"
-            else if(name==='ATA') cols.ata=i;
+            if(name.includes('ATA')) cols.ata=i;
+            if(name.includes('TASK CARD') || name.includes('AMM')) cols.tc=i;
+            if(name.includes('DESCRIPTION')) cols.desc=i;
+            if(name.includes('TOOLS')) cols.tools=i;
+            if(name.includes('CONSUM')) cols.cons=i;
+            if(name.includes('REMARK')) cols.rem=i;
+            if(name.includes('DURATION')) cols.dur=i;
+            if(name.includes('MAN') && name.includes('HOUR')) cols.mh=i;
+            if(name.includes('DUE')) cols.due=i;
+            if(name.includes('ASSIGNED')) cols.assigned=i; // "ASSIGNED TO"
           }
           continue;
         }
-        if(headerIdx<0) continue;                 // skip until header found
-        if(row.every(c=>c==='')) continue;        // skip empty rows
+        if(headerIdx<0) continue;
+        if(row.every(c=>c==='')) continue;
 
         let ata = cols.ata!=null ? (row[cols.ata]||currentATA||'') : (currentATA||'');
         ata = String(ata).trim();
@@ -544,26 +676,37 @@
         const dur  = cell(row, cols.dur);
         const mh   = cell(row, cols.mh);
         const due  = cell(row, cols.due);
+        const asg  = cell(row, cols.assigned);
 
         if(!(tc||desc)) continue;
         out.push({
           ata, tc, desc, tools, cons, rem, dur,
           mh: mh? Number(mh): null,
-          due: due || ''
+          due: due || '',
+          assignedTo: asg || ''
         });
       }
       return out;
     }
     function cell(row, idx){ if(idx==null) return ''; return String(row[idx]||'').trim(); }
 
-    /* ============== INITIAL RENDER ============== */
-    function render(){
-      if(document.getElementById('tab-search').style.display!=='none') { populateATAFilter(); renderSearch(); }
+    /************ EXPORT (JSON) ************/
+    function exportJSON(){
+      const blob = new Blob([JSON.stringify(state.tasks, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url; a.download='taskcards_active.json'; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    /************ INITIAL ************/
+    function renderAll(){
+      if(document.getElementById('tab-search').style.display!=='none'){ populateFilters(); renderSearch(); renderArchive(); }
       if(document.getElementById('tab-manage').style.display!=='none') renderList();
       renderCounts();
     }
 
-    /* ============== PWA: service worker register ============== */
+    // Optional PWA service worker register (if you add service-worker.js at site root)
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", function () {
         navigator.serviceWorker.register("/service-worker.js");
