@@ -24,7 +24,7 @@
   <header>
     <h2>LAE Task Card App</h2>
     <button id="signOutBtn" class="hidden" onclick="signOut()">Sign Out</button>
-    <button id="backBtn" class="hidden" onclick="goBack()">Back to Task List</button>
+    <button id="backBtn" class="hidden" onclick="goBack()">Back</button>
   </header>
   <div class="container">
     <!-- Login Screen -->
@@ -48,6 +48,8 @@
       <h3>Officer Dashboard</h3>
       <input type="file" id="excelFile" accept=".xlsx" />
       <button onclick="uploadExcel()">Upload Excel</button>
+      <h3>All Task Cards</h3>
+      <div id="officerTaskList"></div>
     </div>
 
     <!-- LAE Screen -->
@@ -55,6 +57,8 @@
       <h3>Task Cards</h3>
       <div id="dateTime"></div>
       <div id="stats"></div>
+      <button onclick="renderTasks(uploadedTasks)">All Tasks</button>
+      <button onclick="showMyTasks()">My Assigned Tasks</button>
       <button onclick="showDoneTasks()">View Done Tasks</button>
       <div id="taskList"></div>
       <h3>Completed Tasks</h3>
@@ -82,15 +86,20 @@
     populateNames();
 
     let uploadedTasks = [];
+    let currentUser = { name:"", role:"" };
 
     function login(){
       const name=document.getElementById("nameInput").value;
       const id=document.getElementById("idInput").value;
       const role=document.getElementById("roleInput").value;
       if(!name||!id||!role){ alert("Fill all fields"); return; }
+      currentUser={ name, role };
       document.getElementById("loginScreen").classList.add("hidden");
       document.getElementById("signOutBtn").classList.remove("hidden");
-      if(role==="officer"){ document.getElementById("officerScreen").classList.remove("hidden"); }
+      if(role==="officer"){ 
+        document.getElementById("officerScreen").classList.remove("hidden"); 
+        renderOfficerTasks(uploadedTasks);
+      }
       else{
         document.getElementById("laeScreen").classList.remove("hidden"); 
         renderTasks(uploadedTasks);
@@ -107,6 +116,7 @@
       document.getElementById("idInput").value="";
       document.getElementById("roleInput").value="";
       document.getElementById("nameInput").value="";
+      currentUser={ name:"", role:"" };
     }
 
     function uploadExcel(){
@@ -127,13 +137,28 @@
               ata: row[2],
               manhour: row[3]||"",
               due: row[4]||"",
+              assignedTo: row[5]||"", // assume officer fills this column for assignment
               done:false
             });
           }
         });
         alert("Excel uploaded successfully!");
+        renderOfficerTasks(uploadedTasks);
       };
       reader.readAsArrayBuffer(file);
+    }
+
+    function renderOfficerTasks(tasks){
+      const list=document.getElementById("officerTaskList");
+      list.innerHTML="";
+      tasks.forEach((t)=>{
+        const div=document.createElement("div");
+        div.className="task"+(t.done?" done":"");
+        div.innerHTML=`<h4>${t.card||"Task Card"}</h4>
+          <p>${t.description||""}</p>
+          <small>ATA: ${t.ata||""} | Manhour: ${t.manhour} | Due: ${t.due} | Assigned To: ${t.assignedTo}</small>`;
+        list.appendChild(div);
+      });
     }
 
     function renderTasks(tasks){
@@ -146,7 +171,7 @@
         div.className="task"+(t.done?" done":"");
         div.innerHTML=`<h4>${t.card||"Task Card"}</h4>
           <p>${t.description||""}</p>
-          <small>ATA: ${t.ata||""} | Manhour: ${t.manhour} | Due: ${t.due}</small><br>
+          <small>ATA: ${t.ata||""} | Manhour: ${t.manhour} | Due: ${t.due} | Assigned To: ${t.assignedTo}</small><br>
           <label><input type="checkbox" ${t.done?"checked":""} onchange="toggleDone(${i})"> Done</label>`;
         if(t.done) doneList.appendChild(div); else list.appendChild(div);
       });
@@ -161,6 +186,12 @@
     function showDoneTasks(){
       const done=uploadedTasks.filter(t=>t.done);
       renderTasks(done);
+      document.getElementById("backBtn").classList.remove("hidden");
+    }
+
+    function showMyTasks(){
+      const mine=uploadedTasks.filter(t=>t.assignedTo===currentUser.name);
+      renderTasks(mine);
       document.getElementById("backBtn").classList.remove("hidden");
     }
 
