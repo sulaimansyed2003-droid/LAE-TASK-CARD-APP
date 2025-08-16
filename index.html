@@ -8,11 +8,23 @@
     body { font-family: Arial, sans-serif; background:#f5f9ff; color:#222; margin:20px; }
     h1 { color:#8B0000; }
     .hidden { display:none; }
+
     .task-card {
-      border:1px solid #ccc; border-radius:10px; padding:15px; margin:10px 0;
+      border:1px solid #ccc; border-radius:10px; padding:15px; margin:15px 0;
       background:white; box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      line-height:1.5em;
     }
     .done { background:#d4f8d4 !important; }
+
+    /* Colors for details inside task card */
+    .task-header { font-weight:bold; font-size:16px; color:#8B0000; margin-bottom:8px; }
+    .task-meta { background:#eef7ff; padding:6px; border-radius:6px; margin:4px 0; }
+    .task-desc { background:#fff3e6; padding:6px; border-radius:6px; margin:4px 0; }
+    .task-tools { background:#e6ffe6; padding:6px; border-radius:6px; margin:4px 0; }
+    .task-cons { background:#e6f7ff; padding:6px; border-radius:6px; margin:4px 0; }
+    .task-remarks { background:#fff0f0; padding:6px; border-radius:6px; margin:4px 0; }
+    .task-actions { margin-top:10px; }
+
     .header { display:flex; justify-content:space-between; margin-bottom:15px; }
     button { margin:5px; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; }
     .logout { background:#8B0000; color:white; }
@@ -74,8 +86,8 @@
 
 <script>
 const staffNames=[
-"ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
-"DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK" // etc add full list
+  "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
+  "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK" // extend full list
 ];
 let tasks=[],currentUser=null,showOnlyAssigned=false;
 
@@ -171,15 +183,17 @@ function renderTasks(){
     let div=document.createElement("div");
     div.className="task-card"+(t.done?" done":"");
     div.innerHTML=`
-      <b>${t.ata}</b><br>
-      ATA: ${t.ata} | Manhour: ${t.manhour||"N/A"} | Due: ${t.due||"N/A"} | Assigned To: ${t.assignedTo||"None"}<br>
-      Task Card: ${t.card}<br>
-      Description: ${t.description}<br>
-      Tools: ${t.tools}<br>
-      Consumables: ${t.consumables}<br>
-      Remarks: ${t.remarks}<br>
-      ${currentUser.role==="OFFICER"?`Assign: <select onchange="assign(${i},this.value)"><option value="">Assign to...</option>${staffNames.map(n=>`<option value="${n}">${n}</option>`).join("")}</select>`:""}
-      ${currentUser.role==="LAE"?`<label><input type="checkbox" ${t.done?"checked":""} onchange="markDone(${i},this.checked)"> Mark Done</label>`:""}
+      <div class="task-header">${t.ata}</div>
+      <div class="task-meta"><b>ATA:</b> ${t.ata} | <b>Manhour:</b> ${t.manhour||"N/A"} | <b>Due:</b> ${t.due||"N/A"} | <b>Assigned To:</b> ${t.assignedTo||"None"}</div>
+      <div class="task-meta"><b>Task Card:</b> ${t.card}</div>
+      <div class="task-desc"><b>Description:</b> ${t.description}</div>
+      <div class="task-tools"><b>Tools:</b> ${t.tools}</div>
+      <div class="task-cons"><b>Consumables:</b> ${t.consumables}</div>
+      <div class="task-remarks"><b>Remarks:</b> ${t.remarks}</div>
+      <div class="task-actions">
+        ${currentUser.role==="OFFICER"?`Assign: <select onchange="assign(${i},this.value)"><option value="">Assign to...</option>${staffNames.map(n=>`<option value="${n}">${n}</option>`).join("")}</select>`:""}
+        ${currentUser.role==="LAE"?`<label><input type="checkbox" ${t.done?"checked":""} onchange="markDone(${i},this.checked)"> Mark Done</label>`:""}
+      </div>
     `;
     if(t.done) doneC.appendChild(div); else container.appendChild(div);
     if(t.done) doneCount++; else remainCount++;
