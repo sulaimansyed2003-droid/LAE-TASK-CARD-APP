@@ -8,7 +8,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background:#f5f9ff; color:#222; margin:20px; }
-    h1 { color:#8B0000; margin-top:0; }
+    h1 { color:#8B0000; margin-top:0; text-align:center; }
 
     .hidden { display:none; }
 
@@ -49,7 +49,20 @@
       padding:8px 10px; border:1px solid #cfd9ee; border-radius:8px; background:#fff;
     }
 
-    /* Simple label look for small headings inside blocks */
+    /* Center login form */
+    #loginSection {
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      height:70vh;
+      text-align:center;
+    }
+    #loginSection .block {
+      margin:10px 0;
+    }
+
+    /* Label styling */
     .lbl { font-weight:bold; }
   </style>
 </head>
@@ -126,18 +139,18 @@ const staffNames = [
   "UMEIR BIN SHUKRY OMAR TALIB","MOHD MAHDIR BIN ABDUL MANAN","ABU NOR RAZY BIN ABDULLAH @ ANBARASU",
   "ZARIN DARUS BIN ABDUL RAHMAN","MOHAMMAD ZAHID BIN AFTAB","AJMER SINGH A/L SUKHBIR SINGH",
   "MOHD SYAKIR BIN ROSLE","SASHVIREN SINGH A/L SUKHDEV SINGH","MADIHAH BINTI MOHAMED KHAZIN"
-  // … add the remaining names from your list here …
+  // … add the remaining names …
 ];
 
 /* ======= Storage Keys ======= */
 const TASKS_KEY = "batik_tasks_v1";
 
 /* ======= App State ======= */
-let tasks = [];       // { ata, card, description, tools, consumables, remarks, manhour, due, assignedTo, done, markedBy }
+let tasks = [];
 let currentUser = null;
 let currentTab = "ALL";
 
-/* ======= Populate Name Select ======= */
+/* ======= Populate Names ======= */
 function populateNames(){
   const sel=document.getElementById("nameInput");
   sel.innerHTML='<option value="">Select your name</option>';
@@ -148,7 +161,7 @@ function populateNames(){
 }
 populateNames();
 
-/* ======= Clock (login preview + header live clock) ======= */
+/* ======= Clock ======= */
 function startClock(){
   function update(){
     const now = new Date();
@@ -162,220 +175,152 @@ function startClock(){
 }
 startClock();
 
-/* ======= Local Storage helpers ======= */
-function saveTasks(){
-  try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch(e){}
-}
+/* ======= Local Storage ======= */
+function saveTasks(){ localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); }
 function loadTasks(){
-  try {
-    const raw = localStorage.getItem(TASKS_KEY);
-    if(raw){ tasks = JSON.parse(raw) || []; }
-  } catch(e){ tasks = []; }
+  const raw = localStorage.getItem(TASKS_KEY);
+  if(raw) tasks = JSON.parse(raw) || [];
 }
 
 /* ======= Auth ======= */
 function login(){
-  const name = document.getElementById("nameInput").value;
-  const id   = document.getElementById("idInput").value.trim();
-  const role = document.getElementById("roleInput").value;
-  if(!name || !id){ alert("Please select your name and enter ID"); return; }
+  const name=document.getElementById("nameInput").value;
+  const id=document.getElementById("idInput").value.trim();
+  const role=document.getElementById("roleInput").value;
+  if(!name||!id){ alert("Please select your name and enter ID"); return; }
 
-  currentUser = { name, id, role };
-  // show/hide panels
+  currentUser={name,id,role};
   document.getElementById("loginSection").classList.add("hidden");
   document.getElementById("appSection").classList.remove("hidden");
-  document.getElementById("welcome").textContent = `Welcome ${name} (${role})`;
+  document.getElementById("welcome").textContent=`Welcome ${name} (${role})`;
   if(role==="OFFICER"){
     document.getElementById("officerSection").classList.remove("hidden");
     document.getElementById("tabs").classList.add("hidden");
-  }else{
+  } else {
     document.getElementById("officerSection").classList.add("hidden");
     document.getElementById("tabs").classList.remove("hidden");
   }
 
-  // Load tasks saved previously (so LAE can see what officer uploaded)
   loadTasks();
   populateATAFilter();
   renderTasks();
 }
-
 function logout(){
-  // keep tasks in storage so the next user (LAE) can see them
-  currentUser = null;
-  currentTab = "ALL";
+  currentUser=null;
+  currentTab="ALL";
   document.getElementById("appSection").classList.add("hidden");
   document.getElementById("officerSection").classList.add("hidden");
-  document.getElementById("taskList").innerHTML = "";
+  document.getElementById("taskList").innerHTML="";
   document.getElementById("tabs").classList.add("hidden");
   document.getElementById("loginSection").classList.remove("hidden");
 }
-
-/* ======= Back (simple refresh of current view) ======= */
 function back(){ renderTasks(); }
 
-/* ======= Excel Upload (Officer) ======= */
+/* ======= Excel Upload ======= */
 function loadExcel(e){
-  const file = e.target.files[0];
-  if(!file){ return; }
-  const reader = new FileReader();
-  reader.onload = function(ev){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
     try{
-      const data = new Uint8Array(ev.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { header:1, defval:"" });
-
-      // Expecting header in row 0 (adjust if needed)
-      const body = rows.slice(1);
-
-      const loaded = body.map(r => ({
-        ata:         String(r[0]||"").trim(),
-        card:        String(r[1]||"").trim(),
-        description: String(r[2]||"").trim(),
-        tools:       String(r[3]||"").trim(),
-        consumables: String(r[4]||"").trim(),
-        remarks:     String(r[5]||"").trim(),
-        manhour:     String(r[6]||"").trim(),
-        due:         String(r[7]||"").trim(),
-        assignedTo:  String(r[8]||"").trim(),
-        done: false,
-        markedBy: ""
+      const data=new Uint8Array(ev.target.result);
+      const wb=XLSX.read(data,{type:"array"});
+      const sheet=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:""});
+      const body=rows.slice(1);
+      const loaded=body.map(r=>({
+        ata:String(r[0]||"").trim(),
+        card:String(r[1]||"").trim(),
+        description:String(r[2]||"").trim(),
+        tools:String(r[3]||"").trim(),
+        consumables:String(r[4]||"").trim(),
+        remarks:String(r[5]||"").trim(),
+        manhour:String(r[6]||"").trim(),
+        due:String(r[7]||"").trim(),
+        assignedTo:String(r[8]||"").trim(),
+        done:false, markedBy:""
       }));
-
-      // Replace current tasks with uploaded (or concatenate if you prefer)
-      tasks = loaded;
-      saveTasks();          // persist so LAE can see after sign-in
+      tasks=loaded;
+      saveTasks();
       populateATAFilter();
       renderTasks();
-      alert("Excel imported: " + loaded.length + " task(s).");
-    }catch(err){
-      console.error(err);
-      alert("Failed to parse Excel. Please check the sheet format.");
-    }
+      alert("Excel imported: "+loaded.length+" task(s).");
+    }catch(err){ console.error(err); alert("Failed to parse Excel."); }
   };
   reader.readAsArrayBuffer(file);
 }
 
 /* ======= Filters & Tabs ======= */
 function populateATAFilter(){
-  const sel = document.getElementById("ataFilter");
-  const atas = [...new Set(tasks.map(t => t.ata).filter(Boolean))].sort();
-  sel.innerHTML = '<option value="ALL">All ATA</option>';
+  const sel=document.getElementById("ataFilter");
+  const atas=[...new Set(tasks.map(t=>t.ata).filter(Boolean))].sort();
+  sel.innerHTML='<option value="ALL">All ATA</option>';
   atas.forEach(a=>{
-    const o = document.createElement("option");
-    o.value = a; o.textContent = a;
-    sel.appendChild(o);
+    const o=document.createElement("option"); o.value=a; o.textContent=a; sel.appendChild(o);
   });
 }
-function setTab(tab){ currentTab = tab; renderTasks(); }
+function setTab(tab){ currentTab=tab; renderTasks(); }
 
 /* ======= Assign & Done ======= */
-function assign(i, name){
-  tasks[i].assignedTo = name;
-  saveTasks();
-  renderTasks();
-}
-function markDone(i, checked){
-  if(currentUser?.role !== "LAE"){
-    alert("Only LAE can mark tasks as done.");
-    // reset checkbox visual if needed by rerender
-  }
-  tasks[i].done = !!checked;
-  tasks[i].markedBy = checked ? currentUser.name : "";
-  saveTasks();
-  renderTasks();
+function assign(i,name){ tasks[i].assignedTo=name; saveTasks(); renderTasks(); }
+function markDone(i,checked){
+  if(currentUser?.role!=="LAE"){ alert("Only LAE can mark tasks done."); }
+  tasks[i].done=!!checked; tasks[i].markedBy=checked?currentUser.name:"";
+  saveTasks(); renderTasks();
 }
 
 /* ======= Render ======= */
 function renderTasks(){
-  const filter = document.getElementById("ataFilter").value;
-  const container = document.getElementById("taskList");
-  container.innerHTML = "";
+  const filter=document.getElementById("ataFilter").value;
+  const container=document.getElementById("taskList");
+  container.innerHTML="";
+  let doneCount=0,remainCount=0;
 
-  let doneCount = 0, remainCount = 0;
-
-  // filter by tab & ATA
-  const filtered = tasks.filter(t=>{
-    if(filter !== "ALL" && t.ata !== filter) return false;
-    if(currentUser?.role === "LAE"){
-      if(currentTab === "ASSIGNED") return t.assignedTo === currentUser.name;
-      if(currentTab === "DONE")     return !!t.done;
-      // currentTab "ALL" → show everything (done + not done)
-      return true;
-    }else{
-      // OFFICER: always show all (respect ATA filter only)
+  const filtered=tasks.filter(t=>{
+    if(filter!=="ALL"&&t.ata!==filter) return false;
+    if(currentUser?.role==="LAE"){
+      if(currentTab==="ASSIGNED") return t.assignedTo===currentUser.name;
+      if(currentTab==="DONE") return !!t.done;
       return true;
     }
+    return true;
   });
 
-  filtered.forEach((t, i)=>{
+  filtered.forEach((t,i)=>{
     if(t.done) doneCount++; else remainCount++;
-
-    const card = document.createElement("div");
-    card.className = "task-card" + (t.done ? " done" : "");
-
-    card.innerHTML = `
-      <div class="task-header">${escapeHtml(t.ata || "—")}</div>
-
+    const card=document.createElement("div");
+    card.className="task-card"+(t.done?" done":"");
+    card.innerHTML=`
+      <div class="task-header">${escapeHtml(t.ata||"—")}</div>
       <div class="row">
-        <div class="meta-pill"><span class="lbl">ATA:</span> ${escapeHtml(t.ata || "—")}</div>
-        <div class="meta-pill"><span class="lbl">Manhour:</span> ${escapeHtml(t.manhour || "N/A")}</div>
-        <div class="meta-pill"><span class="lbl">Due:</span> ${escapeHtml(t.due || "N/A")}</div>
+        <div class="meta-pill"><span class="lbl">ATA:</span> ${escapeHtml(t.ata||"—")}</div>
+        <div class="meta-pill"><span class="lbl">Manhour:</span> ${escapeHtml(t.manhour||"N/A")}</div>
+        <div class="meta-pill"><span class="lbl">Due:</span> ${escapeHtml(t.due||"N/A")}</div>
         <div class="meta-pill"><span class="lbl">Assigned To:</span>
-          <span class="${t.assignedTo ? 'assigned-bold' : ''}">
-            ${escapeHtml(t.assignedTo || "None")}
-          </span>
+          <span class="${t.assignedTo?'assigned-bold':''}">${escapeHtml(t.assignedTo||"None")}</span>
         </div>
       </div>
-
-      <div class="block task-meta"><span class="lbl">Task Card:</span> ${escapeHtml(t.card || "—")}</div>
-      <div class="block task-desc"><span class="lbl">Description:</span> ${escapeHtml(t.description || "—")}</div>
-      <div class="block task-tools"><span class="lbl">Tools:</span> ${escapeHtml(t.tools || "—")}</div>
-      <div class="block task-cons"><span class="lbl">Consumables:</span> ${escapeHtml(t.consumables || "—")}</div>
-      <div class="block task-remarks"><span class="lbl">Remarks:</span> ${escapeHtml(t.remarks || "—")}</div>
-
+      <div class="block task-meta"><span class="lbl">Task Card:</span> ${escapeHtml(t.card||"—")}</div>
+      <div class="block task-desc"><span class="lbl">Description:</span> ${escapeHtml(t.description||"—")}</div>
+      <div class="block task-tools"><span class="lbl">Tools:</span> ${escapeHtml(t.tools||"—")}</div>
+      <div class="block task-cons"><span class="lbl">Consumables:</span> ${escapeHtml(t.consumables||"—")}</div>
+      <div class="block task-remarks"><span class="lbl">Remarks:</span> ${escapeHtml(t.remarks||"—")}</div>
       <div class="task-actions">
-        ${
-          currentUser?.role === "OFFICER"
-          ? `Assign:
-              <select onchange="assign(${indexInAll(i, filtered)}, this.value)">
-                <option value="">Assign to...</option>
-                ${staffNames.map(n=>`<option value="${escapeHtml(n)}" ${t.assignedTo===n?'selected':''}>${escapeHtml(n)}</option>`).join("")}
-              </select>`
-          : ``
-        }
-        ${
-          currentUser?.role === "LAE"
-          ? `<label><input type="checkbox" ${t.done?"checked":""}
-                onchange="markDone(${indexInAll(i, filtered)}, this.checked)"> Mark Done</label>`
-          : ``
-        }
-      </div>
-    `;
-
+        ${currentUser?.role==="OFFICER"
+          ? `Assign:<select onchange="assign(${indexInAll(i,filtered)},this.value)">
+              <option value="">Assign to...</option>
+              ${staffNames.map(n=>`<option value="${escapeHtml(n)}" ${t.assignedTo===n?'selected':''}>${escapeHtml(n)}</option>`).join("")}
+             </select>`:""}
+        ${currentUser?.role==="LAE"
+          ? `<label><input type="checkbox" ${t.done?"checked":""} onchange="markDone(${indexInAll(i,filtered)},this.checked)"> Mark Done</label>`:""}
+      </div>`;
     container.appendChild(card);
   });
 
-  document.getElementById("taskDone").textContent = doneCount;
-  document.getElementById("taskRemaining").textContent = remainCount;
+  document.getElementById("taskDone").textContent=doneCount;
+  document.getElementById("taskRemaining").textContent=remainCount;
 }
-
-/* Map filtered index back to absolute index in tasks (safe for assign/mark) */
-function indexInAll(filteredIndex, filteredArray){
-  // find by object reference
-  const obj = filteredArray[filteredIndex];
-  return tasks.indexOf(obj);
-}
-
-/* ======= Utils ======= */
-function escapeHtml(s){
-  return String(s ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#39;");
-}
+function indexInAll(filteredIndex,filteredArray){ return tasks.indexOf(filteredArray[filteredIndex]); }
+function escapeHtml(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 </script>
 
 </body>
