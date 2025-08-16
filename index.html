@@ -16,7 +16,6 @@
     }
     .done { background:#d4f8d4 !important; }
 
-    /* Colors for details inside task card */
     .task-header { font-weight:bold; font-size:16px; color:#8B0000; margin-bottom:8px; }
     .task-meta { background:#eef7ff; padding:6px; border-radius:6px; margin:4px 0; }
     .task-desc { background:#fff3e6; padding:6px; border-radius:6px; margin:4px 0; }
@@ -29,9 +28,7 @@
     button { margin:5px; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; }
     .logout { background:#8B0000; color:white; }
     .back { background:#555; color:white; }
-    .filter-section { margin:10px 0; }
-
-    /* Bold name styling */
+    .tab-btn { background:#317EFB; color:white; }
     .assigned-bold { font-weight:bold; color:#000; }
   </style>
 </head>
@@ -41,7 +38,7 @@
 
 <div id="loginSection">
   <h3>Login</h3>
-  <label>Name: <select id="nameInput"></></label><br>
+  <label>Name: <select id="nameInput"></select></label><br>
   <label>ID: <input type="text" id="idInput"></label><br>
   <label>Role: 
     <select id="roleInput">
@@ -79,21 +76,22 @@
     </label>
   </div>
 
-  <button onclick="showAssigned()">Show Assigned To Me</button>
-  <button onclick="showAll()">Show All</button>
+  <div id="tabs" class="hidden">
+    <button class="tab-btn" onclick="setTab('ALL')">All Task Cards</button>
+    <button class="tab-btn" onclick="setTab('ASSIGNED')">Assigned To Me</button>
+    <button class="tab-btn" onclick="setTab('DONE')">Done Task Cards</button>
+  </div>
 
   <div id="taskList"></div>
-
-  <h3>Finished Tasks</h3>
-  <div id="doneList"></div>
 </div>
 
 <script>
 const staffNames=[
   "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
-  "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK" // extend list
+  "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
+  // ... continue with your full list
 ];
-let tasks=[],currentUser=null,showOnlyAssigned=false;
+let tasks=[],currentUser=null,currentTab="ALL";
 
 function populateNames(){
   const sel=document.getElementById("nameInput");
@@ -114,6 +112,7 @@ function login(){
   document.getElementById("appSection").classList.remove("hidden");
   document.getElementById("welcome").textContent=`Welcome ${name} (${role})`;
   if(role==="OFFICER") document.getElementById("officerSection").classList.remove("hidden");
+  if(role==="LAE") document.getElementById("tabs").classList.remove("hidden");
   renderTasks();
   startClock();
 }
@@ -123,8 +122,8 @@ function logout(){
   document.getElementById("appSection").classList.add("hidden");
   document.getElementById("officerSection").classList.add("hidden");
   document.getElementById("taskList").innerHTML="";
-  document.getElementById("doneList").innerHTML="";
   document.getElementById("loginSection").classList.remove("hidden");
+  document.getElementById("tabs").classList.add("hidden");
 }
 
 function back(){renderTasks();}
@@ -176,16 +175,19 @@ function populateATAFilter(){
   atas.forEach(a=>{let o=document.createElement("option");o.value=a;o.textContent=a;sel.appendChild(o);});
 }
 
+function setTab(tab){currentTab=tab;renderTasks();}
+
 function renderTasks(){
   let filter=document.getElementById("ataFilter").value;
   let container=document.getElementById("taskList");container.innerHTML="";
-  let doneC=document.getElementById("doneList");doneC.innerHTML="";
+  let doneCount=0,remainCount=0;
   let show=tasks.filter(t=>{
-    if(showOnlyAssigned && currentUser.role==="LAE" && t.assignedTo!==currentUser.name) return false;
     if(filter!=="ALL" && t.ata!==filter) return false;
+    if(currentTab==="ASSIGNED" && t.assignedTo!==currentUser.name) return false;
+    if(currentTab==="DONE" && !t.done) return false;
+    if(currentTab==="ALL" && t.done && currentUser.role==="LAE") return false; // hide done from "all" for LAE
     return true;
   });
-  let doneCount=0,remainCount=0;
   show.forEach((t,i)=>{
     let div=document.createElement("div");
     div.className="task-card"+(t.done?" done":"");
@@ -204,7 +206,7 @@ function renderTasks(){
         ${currentUser.role==="LAE"?`<label><input type="checkbox" ${t.done?"checked":""} onchange="markDone(${i},this.checked)"> Mark Done</label>`:""}
       </div>
     `;
-    if(t.done) doneC.appendChild(div); else container.appendChild(div);
+    container.appendChild(div);
     if(t.done) doneCount++; else remainCount++;
   });
   document.getElementById("taskDone").textContent=doneCount;
@@ -218,8 +220,6 @@ function markDone(i,checked){
 }
 
 function assign(i,name){tasks[i].assignedTo=name;renderTasks();}
-function showAssigned(){showOnlyAssigned=true;renderTasks();}
-function showAll(){showOnlyAssigned=false;renderTasks();}
 </script>
 
 </body>
