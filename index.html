@@ -16,6 +16,8 @@
     button { margin:5px; padding:8px 12px; border:none; border-radius:6px; background:#8b0020; color:white; cursor:pointer; }
     button:hover { background:#a61e34; }
     select, input { padding:5px; margin:5px 0; }
+    #stats { margin:10px 0; font-weight:bold; }
+    #dateTime { margin-bottom: 10px; font-size:14px; color:#444; }
   </style>
 </head>
 <body>
@@ -51,20 +53,22 @@
     <!-- LAE Screen -->
     <div id="laeScreen" class="hidden">
       <h3>Task Cards</h3>
+      <div id="dateTime"></div>
+      <div id="stats"></div>
       <button onclick="showDoneTasks()">View Done Tasks</button>
       <div id="taskList"></div>
+      <h3>Completed Tasks</h3>
+      <div id="doneList"></div>
     </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
-    // === Names from roster ===
+    // === Names from roster (shortened for demo) ===
     const demoNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
-      "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK",
-      "UMEIR BIN SHUKRY OMAR TALIB","MOHD MAHDIR BIN ABDUL MANAN","ABU NOR RAZY BIN ABDULLAH @ ANBARASU",
-      "ZARIN DARUS BIN ABDUL RAHMAN","MOHAMMAD ZAHID BIN AFTAB","AJMER SINGH A/L SUKHBIR SINGH"
-      // ...continue with the full list you pasted
+      "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
+      // ... full list here
     ];
 
     function populateNames(){
@@ -87,7 +91,11 @@
       document.getElementById("loginScreen").classList.add("hidden");
       document.getElementById("signOutBtn").classList.remove("hidden");
       if(role==="officer"){ document.getElementById("officerScreen").classList.remove("hidden"); }
-      else{ document.getElementById("laeScreen").classList.remove("hidden"); renderTasks(uploadedTasks); }
+      else{
+        document.getElementById("laeScreen").classList.remove("hidden"); 
+        renderTasks(uploadedTasks);
+        updateDateTime();
+      }
     }
 
     function signOut(){
@@ -130,7 +138,8 @@
 
     function renderTasks(tasks){
       const list=document.getElementById("taskList");
-      list.innerHTML="";
+      const doneList=document.getElementById("doneList");
+      list.innerHTML=""; doneList.innerHTML="";
       if(!tasks.length){ list.innerHTML="<p>No tasks</p>"; return; }
       tasks.forEach((t,i)=>{
         const div=document.createElement("div");
@@ -139,8 +148,9 @@
           <p>${t.description||""}</p>
           <small>ATA: ${t.ata||""} | Manhour: ${t.manhour} | Due: ${t.due}</small><br>
           <label><input type="checkbox" ${t.done?"checked":""} onchange="toggleDone(${i})"> Done</label>`;
-        list.appendChild(div);
+        if(t.done) doneList.appendChild(div); else list.appendChild(div);
       });
+      updateStats();
     }
 
     function toggleDone(index){
@@ -157,6 +167,19 @@
     function goBack(){
       renderTasks(uploadedTasks);
       document.getElementById("backBtn").classList.add("hidden");
+    }
+
+    function updateDateTime(){
+      const now=new Date();
+      const options={ weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' };
+      document.getElementById("dateTime").innerText="Today: "+now.toLocaleDateString("en-MY",options);
+    }
+
+    function updateStats(){
+      const total=uploadedTasks.length;
+      const done=uploadedTasks.filter(t=>t.done).length;
+      const remaining=total-done;
+      document.getElementById("stats").innerText=`Total: ${total} | Done: ${done} | Remaining: ${remaining}`;
     }
   </script>
 </body>
