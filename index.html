@@ -20,6 +20,7 @@
     .assigned-bold { font-weight:bold; color:#800000; }
     nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
     nav button:hover { background:#a00000; }
+    #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
   </style>
 </head>
 <body>
@@ -58,6 +59,7 @@
       <div id="allTasks"></div>
       <div id="assignedTasks" class="hidden"></div>
       <div id="doneTasks" class="hidden"></div>
+      <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
     </div>
   </div>
 
@@ -65,7 +67,7 @@
   <script>
     let staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
-      "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK" 
+      "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
       // ... continue your ~400 names here
     ];
 
@@ -101,6 +103,7 @@
       currentUser=null;
       document.getElementById("app").classList.add("hidden");
       document.getElementById("loginPage").classList.remove("hidden");
+      document.getElementById("allDoneMsg").classList.add("hidden");
     }
 
     function handleFile(e){
@@ -131,6 +134,7 @@
     function showSection(id){
       document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
+      document.getElementById("allDoneMsg").classList.add("hidden"); // hide message by default
       renderTasks();
     }
 
@@ -148,6 +152,15 @@
           }
         }
       });
+
+      // check if all assigned tasks are done
+      if(currentUser?.role==="LAE"){
+        const userAssigned=allTasks.filter(t=>t.assignedTo===currentUser.name);
+        const userDone=userAssigned.filter(t=>t.done);
+        if(userAssigned.length>0 && userAssigned.length===userDone.length){
+          document.getElementById("allDoneMsg").classList.remove("hidden");
+        }
+      }
 
       for(let sec in sections){
         let cont=document.getElementById(sec);
