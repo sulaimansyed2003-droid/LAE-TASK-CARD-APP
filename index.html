@@ -41,7 +41,7 @@
 
 <div id="loginSection">
   <h3>Login</h3>
-  <label>Name: <select id="nameInput"></select></label><br>
+  <label>Name: <select id="nameInput"></></label><br>
   <label>ID: <input type="text" id="idInput"></label><br>
   <label>Role: 
     <select id="roleInput">
@@ -145,26 +145,24 @@ function loadExcel(e){
     let workbook=XLSX.read(data,{type:"array"});
     let sheet=workbook.Sheets[workbook.SheetNames[0]];
     let json=XLSX.utils.sheet_to_json(sheet,{header:1});
-    let raw=json.slice(1);let grouped=[];let current=null;
+    let raw=json.slice(1); // skip headers
+    let loaded=[];
     raw.forEach(r=>{
-      let ata=r[0]||"", card=r[1]||"", desc=r[2]||"", tools=r[3]||"", cons=r[4]||"", remarks=r[5]||"",
-          manhour=r[6]||"", due=r[7]||"", assigned=r[8]||"";
-      if(card===""&&desc===""){
-        if(current) grouped.push(current);
-        current={ata:ata,card:"",description:"",tools:"",consumables:"",remarks:"",
-                 manhour:manhour,due:due,assignedTo:assigned,done:false,markedBy:""};
-      } else {
-        if(current){
-          current.card+=(current.card?" | ":"")+card;
-          current.description+=" "+desc;
-          if(tools) current.tools+=" "+tools;
-          if(cons) current.consumables+=" "+cons;
-          if(remarks) current.remarks+=" "+remarks;
-        }
-      }
+      loaded.push({
+        ata:r[0]||"",
+        card:r[1]||"",
+        description:r[2]||"",
+        tools:r[3]||"",
+        consumables:r[4]||"",
+        remarks:r[5]||"",
+        manhour:r[6]||"",
+        due:r[7]||"",
+        assignedTo:r[8]||"",
+        done:false,
+        markedBy:""
+      });
     });
-    if(current) grouped.push(current);
-    tasks=grouped;
+    tasks=loaded;
     populateATAFilter();
     renderTasks();
   };
