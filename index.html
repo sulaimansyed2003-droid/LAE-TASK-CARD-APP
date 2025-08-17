@@ -68,11 +68,12 @@
     let staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
-      // ... add the rest of your ~400 names here
+      // ... rest of your 400+ names
     ];
 
     let allTasks = [];
     let currentUser = null;
+    let availableATAs = []; // ✅ dynamic ATA list
 
     function populateNames(){
       const sel=document.getElementById("nameInput");
@@ -115,7 +116,7 @@
         const sheet=workbook.Sheets[workbook.SheetNames[0]];
         const json=XLSX.utils.sheet_to_json(sheet);
         allTasks=json.map(r=>({
-          ata:r["ATA"]||"",   // ✅ include ATA number
+          ata:r["ATA"]||"",
           card:r["TASK CARD NUM/ AMM REF"]||"",
           description:r["TASK DESCRIPTION"]||"",
           tools:r["TOOLS / TESTSET"]||"",
@@ -126,6 +127,8 @@
           assignedTo:"",
           done:false
         }));
+        // ✅ collect unique ATAs dynamically
+        availableATAs=[...new Set(allTasks.map(t=>t.ata).filter(v=>v))];
         renderTasks();
       };
       reader.readAsArrayBuffer(file);
@@ -134,7 +137,7 @@
     function showSection(id){
       document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
-      document.getElementById("allDoneMsg").classList.add("hidden"); // hide by default
+      document.getElementById("allDoneMsg").classList.add("hidden");
       renderTasks();
     }
 
@@ -153,7 +156,6 @@
         }
       });
 
-      // check if all assigned tasks are done
       if(currentUser?.role==="LAE"){
         const userAssigned=allTasks.filter(t=>t.assignedTo===currentUser.name);
         const userDone=userAssigned.filter(t=>t.done);
@@ -202,12 +204,12 @@
     function markDone(i,done){ allTasks[i].done=done; renderTasks(); }
 
     function populateATAFilter(){
-      if(document.getElementById("ataSelect")) return;
       let div=document.getElementById("ataFilter");
+      div.innerHTML="";
       let sel=document.createElement("select");
       sel.id="ataSelect";
       sel.innerHTML='<option value="ALL">All ATA</option>';
-      for(let n=1;n<=40;n++){sel.innerHTML+=`<option value="${n}">ATA ${n}</option>`;}
+      availableATAs.forEach(a=>{ sel.innerHTML+=`<option value="${a}">ATA ${a}</option>`; });
       sel.onchange=()=>renderTasks();
       div.appendChild(sel);
     }
