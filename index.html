@@ -21,6 +21,10 @@
     nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
     nav button:hover { background:#a00000; }
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
+    #assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
+    #assignedOverview h3 { color:#800000; margin-bottom:10px; }
+    #assignedOverview ul { list-style:none; padding-left:0; }
+    #assignedOverview li { margin:4px 0; }
   </style>
 </head>
 <body>
@@ -52,6 +56,10 @@
     <div id="officerSection" class="hidden">
       <h2>Officer Panel</h2>
       <input type="file" id="fileInput" accept=".xlsx" onchange="handleFile(event)">
+      <div id="assignedOverview" class="hidden">
+        <h3>LAE Assigned Tasks Overview</h3>
+        <div id="overviewList"></div>
+      </div>
     </div>
 
     <div class="container">
@@ -68,7 +76,6 @@
     let staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
-      // ... rest of your names
     ];
 
     let allTasks = [];
@@ -90,9 +97,14 @@
       currentUser={id,name,role};
       document.getElementById("loginPage").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
-      if(role==="OFFICER"){ document.getElementById("officerSection").classList.remove("hidden"); }
-      else{ document.getElementById("officerSection").classList.add("hidden"); }
+      if(role==="OFFICER"){ 
+        document.getElementById("officerSection").classList.remove("hidden"); 
+        document.getElementById("assignedOverview").classList.remove("hidden");
+      } else { 
+        document.getElementById("officerSection").classList.add("hidden"); 
+      }
       updateLoginTime();
+      renderTasks();
     }
 
     function updateLoginTime(){
@@ -155,11 +167,33 @@
         }
       });
 
+      // Show message for LAE when all assigned tasks done
       if(currentUser?.role==="LAE"){
         const userAssigned=allTasks.filter(t=>t.assignedTo===currentUser.name);
         const userDone=userAssigned.filter(t=>t.done);
         if(userAssigned.length>0 && userAssigned.length===userDone.length){
           document.getElementById("allDoneMsg").classList.remove("hidden");
+        }
+      }
+
+      // Populate officer overview of LAE assigned tasks
+      if(currentUser?.role==="OFFICER"){
+        let overviewDiv=document.getElementById("overviewList");
+        let laeTasks={};
+        allTasks.forEach(t=>{
+          if(t.assignedTo){ 
+            if(!laeTasks[t.assignedTo]) laeTasks[t.assignedTo]=[];
+            laeTasks[t.assignedTo].push(`${t.card} - ${t.description}`);
+          }
+        });
+        overviewDiv.innerHTML="";
+        for(let lae in laeTasks){
+          let ul=document.createElement("ul");
+          laeTasks[lae].forEach(task=>{ let li=document.createElement("li"); li.textContent=task; ul.appendChild(li); });
+          let div=document.createElement("div");
+          div.innerHTML=`<b>${lae}:</b>`; 
+          div.appendChild(ul);
+          overviewDiv.appendChild(div);
         }
       }
 
@@ -200,7 +234,7 @@
     }
 
     function assign(i,name){ 
-      if(currentUser && currentUser.role==="OFFICER"){ // ✅ only officer can assign
+      if(currentUser && currentUser.role==="OFFICER"){ 
         allTasks[i].assignedTo=name; 
         renderTasks(); 
       } else {
@@ -208,7 +242,10 @@
       }
     }
 
-    function markDone(i,done){ allTasks[i].done=done; renderTasks(); }
+    function markDone(i,done){ 
+      allTasks[i].done=done; 
+      renderTasks(); 
+    }
 
     function populateATAFilter(){
       let div=document.getElementById("ataFilter");
