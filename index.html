@@ -73,7 +73,7 @@
 
     let allTasks = [];
     let currentUser = null;
-    let availableATAs = []; // ✅ dynamic ATA list
+    let availableATAs = [];
 
     function populateNames(){
       const sel=document.getElementById("nameInput");
@@ -127,7 +127,6 @@
           assignedTo:"",
           done:false
         }));
-        // ✅ collect unique ATAs dynamically
         availableATAs=[...new Set(allTasks.map(t=>t.ata).filter(v=>v))];
         renderTasks();
       };
@@ -200,7 +199,12 @@
       populateATAFilter();
     }
 
-    function assign(i,name){ allTasks[i].assignedTo=name; renderTasks(); }
+    function assign(i,name){ 
+      if(currentUser.role==="OFFICER"){ // ✅ only officer can assign
+        allTasks[i].assignedTo=name; 
+        renderTasks(); 
+      }
+    }
     function markDone(i,done){ allTasks[i].done=done; renderTasks(); }
 
     function populateATAFilter(){
