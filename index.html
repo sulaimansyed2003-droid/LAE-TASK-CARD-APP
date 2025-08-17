@@ -68,7 +68,7 @@
     let staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
-      // ... rest of your 400+ names
+      // ... rest of your names
     ];
 
     let allTasks = [];
@@ -200,11 +200,14 @@
     }
 
     function assign(i,name){ 
-      if(currentUser.role==="OFFICER"){ // ✅ only officer can assign
+      if(currentUser && currentUser.role==="OFFICER"){ // ✅ only officer can assign
         allTasks[i].assignedTo=name; 
         renderTasks(); 
+      } else {
+        alert("Only officers can assign tasks.");
       }
     }
+
     function markDone(i,done){ allTasks[i].done=done; renderTasks(); }
 
     function populateATAFilter(){
