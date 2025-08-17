@@ -68,7 +68,7 @@
     let staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
-      // ... continue your ~400 names here
+      // ... add the rest of your ~400 names here
     ];
 
     let allTasks = [];
@@ -115,7 +115,7 @@
         const sheet=workbook.Sheets[workbook.SheetNames[0]];
         const json=XLSX.utils.sheet_to_json(sheet);
         allTasks=json.map(r=>({
-          ata:r["ATA"]||"",
+          ata:r["ATA"]||"",   // ✅ include ATA number
           card:r["TASK CARD NUM/ AMM REF"]||"",
           description:r["TASK DESCRIPTION"]||"",
           tools:r["TOOLS / TESTSET"]||"",
@@ -134,7 +134,7 @@
     function showSection(id){
       document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
-      document.getElementById("allDoneMsg").classList.add("hidden"); // hide message by default
+      document.getElementById("allDoneMsg").classList.add("hidden"); // hide by default
       renderTasks();
     }
 
