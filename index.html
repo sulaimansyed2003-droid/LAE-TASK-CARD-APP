@@ -28,6 +28,11 @@
     #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
     .btn-toggle { margin:5px 0; padding:6px 10px; background:#800000; color:white; border:none; border-radius:5px; cursor:pointer; }
     .btn-toggle:hover { background:#a00000; }
+    #productivityDashboard { background:#f0f0f0; padding:10px; border-radius:8px; margin:15px 0; }
+    #productivityDashboard h3 { color:#800000; margin-bottom:10px; }
+    #productivityDashboard table { width:100%; border-collapse: collapse; }
+    #productivityDashboard th, #productivityDashboard td { border:1px solid #ccc; padding:6px; text-align:left; }
+    #attendanceSection { margin:10px 0; }
   </style>
 </head>
 <body>
@@ -66,9 +71,20 @@
         <button class="btn-toggle" onclick="toggleOverview()">Show/Hide Assigned Tasks</button>
         <div id="overviewList" class="hidden"></div>
       </div>
+
+      <div id="productivityDashboard">
+        <h3>LAE Productivity Dashboard</h3>
+        <table>
+          <thead>
+            <tr><th>LAE</th><th>Tasks Assigned</th><th>Tasks Done</th><th>Productivity %</th></tr>
+          </thead>
+          <tbody id="productivityBody"></tbody>
+        </table>
+      </div>
     </div>
 
     <div class="container">
+      <div id="attendanceSection"></div>
       <div id="ataFilter"></div>
       <div id="allTasks"></div>
       <div id="assignedTasks" class="hidden"></div>
@@ -84,9 +100,20 @@
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
 
+    // Example roster data (working days)
+    let laeRoster = {
+      "ABDUL FATAH BIN IBRAHIM": ["Mon","Tue","Wed","Thu","Fri"],
+      "MOHD HAFIZ SAZWAN BIN ZAM ZAM": ["Mon","Tue","Thu","Fri"],
+      "MOHAMMAD ZULKIFLEE BIN HUSSIN": ["Tue","Wed","Thu"],
+      "DING JU SHENG": ["Mon","Wed","Fri"],
+      "LEE YOONG JUN": ["Tue","Thu","Fri"],
+      "MUHAMMAD NAZIF BIN ABDUL MALEK": ["Mon","Tue","Wed","Thu","Fri"]
+    };
+
     let allTasks = [];
     let currentUser = null;
     let availableATAs = [];
+    let attendance = {}; // track attendance
 
     function populateNames(){
       const sel=document.getElementById("nameInput");
@@ -114,6 +141,7 @@
         document.getElementById("officerSection").classList.add("hidden"); 
       }
       updateLoginTime();
+      renderAttendance();
       renderTasks();
     }
 
@@ -156,6 +184,19 @@
       reader.readAsArrayBuffer(file);
     }
 
+    function renderAttendance(){
+      const div=document.getElementById("attendanceSection");
+      div.innerHTML="<h3>LAE Attendance</h3>";
+      let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
+      staffNames.forEach(name=>{
+        let present=laeRoster[name].includes(today);
+        attendance[name]=present;
+        let p=document.createElement("p");
+        p.textContent=`${name}: ${present ? "Present ✅" : "Off ❌"}`;
+        div.appendChild(p);
+      });
+    }
+
     function showSection(id){
       document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
@@ -178,7 +219,7 @@
         }
       });
 
-      // LAE all tasks done message
+      // LAE done message
       if(currentUser?.role==="LAE"){
         const userAssigned=allTasks.filter(t=>t.assignedTo===currentUser.name);
         const userDone=userAssigned.filter(t=>t.done);
@@ -206,13 +247,26 @@
           div.appendChild(ul);
           overviewDiv.appendChild(div);
         }
+
+        // Productivity Dashboard
+        let tbody=document.getElementById("productivityBody");
+        tbody.innerHTML="";
+        staffNames.forEach(name=>{
+          let assigned=allTasks.filter(t=>t.assignedTo===name).length;
+          let done=allTasks.filter(t=>t.assignedTo===name && t.done).length;
+          let percent=assigned>0? Math.round(done/assigned*100) : 0;
+          let tr=document.createElement("tr");
+          tr.innerHTML=`<td>${name}</td><td>${assigned}</td><td>${done}</td><td>${percent}%</td>`;
+          tbody.appendChild(tr);
+        });
       }
 
+      // Render task cards
       for(let sec in sections){
         let cont=document.getElementById(sec);
         cont.innerHTML="";
         sections[sec].forEach(([t,i])=>{
-          let canMark=(currentUser.role==="LAE" && t.assignedTo===currentUser.name);
+          let canMark=(currentUser.role==="LAE" && t.assignedTo===currentUser.name && attendance[t.assignedTo]);
           let card=document.createElement("div");
           card.className="task-card"+(t.done?" done":"");
           card.innerHTML=`
@@ -246,6 +300,12 @@
 
     function assign(i,name){ 
       if(currentUser && currentUser.role==="OFFICER"){ 
+        // Check LAE availability today
+        let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
+        if(name && !laeRoster[name].includes(today)){
+          alert(`${name} is off today!`);
+          return;
+        }
         allTasks[i].assignedTo=name; 
         renderTasks(); 
       } else {
