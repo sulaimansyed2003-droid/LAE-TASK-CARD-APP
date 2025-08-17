@@ -25,6 +25,9 @@
     #assignedOverview h3 { color:#800000; margin-bottom:10px; }
     #assignedOverview ul { list-style:none; padding-left:0; }
     #assignedOverview li { margin:4px 0; }
+    #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
+    .btn-toggle { margin:5px 0; padding:6px 10px; background:#800000; color:white; border:none; border-radius:5px; cursor:pointer; }
+    .btn-toggle:hover { background:#a00000; }
   </style>
 </head>
 <body>
@@ -46,6 +49,8 @@
 
   <!-- MAIN APP -->
   <div id="app" class="hidden">
+    <div id="userInfo"></div>
+
     <nav>
       <button onclick="showSection('allTasks')">All Tasks</button>
       <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
@@ -57,8 +62,9 @@
       <h2>Officer Panel</h2>
       <input type="file" id="fileInput" accept=".xlsx" onchange="handleFile(event)">
       <div id="assignedOverview" class="hidden">
-        <h3>LAE Assigned Tasks Overview</h3>
-        <div id="overviewList"></div>
+        <h3>Assigned Tasks Overview</h3>
+        <button class="btn-toggle" onclick="toggleOverview()">Show/Hide Assigned Tasks</button>
+        <div id="overviewList" class="hidden"></div>
       </div>
     </div>
 
@@ -97,6 +103,10 @@
       currentUser={id,name,role};
       document.getElementById("loginPage").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
+
+      // Show user info
+      document.getElementById("userInfo").innerText = `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
+
       if(role==="OFFICER"){ 
         document.getElementById("officerSection").classList.remove("hidden"); 
         document.getElementById("assignedOverview").classList.remove("hidden");
@@ -117,6 +127,7 @@
       document.getElementById("app").classList.add("hidden");
       document.getElementById("loginPage").classList.remove("hidden");
       document.getElementById("allDoneMsg").classList.add("hidden");
+      document.getElementById("userInfo").innerText="";
     }
 
     function handleFile(e){
@@ -167,7 +178,7 @@
         }
       });
 
-      // Show message for LAE when all assigned tasks done
+      // LAE all tasks done message
       if(currentUser?.role==="LAE"){
         const userAssigned=allTasks.filter(t=>t.assignedTo===currentUser.name);
         const userDone=userAssigned.filter(t=>t.done);
@@ -176,14 +187,14 @@
         }
       }
 
-      // Populate officer overview of LAE assigned tasks
+      // Officer assigned task overview
       if(currentUser?.role==="OFFICER"){
         let overviewDiv=document.getElementById("overviewList");
         let laeTasks={};
         allTasks.forEach(t=>{
           if(t.assignedTo){ 
             if(!laeTasks[t.assignedTo]) laeTasks[t.assignedTo]=[];
-            laeTasks[t.assignedTo].push(`${t.card} - ${t.description}`);
+            laeTasks[t.assignedTo].push(`${t.card} - ${t.description} ${t.done?'✅':''}`);
           }
         });
         overviewDiv.innerHTML="";
@@ -256,6 +267,11 @@
       availableATAs.forEach(a=>{ sel.innerHTML+=`<option value="${a}">ATA ${a}</option>`; });
       sel.onchange=()=>renderTasks();
       div.appendChild(sel);
+    }
+
+    function toggleOverview(){
+      const ov=document.getElementById("overviewList");
+      ov.classList.toggle("hidden");
     }
   </script>
 </body>
