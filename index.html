@@ -491,7 +491,10 @@
     function computeTodayOnOff(){
       workingToday = []; offToday = [];
       const col = findTodayColumnIndex();
-      if(col<0) { return; }
+      if(col<0) { 
+        console.error("Could not find today's column in roster");
+        return; 
+      }
 
       // Start scanning rows after header to the end
       for(let r=rosterHeaderRow+1; r<rosterMatrix.length; r++){
@@ -501,10 +504,10 @@
 
         let code = row[col];
         if(code == null) code = "";
-        code = code.toString().trim();
+        code = code.toString().trim().toUpperCase();
 
         const offCodes = ['OFF','AL','SL','ML','EL','PH','MC','OFFDAY','OFF DAY','LEAVE','HOL','PHL','ANNUAL LEAVE','SICK LEAVE'];
-        const isOff = (code==="" || offCodes.includes(code.toUpperCase()));
+        const isOff = (code==="" || offCodes.includes(code));
         if(isOff){
           offToday.push({name, code: code || '—'});
         } else {
@@ -526,14 +529,14 @@
         const div=document.createElement('div');
         div.className='name-item';
         div.dataset.name=item.name.toLowerCase();
-        div.textContent=`${item.name}  (${item.code})`;
+        div.textContent=`${item.name} (${item.code})`;
         w.appendChild(div);
       });
       offToday.forEach(item=>{
         const div=document.createElement('div');
         div.className='name-item';
         div.dataset.name=item.name.toLowerCase();
-        div.textContent=`${item.name}  (${item.code})`;
+        div.textContent=`${item.name} (${item.code})`;
         o.appendChild(div);
       });
     }
@@ -561,6 +564,7 @@
       rosterPreviewVisible = !rosterPreviewVisible;
       const el = document.getElementById('rosterPreview');
       el.classList.toggle('hidden', !rosterPreviewVisible);
+      if(rosterPreviewVisible) renderRosterPreview();
     }
 
     function renderRosterPreview(){
