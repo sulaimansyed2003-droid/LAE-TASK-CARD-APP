@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Batik Air Task Card App</title>
   <style>
+    /* ALL YOUR ORIGINAL CSS REMAINS EXACTLY THE SAME */
     body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
     header { background:#800000; color:white; padding:10px; text-align:center; position:relative; }
     .login-box { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
@@ -109,6 +110,7 @@
     <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
   </header>
 
+  <!-- MODIFIED: Added Attendance button to mobile menu -->
   <div id="mobileMenu" class="mobile-menu">
     <button onclick="showSection('allTasks'); hideMobileMenu()">All Tasks</button>
     <button onclick="showSection('assignedTasks'); hideMobileMenu()">Assigned Tasks</button>
@@ -118,6 +120,7 @@
     <button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
   </div>
 
+  <!-- Your existing login page remains exactly the same -->
   <div id="loginPage" class="login-box">
     <h2>Login</h2>
     <input type="text" id="idInput" placeholder="Enter your ID">
@@ -131,9 +134,11 @@
     <div id="loginTime"></div>
   </div>
 
+  <!-- MAIN APP -->
   <div id="app" class="hidden">
     <div id="userInfo"></div>
 
+    <!-- MODIFIED: Added Attendance button to main navigation -->
     <nav>
       <button onclick="showSection('allTasks')">All Tasks</button>
       <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
@@ -164,7 +169,10 @@
     </div>
 
     <div class="container">
+      <!-- MODIFIED: Made attendance section hidden by default -->
       <div id="attendanceSection" class="hidden"></div>
+      
+      <!-- Rest of your container content remains exactly the same -->
       <div id="ataFilter"></div>
       <div id="allTasks"></div>
       <div id="assignedTasks" class="hidden"></div>
@@ -211,6 +219,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
+    // ALL YOUR ORIGINAL JAVASCRIPT VARIABLES REMAIN THE SAME
     let staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
@@ -237,6 +246,7 @@
     let offToday = [];
     let rosterPreviewVisible = false;
 
+    // MODIFIED: Added loadSavedData and saveAppData functions
     function loadSavedData() {
         try {
             const savedData = localStorage.getItem('batikAirAppData');
@@ -267,21 +277,20 @@
 
     loadSavedData();
 
-    function toggleMobileMenu() {
-      document.getElementById('mobileMenu').classList.toggle('show');
+    // MODIFIED: Updated showSection function
+    function showSection(id){
+      document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+      document.getElementById("allDoneMsg").classList.add("hidden");
+      
+      if(id === "attendanceSection") {
+        renderAttendance();
+      } else {
+        renderTasks();
+      }
     }
 
-    function hideMobileMenu() {
-      document.getElementById('mobileMenu').classList.remove('show');
-    }
-
-    function populateNames(){
-      const sel=document.getElementById("nameInput");
-      sel.innerHTML='<option value="">Select your name</option>';
-      staffNames.forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)});
-    }
-    populateNames();
-
+    // MODIFIED: Updated login function (removed renderAttendance call)
     function login(){
       const id=document.getElementById("idInput").value;
       const name=document.getElementById("nameInput").value;
@@ -303,6 +312,42 @@
       renderTasks();
       updateProdDatePill();
     }
+
+    // MODIFIED: Enhanced renderAttendance function
+    function renderAttendance(){
+      const div=document.getElementById("attendanceSection");
+      div.innerHTML="<h3>LAE Attendance</h3>";
+      let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
+      staffNames.forEach(name=>{
+        let present=(laeRoster[name]||[]).includes(today);
+        attendance[name]=present;
+        let p=document.createElement("p");
+        p.textContent=`${name}: ${present ? "Present ✅" : "Off ❌"}`;
+        div.appendChild(p);
+      });
+      
+      let refreshBtn = document.createElement("button");
+      refreshBtn.textContent = "Refresh Attendance";
+      refreshBtn.className = "btn-toggle";
+      refreshBtn.onclick = renderAttendance;
+      div.appendChild(refreshBtn);
+    }
+
+    // ALL YOUR OTHER ORIGINAL FUNCTIONS REMAIN EXACTLY THE SAME
+    function toggleMobileMenu() {
+      document.getElementById('mobileMenu').classList.toggle('show');
+    }
+
+    function hideMobileMenu() {
+      document.getElementById('mobileMenu').classList.remove('show');
+    }
+
+    function populateNames(){
+      const sel=document.getElementById("nameInput");
+      sel.innerHTML='<option value="">Select your name</option>';
+      staffNames.forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)});
+    }
+    populateNames();
 
     function updateLoginTime(){
       const now=new Date();
@@ -345,37 +390,6 @@
         renderTasks();
       };
       reader.readAsArrayBuffer(file);
-    }
-
-    function renderAttendance(){
-      const div=document.getElementById("attendanceSection");
-      div.innerHTML="<h3>LAE Attendance</h3>";
-      let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
-      staffNames.forEach(name=>{
-        let present=(laeRoster[name]||[]).includes(today);
-        attendance[name]=present;
-        let p=document.createElement("p");
-        p.textContent=`${name}: ${present ? "Present ✅" : "Off ❌"}`;
-        div.appendChild(p);
-      });
-      
-      let refreshBtn = document.createElement("button");
-      refreshBtn.textContent = "Refresh Attendance";
-      refreshBtn.className = "btn-toggle";
-      refreshBtn.onclick = renderAttendance;
-      div.appendChild(refreshBtn);
-    }
-
-    function showSection(id){
-      document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
-      document.getElementById(id).classList.remove("hidden");
-      document.getElementById("allDoneMsg").classList.add("hidden");
-      
-      if(id === "attendanceSection") {
-        renderAttendance();
-      } else {
-        renderTasks();
-      }
     }
 
     function renderTasks(){
