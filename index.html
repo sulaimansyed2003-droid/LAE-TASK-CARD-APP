@@ -642,6 +642,146 @@
       el.classList.toggle('hidden', !rosterPreviewVisible);
       if(rosterPreviewVisible) renderRosterPreview();
     }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    // [Previous variable declarations remain the same]
+
+    // NEW: Load saved data from localStorage on page load
+    function loadSavedData() {
+      const savedTasks = localStorage.getItem('batikAirTasks');
+      if (savedTasks) {
+        allTasks = JSON.parse(savedTasks);
+        availableATAs = [...new Set(allTasks.map(t=>t.ata).filter(v=>v))];
+      }
+
+      const savedRoster = localStorage.getItem('batikAirRosterMatrix');
+      if (savedRoster) {
+        rosterMatrix = JSON.parse(savedRoster);
+        detectHeaderAndNameColumn();
+        computeTodayOnOff();
+      }
+    }
+
+    // Call this when the page loads
+    loadSavedData();
+
+    // NEW: Save data to localStorage whenever it changes
+    function saveTasksToStorage() {
+      localStorage.setItem('batikAirTasks', JSON.stringify(allTasks));
+    }
+
+    function saveRosterToStorage() {
+      localStorage.setItem('batikAirRosterMatrix', JSON.stringify(rosterMatrix));
+    }
+
+    // [Previous populateNames() remains the same]
+
+    function login(){
+      const id=document.getElementById("idInput").value;
+      const name=document.getElementById("nameInput").value;
+      const role=document.getElementById("roleInput").value;
+      if(!id||!name||!role){alert("Fill all fields");return;}
+      currentUser={id,name,role};
+      document.getElementById("loginPage").classList.add("hidden");
+      document.getElementById("app").classList.remove("hidden");
+
+      // Show user info
+      document.getElementById("userInfo").innerText = `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
+
+      if(role==="OFFICER"){ 
+        document.getElementById("officerSection").classList.remove("hidden"); 
+        document.getElementById("assignedOverview").classList.remove("hidden");
+      } else { 
+        document.getElementById("officerSection").classList.add("hidden"); 
+      }
+      updateLoginTime();
+      renderAttendance();
+      renderTasks();
+      updateProdDatePill();
+      
+      // NEW: If we have saved tasks, render them immediately
+      if (allTasks.length > 0) {
+        renderTasks();
+      }
+    }
+
+    // [Previous updateLoginTime() remains the same]
+
+    function signOut(){
+      currentUser=null;
+      document.getElementById("app").classList.add("hidden");
+      document.getElementById("loginPage").classList.remove("hidden");
+      document.getElementById("allDoneMsg").classList.add("hidden");
+      document.getElementById("userInfo").innerText="";
+      hideMobileMenu();
+      
+      // NEW: Don't clear tasks/roster data, just the user session
+    }
+
+    function handleFile(e){
+      const file=e.target.files[0];
+      const reader=new FileReader();
+      reader.onload=function(evt){
+        const data=new Uint8Array(evt.target.result);
+        const workbook=XLSX.read(data,{type:'array'});
+        const sheet=workbook.Sheets[workbook.SheetNames[0]];
+        const json=XLSX.utils.sheet_to_json(sheet);
+        allTasks=json.map(r=>({
+          ata:r["ATA"]||"",
+          card:r["TASK CARD NUM/ AMM REF"]||"",
+          description:r["TASK DESCRIPTION"]||"",
+          tools:r["TOOLS / TESTSET"]||"",
+          consumables:r["CONSUMABLES / MSL"]||"",
+          remarks:r["REMARKS"]||"",
+          manhour:r["DURATION MANHOUR"]||"",
+          due:r["DUE"]||"",
+          assignedTo:"",
+          done:false
+        }));
+        availableATAs=[...new Set(allTasks.map(t=>t.ata).filter(v=>v))];
+        
+        // NEW: Save tasks to storage
+        saveTasksToStorage();
+        
+        renderTasks();
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // [Previous renderAttendance() remains the same]
+
+    function handleRosterFile(e){
+      const file = e.target.files[0];
+      if(!file){ return; }
+      const reader = new FileReader();
+      reader.onload = function(evt){
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type:'array' });
+
+        // Prefer "KUL" if it exists; otherwise first sheet
+        const targetSheetName = wb.SheetNames.includes("KUL") ? "KUL" : wb.SheetNames[0];
+        const sheet = wb.Sheets[targetSheetName];
+
+        // 2D matrix for robust parsing
+        const mat = XLSX.utils.sheet_to_json(sheet, { header:1, raw:true });
+        rosterMatrix = mat;
+        
+        // NEW: Save roster to storage
+        saveRosterToStorage();
+        
+        detectHeaderAndNameColumn();
+        computeTodayOnOff();
+        renderProdLists();
+        renderProdStats();
+        renderRosterPreview();
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // [All remaining functions stay exactly the same]
+
+    // Initial date pill
+    updateProdDatePill();
 
     function renderRosterPreview(){
       const el = document.getElementById('rosterPreview');
