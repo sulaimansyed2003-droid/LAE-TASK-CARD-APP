@@ -50,7 +50,7 @@
     table.preview th, table.preview td { border:1px solid #eee; padding:6px; font-size:12px; }
     .muted { color:#666; font-size:12px; }
 
-    /* Mobile menu styles */
+    /* NEW: Mobile menu styles */
     .mobile-menu-btn {
       position: absolute;
       right: 10px;
@@ -60,7 +60,7 @@
       color: white;
       font-size: 24px;
       cursor: pointer;
-      display: none;
+      display: none; /* Hidden by default, shown on mobile */
     }
     .mobile-menu {
       position: fixed;
@@ -106,9 +106,11 @@
 <body>
   <header>
     <h1>Batik Air Task Card System</h1>
+    <!-- NEW: Mobile menu button -->
     <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
   </header>
 
+  <!-- NEW: Mobile menu -->
   <div id="mobileMenu" class="mobile-menu">
     <button onclick="showSection('allTasks'); hideMobileMenu()">All Tasks</button>
     <button onclick="showSection('assignedTasks'); hideMobileMenu()">Assigned Tasks</button>
@@ -117,6 +119,7 @@
     <button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
   </div>
 
+  <!-- LOGIN PAGE -->
   <div id="loginPage" class="login-box">
     <h2>Login</h2>
     <input type="text" id="idInput" placeholder="Enter your ID">
@@ -130,6 +133,7 @@
     <div id="loginTime"></div>
   </div>
 
+  <!-- MAIN APP -->
   <div id="app" class="hidden">
     <div id="userInfo"></div>
 
@@ -214,6 +218,7 @@
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
 
+    // Example roster data for in-app attendance section (working days)
     let laeRoster = {
       "ABDUL FATAH BIN IBRAHIM": ["Mon","Tue","Wed","Thu","Fri"],
       "MOHD HAFIZ SAZWAN BIN ZAM ZAM": ["Mon","Tue","Thu","Fri"],
@@ -226,46 +231,17 @@
     let allTasks = [];
     let currentUser = null;
     let availableATAs = [];
-    let attendance = {};
-    let rosterMatrix = [];
-    let rosterHeaderRow = -1;
-    let rosterNameCol = 0;
-    let workingToday = [];
-    let offToday = [];
+    let attendance = {}; // simple presence marker for the in-app attendance card
+
+    // --- NEW: Roster Dashboard State ---
+    let rosterMatrix = [];      // 2D array from uploaded Excel (header:1)
+    let rosterHeaderRow = -1;   // index of header row with day numbers
+    let rosterNameCol = 0;      // column index holding names
+    let workingToday = [];      // [{name, code}]
+    let offToday = [];          // [{name, code}]
     let rosterPreviewVisible = false;
 
-    // NEW: Data persistence functions
-    function loadSavedData() {
-        try {
-            const savedData = localStorage.getItem('batikAirAppData');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                if (data.tasks) {
-                    allTasks = data.tasks;
-                    availableATAs = [...new Set(allTasks.map(t => t.ata).filter(v => v))];
-                }
-                if (data.rosterMatrix) {
-                    rosterMatrix = data.rosterMatrix;
-                    detectHeaderAndNameColumn();
-                    computeTodayOnOff();
-                }
-            }
-        } catch (e) {
-            console.error("Error loading saved data:", e);
-        }
-    }
-
-    function saveAppData() {
-        const data = {
-            tasks: allTasks,
-            rosterMatrix: rosterMatrix
-        };
-        localStorage.setItem('batikAirAppData', JSON.stringify(data));
-    }
-
-    // Load saved data when page loads
-    loadSavedData();
-
+    // NEW: Mobile menu functions
     function toggleMobileMenu() {
       document.getElementById('mobileMenu').classList.toggle('show');
     }
@@ -290,6 +266,7 @@
       document.getElementById("loginPage").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
 
+      // Show user info
       document.getElementById("userInfo").innerText = `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
 
       if(role==="OFFICER"){ 
@@ -339,10 +316,6 @@
           done:false
         }));
         availableATAs=[...new Set(allTasks.map(t=>t.ata).filter(v=>v))];
-        
-        // Save imported tasks
-        saveAppData();
-        
         renderTasks();
       };
       reader.readAsArrayBuffer(file);
@@ -383,6 +356,7 @@
         }
       });
 
+      // LAE done message
       if(currentUser?.role==="LAE"){
         const userAssigned=allTasks.filter(t=>t.assignedTo===currentUser.name);
         const userDone=userAssigned.filter(t=>t.done);
@@ -391,6 +365,7 @@
         }
       }
 
+      // Officer assigned task overview & productivity from task data
       if(currentUser?.role==="OFFICER"){
         let overviewDiv=document.getElementById("overviewList");
         let laeTasks={};
@@ -410,6 +385,7 @@
           overviewDiv.appendChild(div);
         }
 
+        // Productivity Dashboard (task-based)
         let tbody=document.getElementById("productivityBody");
         tbody.innerHTML="";
         staffNames.forEach(name=>{
@@ -422,6 +398,7 @@
         });
       }
 
+      // Render task cards
       for(let sec in sections){
         let cont=document.getElementById(sec);
         cont.innerHTML="";
@@ -460,16 +437,13 @@
 
     function assign(i,name){ 
       if(currentUser && currentUser.role==="OFFICER"){ 
+        // Check LAE availability today (simple in-app roster guard)
         let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
         if(name && !(laeRoster[name]||[]).includes(today)){
           alert(`${name} is off today!`);
           return;
         }
         allTasks[i].assignedTo=name; 
-        
-        // Save after assignment
-        saveAppData();
-        
         renderTasks(); 
       } else {
         alert("Only officers can assign tasks.");
@@ -478,10 +452,6 @@
 
     function markDone(i,done){ 
       allTasks[i].done=done; 
-      
-      // Save after marking done
-      saveAppData();
-      
       renderTasks(); 
     }
 
@@ -501,6 +471,9 @@
       ov.classList.toggle("hidden");
     }
 
+    // --------------------------
+    // NEW: Productivity Dashboard (Roster Upload)
+    // --------------------------
     function updateProdDatePill(){
       const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
       const nice = nowMY.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric', timeZone:'Asia/Kuala_Lumpur' });
@@ -515,15 +488,13 @@
         const data = new Uint8Array(evt.target.result);
         const wb = XLSX.read(data, { type:'array' });
 
+        // Prefer "KUL" if it exists; otherwise first sheet
         const targetSheetName = wb.SheetNames.includes("KUL") ? "KUL" : wb.SheetNames[0];
         const sheet = wb.Sheets[targetSheetName];
 
+        // 2D matrix for robust parsing
         const mat = XLSX.utils.sheet_to_json(sheet, { header:1, raw:true });
         rosterMatrix = mat;
-        
-        // Save imported roster
-        saveAppData();
-        
         detectHeaderAndNameColumn();
         computeTodayOnOff();
         renderProdLists();
@@ -535,6 +506,7 @@
 
     function detectHeaderAndNameColumn(){
       rosterHeaderRow = -1; rosterNameCol = 0;
+      // Find a row that contains many day numbers 1..31 (typical roster layout)
       let bestRow = -1, bestCount = -1;
       for(let r=0; r<Math.min(rosterMatrix.length, 10); r++){
         let row = rosterMatrix[r]||[];
@@ -543,6 +515,7 @@
       }
       rosterHeaderRow = bestRow >= 0 ? bestRow : 0;
 
+      // Try find "Name" column, else assume first column
       let nameCol = 0;
       const headerCandidates = [rosterHeaderRow-1, rosterHeaderRow, rosterHeaderRow+1].filter(x=>x>=0);
       for(const hr of headerCandidates){
@@ -559,6 +532,7 @@
 
     function isDayNumber(cell){
       if(cell == null) return false;
+      // number 1..31 or string "1".."31"
       if(typeof cell === 'number') return cell>=1 && cell<=31;
       const s = cell.toString().trim();
       if(!s) return false;
@@ -568,7 +542,7 @@
 
     function getTodayDayNumberMYT(){
       const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
-      return nowMY.getDate();
+      return nowMY.getDate(); // day of month 1..31
     }
 
     function findTodayColumnIndex(){
@@ -576,12 +550,14 @@
       const header = rosterMatrix[rosterHeaderRow] || [];
       const d = getTodayDayNumberMYT();
 
+      // exact match first (number), then string
       for(let c=0;c<header.length;c++){
         if(typeof header[c]==='number' && header[c]===d) return c;
       }
       for(let c=0;c<header.length;c++){
         if((header[c]||"").toString().trim()===String(d)) return c;
       }
+      // fallback: try zero-padded day ("01")
       for(let c=0;c<header.length;c++){
         if((header[c]||"").toString().trim()===String(d).padStart(2,'0')) return c;
       }
@@ -596,10 +572,11 @@
         return; 
       }
 
+      // Start scanning rows after header to the end
       for(let r=rosterHeaderRow+1; r<rosterMatrix.length; r++){
         const row = rosterMatrix[r]||[];
         let name = (row[rosterNameCol]||"").toString().trim();
-        if(!name) continue;
+        if(!name) continue; // skip blank rows
 
         let code = row[col];
         if(code == null) code = "";
@@ -614,6 +591,7 @@
         }
       }
 
+      // Sort alphabetically
       workingToday.sort((a,b)=> a.name.localeCompare(b.name));
       offToday.sort((a,b)=> a.name.localeCompare(b.name));
     }
@@ -665,11 +643,13 @@
       if(rosterPreviewVisible) renderRosterPreview();
     }
 
+
     function renderRosterPreview(){
       const el = document.getElementById('rosterPreview');
       if(!el) return;
-      if(!rosterPreviewVisible) return;
+      if(!rosterPreviewVisible) return; // only render when visible
 
+      // Build small preview table (up to 30 rows x 20 cols for performance)
       const maxRows = Math.min(rosterMatrix.length, 30);
       const maxCols = Math.min((rosterMatrix[0]||[]).length, 20);
       let html = '<table class="preview"><thead><tr>';
@@ -690,6 +670,7 @@
       el.innerHTML = html;
     }
 
+    // Initial date pill
     updateProdDatePill();
   </script>
 </body>
