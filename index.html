@@ -256,251 +256,256 @@
         div.appendChild(p);
       });
     }
-<!-- --- CHUNK 3 --- -->
 <script>
-  // --- Show / Switch Sections ---
-  function showSection(id){
-    document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
-    document.getElementById(id).classList.remove("hidden");
-    document.getElementById("allDoneMsg").classList.add("hidden");
-    renderTasks();
+let rosterMatrix = [];
+let rosterHeaderRow = -1;
+let rosterNameCol = 0;
+let workingToday = [];
+let offToday = [];
+let rosterPreviewVisible = false;
+
+// --- TASK & SECTION FUNCTIONS ---
+function showSection(id){
+  document.querySelectorAll(".container > div").forEach(d => d.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  if(currentUser) renderTasks();
+  document.getElementById("allDoneMsg")?.classList.add("hidden");
+}
+
+function renderTasks(){
+  if(!currentUser) return; // prevent running before login
+
+  let ataFilter = document.getElementById("ataSelect")?.value || "ALL";
+  let filterFn = t => (ataFilter === "ALL" || t.ata === ataFilter);
+  let sections = {allTasks: [], assignedTasks: [], doneTasks: []};
+
+  allTasks.forEach((t, i) => {
+    if(filterFn(t)){
+      if(t.done){ sections.doneTasks.push([t,i]); }
+      else {
+        sections.allTasks.push([t,i]);
+        if(t.assignedTo === currentUser.name){ sections.assignedTasks.push([t,i]); }
+      }
+    }
+  });
+
+  if(currentUser.role === "LAE"){
+    const userAssigned = allTasks.filter(t => t.assignedTo === currentUser.name);
+    const userDone = userAssigned.filter(t => t.done);
+    if(userAssigned.length > 0 && userAssigned.length === userDone.length){
+      document.getElementById("allDoneMsg")?.classList.remove("hidden");
+    }
   }
 
-  // --- Render Tasks / Task Cards ---
-  function renderTasks(){
-    let ataFilter = document.getElementById("ataSelect")?.value || "ALL";
-    let filterFn = t => (ataFilter==="ALL" || t.ata===ataFilter);
-    let sections = { allTasks:[], assignedTasks:[], doneTasks:[] };
-
-    allTasks.forEach((t,i)=>{
-      if(filterFn(t)){
-        if(t.done){ sections.doneTasks.push([t,i]); }
-        else {
-          sections.allTasks.push([t,i]);
-          if(t.assignedTo===currentUser?.name){ sections.assignedTasks.push([t,i]); }
-        }
+  if(currentUser.role === "OFFICER"){
+    let overviewDiv = document.getElementById("overviewList");
+    let laeTasks = {};
+    allTasks.forEach(t => {
+      if(t.assignedTo){
+        if(!laeTasks[t.assignedTo]) laeTasks[t.assignedTo] = [];
+        laeTasks[t.assignedTo].push(`${t.card} - ${t.description} ${t.done?'✅':''}`);
       }
     });
-
-    // LAE done message
-    if(currentUser?.role==="LAE"){
-      const userAssigned = allTasks.filter(t=>t.assignedTo===currentUser.name);
-      const userDone = userAssigned.filter(t=>t.done);
-      if(userAssigned.length>0 && userAssigned.length===userDone.length){
-        document.getElementById("allDoneMsg").classList.remove("hidden");
-      }
-    }
-
-    // Officer overview & productivity
-    if(currentUser?.role==="OFFICER"){
-      let overviewDiv = document.getElementById("overviewList");
-      let laeTasks = {};
-      allTasks.forEach(t=>{
-        if(t.assignedTo){
-          if(!laeTasks[t.assignedTo]) laeTasks[t.assignedTo]=[];
-          laeTasks[t.assignedTo].push(`${t.card} - ${t.description} ${t.done?'✅':''}`);
-        }
+    overviewDiv.innerHTML = "";
+    for(let lae in laeTasks){
+      let ul = document.createElement("ul");
+      laeTasks[lae].forEach(task => { 
+        let li = document.createElement("li"); 
+        li.textContent = task; 
+        ul.appendChild(li); 
       });
-      overviewDiv.innerHTML="";
-      for(let lae in laeTasks){
-        let ul=document.createElement("ul");
-        laeTasks[lae].forEach(task=>{
-          let li=document.createElement("li"); li.textContent=task; ul.appendChild(li);
-        });
-        let div=document.createElement("div");
-        div.innerHTML=`<b>${lae}:</b>`; div.appendChild(ul); overviewDiv.appendChild(div);
-      }
-
-      // Productivity dashboard
-      let tbody = document.getElementById("productivityBody");
-      tbody.innerHTML="";
-      staffNames.forEach(name=>{
-        let assigned = allTasks.filter(t=>t.assignedTo===name).length;
-        let done = allTasks.filter(t=>t.assignedTo===name && t.done).length;
-        let percent = assigned>0 ? Math.round(done/assigned*100) : 0;
-        let tr = document.createElement("tr");
-        tr.innerHTML=`<td>${name}</td><td>${assigned}</td><td>${done}</td><td>${percent}%</td>`;
-        tbody.appendChild(tr);
-      });
+      let div = document.createElement("div");
+      div.innerHTML = `<b>${lae}:</b>`;
+      div.appendChild(ul);
+      overviewDiv.appendChild(div);
     }
 
-    // Render task cards
-    for(let sec in sections){
-      let cont = document.getElementById(sec);
-      cont.innerHTML="";
-      sections[sec].forEach(([t,i])=>{
-        let canMark = (currentUser.role==="LAE" && t.assignedTo===currentUser.name && attendance[t.assignedTo]);
-        let card = document.createElement("div");
-        card.className="task-card"+(t.done?" done":"");
-        card.innerHTML=`
-          <div class="task-header">ATA ${t.ata}</div>
-          <div class="block"><b>Task Card Num / AMM Ref:</b> ${t.card}</div>
-          <div class="block"><b>Task Description:</b> ${t.description}</div>
-          <div class="block"><b>Tools / Testset:</b> ${t.tools}</div>
-          <div class="block"><b>Consumables / MSL:</b> ${t.consumables}</div>
-          <div class="block"><b>Remarks:</b> ${t.remarks}</div>
-          <div class="row">
-            <div class="meta-pill">Duration / Manhour: ${t.manhour||"N/A"}</div>
-            <div class="meta-pill">Due: ${t.due||"N/A"}</div>
-            <div class="meta-pill">Assigned To: <span class="${t.assignedTo?'assigned-bold':''}">${t.assignedTo||"None"}</span></div>
-          </div>
-          <div class="task-actions">
-            ${ currentUser?.role==="OFFICER"
-              ? `Assign:
-                  <select onchange="assign(${i}, this.value)">
-                    <option value="">Assign to...</option>
-                    ${staffNames.map(n=>`<option value="${n}" ${t.assignedTo===n?'selected':''}>${n}</option>`).join("")}
-                  </select>` : `` }
-            ${ canMark
-              ? `<label><input type="checkbox" ${t.done?"checked":""} onchange="markDone(${i}, this.checked)"> Mark Done</label>` : `` }
-          </div>`;
-        cont.appendChild(card);
-      });
-    }
-    populateATAFilter();
-  }
-
-  // --- Task Actions ---
-  function assign(i,name){
-    if(currentUser && currentUser.role==="OFFICER"){
-      let today = new Date().toLocaleDateString("en-US",{weekday:'short'});
-      if(name && !(laeRoster[name]||[]).includes(today)){
-        alert(`${name} is off today!`);
-        return;
-      }
-      allTasks[i].assignedTo = name;
-      renderTasks();
-    } else { alert("Only officers can assign tasks."); }
-  }
-
-  function markDone(i,done){
-    allTasks[i].done = done;
-    renderTasks();
-  }
-
-  // --- ATA Filter ---
-  function populateATAFilter(){
-    let div = document.getElementById("ataFilter");
-    div.innerHTML="";
-    let sel = document.createElement("select");
-    sel.id="ataSelect";
-    sel.innerHTML='<option value="ALL">All ATA</option>';
-    availableATAs.forEach(a=>{ sel.innerHTML+=`<option value="${a}">ATA ${a}</option>`; });
-    sel.onchange=()=>renderTasks();
-    div.appendChild(sel);
-  }
-
-  function toggleOverview(){
-    document.getElementById("overviewList").classList.toggle("hidden");
-  }
-
-  // --- ROSTER / PRODUCTIVITY ---
-  function updateProdDatePill(){
-    const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
-    const nice = nowMY.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric', timeZone:'Asia/Kuala_Lumpur' });
-    document.getElementById('prodDatePill').textContent = `Date: ${nice} (MYT)`;
-  }
-
-  function handleRosterFile(e){
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(evt){
-      const data = new Uint8Array(evt.target.result);
-      const wb = XLSX.read(data, { type:'array' });
-      const targetSheetName = wb.SheetNames.includes("KUL") ? "KUL" : wb.SheetNames[0];
-      const sheet = wb.Sheets[targetSheetName];
-      rosterMatrix = XLSX.utils.sheet_to_json(sheet, { header:1, raw:true });
-      detectHeaderAndNameColumn();
-      computeTodayOnOff();
-      renderProdLists();
-      renderProdStats();
-      renderRosterPreview();
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
-  function detectHeaderAndNameColumn(){
-    rosterHeaderRow = -1; rosterNameCol = 0;
-    let bestRow = -1, bestCount = -1;
-    for(let r=0; r<Math.min(rosterMatrix.length,10); r++){
-      let row = rosterMatrix[r]||[];
-      let count = row.reduce((acc,cell)=> acc + (isDayNumber(cell)?1:0),0);
-      if(count>bestCount){ bestCount=count; bestRow=r; }
-    }
-    rosterHeaderRow = bestRow>=0 ? bestRow : 0;
-    let nameCol = 0;
-    [rosterHeaderRow-1, rosterHeaderRow, rosterHeaderRow+1].filter(x=>x>=0).forEach(hr=>{
-      const row = rosterMatrix[hr]||[];
-      for(let c=0;c<row.length;c++){
-        const v=(row[c]||"").toString().trim().toLowerCase();
-        if(["name","employee","staff","lae"].includes(v)){ nameCol=c; }
-      }
+    // Productivity table
+    let tbody = document.getElementById("productivityBody");
+    tbody.innerHTML = "";
+    staffNames.forEach(name => {
+      let assigned = allTasks.filter(t => t.assignedTo === name).length;
+      let done = allTasks.filter(t => t.assignedTo === name && t.done).length;
+      let percent = assigned > 0 ? Math.round(done/assigned*100) : 0;
+      let tr = document.createElement("tr");
+      tr.innerHTML = `<td>${name}</td><td>${assigned}</td><td>${done}</td><td>${percent}%</td>`;
+      tbody.appendChild(tr);
     });
-    rosterNameCol = nameCol;
   }
 
-  function isDayNumber(cell){
-    if(cell==null) return false;
-    if(typeof cell==='number') return cell>=1 && cell<=31;
-    const n = parseInt(cell.toString().trim(),10);
-    return !isNaN(n) && n>=1 && n<=31;
+  for(let sec in sections){
+    let cont = document.getElementById(sec);
+    if(!cont) continue;
+    cont.innerHTML = "";
+    sections[sec].forEach(([t,i])=>{
+      let canMark = (currentUser.role==="LAE" && t.assignedTo===currentUser.name && attendance[t.assignedTo]);
+      let card = document.createElement("div");
+      card.className = "task-card" + (t.done ? " done" : "");
+      card.innerHTML = `
+        <div class="task-header">ATA ${t.ata}</div>
+        <div class="block"><b>Task Card Num / AMM Ref:</b> ${t.card}</div>
+        <div class="block"><b>Task Description:</b> ${t.description}</div>
+        <div class="block"><b>Tools / Testset:</b> ${t.tools}</div>
+        <div class="block"><b>Consumables / MSL:</b> ${t.consumables}</div>
+        <div class="block"><b>Remarks:</b> ${t.remarks}</div>
+        <div class="row">
+          <div class="meta-pill">Duration / Manhour: ${t.manhour||"N/A"}</div>
+          <div class="meta-pill">Due: ${t.due||"N/A"}</div>
+          <div class="meta-pill">Assigned To: <span class="${t.assignedTo?'assigned-bold':''}">${t.assignedTo||"None"}</span></div>
+        </div>
+        <div class="task-actions">
+          ${ currentUser.role==="OFFICER"
+            ? `Assign:
+              <select onchange="assign(${i}, this.value)">
+                <option value="">Assign to...</option>
+                ${staffNames.map(n=>`<option value="${n}" ${t.assignedTo===n?'selected':''}>${n}</option>`).join("")}
+              </select>` : `` }
+          ${ canMark
+            ? `<label><input type="checkbox" ${t.done?"checked":""} onchange="markDone(${i}, this.checked)"> Mark Done</label>` : `` }
+        </div>`;
+      cont.appendChild(card);
+    });
   }
+  populateATAFilter();
+}
 
-  function getTodayDayNumberMYT(){
-    const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
-    return nowMY.getDate();
+// --- ASSIGN & MARK DONE ---
+function assign(i,name){
+  if(currentUser?.role !== "OFFICER"){ alert("Only officers can assign tasks."); return; }
+  let today = new Date().toLocaleDateString("en-US",{weekday:'short'});
+  if(name && !(laeRoster[name]||[]).includes(today)){
+    alert(`${name} is off today!`);
+    return;
   }
+  allTasks[i].assignedTo = name;
+  renderTasks();
+}
 
-  function findTodayColumnIndex(){
-    if(rosterHeaderRow<0 || rosterMatrix.length===0) return -1;
-    const header = rosterMatrix[rosterHeaderRow]||[];
-    const d = getTodayDayNumberMYT();
-    for(let c=0;c<header.length;c++){ if(header[c]===d) return c; }
-    for(let c=0;c<header.length;c++){ if((header[c]||"").toString().trim()===String(d)) return c; }
-    for(let c=0;c<header.length;c++){ if((header[c]||"").toString().trim()===String(d).padStart(2,'0')) return c; }
-    return -1;
+function markDone(i,done){
+  allTasks[i].done = done;
+  renderTasks();
+}
+
+// --- ATA FILTER ---
+function populateATAFilter(){
+  let div=document.getElementById("ataFilter");
+  if(!div) return;
+  div.innerHTML="";
+  let sel=document.createElement("select");
+  sel.id="ataSelect";
+  sel.innerHTML='<option value="ALL">All ATA</option>';
+  availableATAs.forEach(a => sel.innerHTML += `<option value="${a}">ATA ${a}</option>`);
+  sel.onchange = () => renderTasks();
+  div.appendChild(sel);
+}
+
+// --- ROSTER & LAE DASHBOARD ---
+function updateProdDatePill(){
+  const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
+  const nice = nowMY.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric', timeZone:'Asia/Kuala_Lumpur' });
+  document.getElementById('prodDatePill').textContent = `Date: ${nice} (MYT)`;
+}
+
+function handleRosterFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    const data = new Uint8Array(evt.target.result);
+    const wb = XLSX.read(data, { type:'array' });
+    const targetSheetName = wb.SheetNames.includes("KUL") ? "KUL" : wb.SheetNames[0];
+    const sheet = wb.Sheets[targetSheetName];
+    rosterMatrix = XLSX.utils.sheet_to_json(sheet, { header:1, raw:true });
+    detectHeaderAndNameColumn();
+    computeTodayOnOff();
+    renderProdLists();
+    renderProdStats();
+    renderRosterPreview();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function detectHeaderAndNameColumn(){
+  rosterHeaderRow = -1; rosterNameCol = 0;
+  let bestRow=-1, bestCount=-1;
+  for(let r=0;r<Math.min(rosterMatrix.length,10);r++){
+    let row = rosterMatrix[r]||[];
+    let count = row.reduce((acc,cell)=> acc + (isDayNumber(cell)?1:0), 0);
+    if(count>bestCount){ bestCount=count; bestRow=r; }
   }
-
-  function computeTodayOnOff(){
-    workingToday=[]; offToday=[];
-    const col = findTodayColumnIndex();
-    if(col<0) return;
-    for(let r=rosterHeaderRow+1;r<rosterMatrix.length;r++){
-      const row = rosterMatrix[r]||[];
-      let name=(row[rosterNameCol]||"").toString().trim();
-      if(!name) continue;
-      let code=(row[col]||"").toString().trim();
-      const offCodes=['OFF','AL','SL','ML','EL','PH','MC','OFFDAY','OFF DAY'];
-      if(offCodes.includes(code.toUpperCase())) offToday.push({name,code});
-      else workingToday.push({name,code});
+  rosterHeaderRow = bestRow>=0?bestRow:0;
+  let nameCol=0;
+  [rosterHeaderRow-1, rosterHeaderRow, rosterHeaderRow+1].filter(x=>x>=0).forEach(hr=>{
+    let row = rosterMatrix[hr]||[];
+    for(let c=0;c<row.length;c++){
+      let v = (row[c]||"").toString().trim().toLowerCase();
+      if(["name","employee","staff","lae"].includes(v)){ nameCol=c; return; }
     }
-  }
+  });
+  rosterNameCol = nameCol;
+}
 
-  function renderProdLists(){
-    document.getElementById("workingList").innerHTML = workingToday.map(x=>`<div>${x.name} (${x.code})</div>`).join("");
-    document.getElementById("offList").innerHTML = offToday.map(x=>`<div>${x.name} (${x.code})</div>`).join("");
-  }
+function isDayNumber(cell){
+  if(cell==null) return false;
+  if(typeof cell==="number") return cell>=1 && cell<=31;
+  const n=parseInt(cell.toString().trim(),10);
+  return !isNaN(n) && n>=1 && n<=31;
+}
 
-  function renderProdStats(){
-    document.getElementById("prodCountsPill").textContent = 
-      `Total LAEs: ${workingToday.length + offToday.length} | Working: ${workingToday.length} | Off: ${offToday.length}`;
-  }
+function getTodayDayNumberMYT(){
+  const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
+  return nowMY.getDate();
+}
 
-  function toggleRosterPreview(){
-    rosterPreviewVisible = !rosterPreviewVisible;
-    document.getElementById("rosterPreview").classList.toggle("hidden");
-  }
+function findTodayColumnIndex(){
+  if(rosterHeaderRow<0 || rosterMatrix.length===0) return -1;
+  const header = rosterMatrix[rosterHeaderRow]||[];
+  const d = getTodayDayNumberMYT();
+  for(let c=0;c<header.length;c++) if(header[c]===d) return c;
+  for(let c=0;c<header.length;c++) if((header[c]||"").toString().trim()===String(d)) return c;
+  for(let c=0;c<header.length;c++) if((header[c]||"").toString().trim()===String(d).padStart(2,'0')) return c;
+  return -1;
+}
 
-  function renderRosterPreview(){
-    const div = document.getElementById("rosterPreview");
-    if(!rosterPreviewVisible) div.classList.add("hidden");
-    div.innerHTML = rosterMatrix.map(row=>`<div>${row.join(" | ")}</div>`).join("");
+function computeTodayOnOff(){
+  workingToday=[]; offToday=[];
+  const col = findTodayColumnIndex();
+  if(col<0) return;
+  for(let r=rosterHeaderRow+1;r<rosterMatrix.length;r++){
+    let row = rosterMatrix[r]||[];
+    let name=(row[rosterNameCol]||"").toString().trim();
+    if(!name) continue;
+    let code=(row[col]||"").toString().trim();
+    const offCodes=['OFF','AL','SL','ML','EL','PH','MC','OFFDAY','OFF DAY'];
+    if(offCodes.includes(code.toUpperCase())) offToday.push({name,code});
+    else workingToday.push({name,code});
   }
+}
 
-  function filterProdLists(){
-    const term = document.getElementById("prodSearch").value.toLowerCase();
-    document.getElementById("workingList").innerHTML = workingToday.filter(x=>x.name.toLowerCase().includes(term)).map(x=>`<div>${x.name} (${x.code})</div>`).join("");
-    document.getElementById("offList").innerHTML = offToday.filter(x=>x.name.toLowerCase().includes(term)).map(x=>`<div>${x.name} (${x.code})</div>`).join("");
-  }
+function renderProdLists(){
+  document.getElementById("workingList").innerHTML = workingToday.map(x=>`<div>${x.name} (${x.code})</div>`).join("");
+  document.getElementById("offList").innerHTML = offToday.map(x=>`<div>${x.name} (${x.code})</div>`).join("");
+}
+
+function renderProdStats(){
+  const total = workingToday.length + offToday.length;
+  document.getElementById("prodCountsPill").textContent = `Total LAEs: ${total} | Working: ${workingToday.length} | Off: ${offToday.length}`;
+}
+
+function toggleRosterPreview(){
+  rosterPreviewVisible = !rosterPreviewVisible;
+  document.getElementById("rosterPreview").classList.toggle("hidden");
+}
+
+function renderRosterPreview(){
+  const div = document.getElementById("rosterPreview");
+  if(!rosterPreviewVisible) div.classList.add("hidden");
+  div.innerHTML = rosterMatrix.map(row=>`<div>${row.join(" | ")}</div>`).join("");
+}
+
+function filterProdLists(){
+  const term = document.getElementById("prodSearch").value.toLowerCase();
+  document.getElementById("workingList").innerHTML = workingToday.filter(x=>x.name.toLowerCase().includes(term)).map(x=>`<div>${x.name} (${x.code})</div>`).join("");
+  document.getElementById("offList").innerHTML = offToday.filter(x=>x.name.toLowerCase().includes(term)).map(x=>`<div>${x.name} (${x.code})</div>`).join("");
+}
 </script>
