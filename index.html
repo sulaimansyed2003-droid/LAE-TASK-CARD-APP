@@ -33,6 +33,21 @@
     #productivityDashboard table { width:100%; border-collapse: collapse; }
     #productivityDashboard th, #productivityDashboard td { border:1px solid #ccc; padding:6px; text-align:left; }
     #attendanceSection { margin:10px 0; }
+
+    /* Productivity Dashboard (Roster Upload) */
+    #prodDash { background:#ffffff; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); padding:16px; }
+    #prodDash h2 { color:#800000; margin-top:0; }
+    .prod-row { display:flex; gap:16px; flex-wrap:wrap; }
+    .prod-card { flex:1; min-width:260px; background:#fafafa; border-left:4px solid #80000022; border-radius:8px; padding:12px; }
+    .prod-card h3 { margin:0 0 8px; color:#800000; }
+    #prodSearch { width:100%; padding:8px; border:1px solid #ccc; border-radius:8px; }
+    .name-item { padding:6px 8px; background:#fff; border:1px solid #eee; border-radius:8px; margin:6px 0; }
+    .stat-pill { display:inline-block; padding:6px 10px; border-radius:16px; background:#fff; border:1px solid #eee; margin-right:8px; }
+    .soft { color:#555; }
+    .table-wrap { max-height:320px; overflow:auto; border:1px solid #eee; border-radius:8px; background:#fff; }
+    table.preview { width:100%; border-collapse:collapse; }
+    table.preview th, table.preview td { border:1px solid #eee; padding:6px; font-size:12px; }
+    .muted { color:#666; font-size:12px; }
   </style>
 </head>
 <body>
@@ -60,6 +75,7 @@
       <button onclick="showSection('allTasks')">All Tasks</button>
       <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
       <button onclick="showSection('doneTasks')">Done</button>
+      <button onclick="showSection('prodDash')">Productivity Dashboard</button>
       <button onclick="signOut()">Sign Out</button>
     </nav>
 
@@ -73,7 +89,7 @@
       </div>
 
       <div id="productivityDashboard">
-        <h3>LAE Productivity Dashboard</h3>
+        <h3>LAE Productivity Dashboard (Task Completion)</h3>
         <table>
           <thead>
             <tr><th>LAE</th><th>Tasks Assigned</th><th>Tasks Done</th><th>Productivity %</th></tr>
@@ -89,6 +105,42 @@
       <div id="allTasks"></div>
       <div id="assignedTasks" class="hidden"></div>
       <div id="doneTasks" class="hidden"></div>
+      <div id="prodDash" class="hidden">
+        <h2>Productivity Dashboard (Roster)</h2>
+        <p class="soft">Upload the roster Excel to see who is <b>Working Today</b> vs <b>Off Today</b>. Auto-detects Malaysia time (GMT+8).</p>
+        <div class="prod-row" style="align-items:center;">
+          <div>
+            <input type="file" id="prodFileInput" accept=".xlsx" onchange="handleRosterFile(event)">
+          </div>
+          <div><span class="stat-pill" id="prodDatePill">Date: —</span></div>
+          <div><span class="stat-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
+        </div>
+        <div class="prod-row" style="margin-top:12px;">
+          <input id="prodSearch" type="text" placeholder="Search LAE by name..." oninput="filterProdLists()">
+        </div>
+
+        <div class="prod-row" style="margin-top:12px;">
+          <div class="prod-card">
+            <h3>✅ Working Today</h3>
+            <div id="workingList"></div>
+          </div>
+          <div class="prod-card">
+            <h3>❌ Off Today</h3>
+            <div id="offList"></div>
+          </div>
+        </div>
+
+        <div class="prod-row" style="margin-top:12px;">
+          <div class="prod-card" style="flex:1 1 100%;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h3>Roster Preview (Optional)</h3>
+              <button class="btn-toggle" onclick="toggleRosterPreview()">Show/Hide</button>
+            </div>
+            <div id="rosterPreview" class="table-wrap hidden"></div>
+            <p class="muted">Tip: Make sure the top header row has day numbers (1–31) and the first column has names.</p>
+          </div>
+        </div>
+      </div>
       <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
     </div>
   </div>
@@ -100,7 +152,7 @@
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
 
-    // Example roster data (working days)
+    // Example roster data for in-app attendance section (working days)
     let laeRoster = {
       "ABDUL FATAH BIN IBRAHIM": ["Mon","Tue","Wed","Thu","Fri"],
       "MOHD HAFIZ SAZWAN BIN ZAM ZAM": ["Mon","Tue","Thu","Fri"],
@@ -113,7 +165,15 @@
     let allTasks = [];
     let currentUser = null;
     let availableATAs = [];
-    let attendance = {}; // track attendance
+    let attendance = {}; // simple presence marker for the in-app attendance card
+
+    // --- NEW: Roster Dashboard State ---
+    let rosterMatrix = [];      // 2D array from uploaded Excel (header:1)
+    let rosterHeaderRow = -1;   // index of header row with day numbers
+    let rosterNameCol = 0;      // column index holding names
+    let workingToday = [];      // [{name, code}]
+    let offToday = [];          // [{name, code}]
+    let rosterPreviewVisible = false;
 
     function populateNames(){
       const sel=document.getElementById("nameInput");
@@ -143,6 +203,7 @@
       updateLoginTime();
       renderAttendance();
       renderTasks();
+      updateProdDatePill();
     }
 
     function updateLoginTime(){
@@ -189,7 +250,7 @@
       div.innerHTML="<h3>LAE Attendance</h3>";
       let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
       staffNames.forEach(name=>{
-        let present=laeRoster[name].includes(today);
+        let present=(laeRoster[name]||[]).includes(today);
         attendance[name]=present;
         let p=document.createElement("p");
         p.textContent=`${name}: ${present ? "Present ✅" : "Off ❌"}`;
@@ -228,7 +289,7 @@
         }
       }
 
-      // Officer assigned task overview
+      // Officer assigned task overview & productivity from task data
       if(currentUser?.role==="OFFICER"){
         let overviewDiv=document.getElementById("overviewList");
         let laeTasks={};
@@ -248,7 +309,7 @@
           overviewDiv.appendChild(div);
         }
 
-        // Productivity Dashboard
+        // Productivity Dashboard (task-based)
         let tbody=document.getElementById("productivityBody");
         tbody.innerHTML="";
         staffNames.forEach(name=>{
@@ -300,9 +361,9 @@
 
     function assign(i,name){ 
       if(currentUser && currentUser.role==="OFFICER"){ 
-        // Check LAE availability today
+        // Check LAE availability today (simple in-app roster guard)
         let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
-        if(name && !laeRoster[name].includes(today)){
+        if(name && !(laeRoster[name]||[]).includes(today)){
           alert(`${name} is off today!`);
           return;
         }
@@ -333,6 +394,203 @@
       const ov=document.getElementById("overviewList");
       ov.classList.toggle("hidden");
     }
+
+    // --------------------------
+    // NEW: Productivity Dashboard (Roster Upload)
+    // --------------------------
+    function updateProdDatePill(){
+      const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
+      const nice = nowMY.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric', timeZone:'Asia/Kuala_Lumpur' });
+      document.getElementById('prodDatePill').textContent = `Date: ${nice} (MYT)`;
+    }
+
+    function handleRosterFile(e){
+      const file = e.target.files[0];
+      if(!file){ return; }
+      const reader = new FileReader();
+      reader.onload = function(evt){
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type:'array' });
+
+        // Prefer "KUL" if it exists; otherwise first sheet
+        const targetSheetName = wb.SheetNames.includes("KUL") ? "KUL" : wb.SheetNames[0];
+        const sheet = wb.Sheets[targetSheetName];
+
+        // 2D matrix for robust parsing
+        const mat = XLSX.utils.sheet_to_json(sheet, { header:1, raw:true });
+        rosterMatrix = mat;
+        detectHeaderAndNameColumn();
+        computeTodayOnOff();
+        renderProdLists();
+        renderProdStats();
+        renderRosterPreview();
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function detectHeaderAndNameColumn(){
+      rosterHeaderRow = -1; rosterNameCol = 0;
+      // Find a row that contains many day numbers 1..31 (typical roster layout)
+      let bestRow = -1, bestCount = -1;
+      for(let r=0; r<Math.min(rosterMatrix.length, 10); r++){
+        let row = rosterMatrix[r]||[];
+        let count = row.reduce((acc,cell)=> acc + (isDayNumber(cell)?1:0), 0);
+        if(count>bestCount){ bestCount=count; bestRow=r; }
+      }
+      rosterHeaderRow = bestRow >= 0 ? bestRow : 0;
+
+      // Try find "Name" column, else assume first column
+      let nameCol = 0;
+      const headerCandidates = [rosterHeaderRow-1, rosterHeaderRow, rosterHeaderRow+1].filter(x=>x>=0);
+      for(const hr of headerCandidates){
+        const row = rosterMatrix[hr]||[];
+        for(let c=0;c<row.length;c++){
+          const v = (row[c]||"").toString().trim().toLowerCase();
+          if(v==="name" || v==="employee" || v==="staff" || v==="lae"){
+            nameCol = c; break;
+          }
+        }
+      }
+      rosterNameCol = nameCol;
+    }
+
+    function isDayNumber(cell){
+      if(cell == null) return false;
+      // number 1..31 or string "1".."31"
+      if(typeof cell === 'number') return cell>=1 && cell<=31;
+      const s = cell.toString().trim();
+      if(!s) return false;
+      const n = parseInt(s,10);
+      return !isNaN(n) && n>=1 && n<=31;
+    }
+
+    function getTodayDayNumberMYT(){
+      const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
+      return nowMY.getDate(); // day of month 1..31
+    }
+
+    function findTodayColumnIndex(){
+      if(rosterHeaderRow<0 || rosterMatrix.length===0) return -1;
+      const header = rosterMatrix[rosterHeaderRow] || [];
+      const d = getTodayDayNumberMYT();
+
+      // exact match first (number), then string
+      for(let c=0;c<header.length;c++){
+        if(typeof header[c]==='number' && header[c]===d) return c;
+      }
+      for(let c=0;c<header.length;c++){
+        if((header[c]||"").toString().trim()===String(d)) return c;
+      }
+      // fallback: try zero-padded day ("01")
+      for(let c=0;c<header.length;c++){
+        if((header[c]||"").toString().trim()===String(d).padStart(2,'0')) return c;
+      }
+      return -1;
+    }
+
+    function computeTodayOnOff(){
+      workingToday = []; offToday = [];
+      const col = findTodayColumnIndex();
+      if(col<0) { return; }
+
+      // Start scanning rows after header to the end
+      for(let r=rosterHeaderRow+1; r<rosterMatrix.length; r++){
+        const row = rosterMatrix[r]||[];
+        let name = (row[rosterNameCol]||"").toString().trim();
+        if(!name) continue; // skip blank rows
+
+        let code = row[col];
+        if(code == null) code = "";
+        code = code.toString().trim();
+
+        const offCodes = ['OFF','AL','SL','ML','EL','PH','MC','OFFDAY','OFF DAY','LEAVE','HOL','PHL','ANNUAL LEAVE','SICK LEAVE'];
+        const isOff = (code==="" || offCodes.includes(code.toUpperCase()));
+        if(isOff){
+          offToday.push({name, code: code || '—'});
+        } else {
+          workingToday.push({name, code});
+        }
+      }
+
+      // Sort alphabetically
+      workingToday.sort((a,b)=> a.name.localeCompare(b.name));
+      offToday.sort((a,b)=> a.name.localeCompare(b.name));
+    }
+
+    function renderProdLists(){
+      const w = document.getElementById('workingList');
+      const o = document.getElementById('offList');
+      w.innerHTML=""; o.innerHTML="";
+
+      workingToday.forEach(item=>{
+        const div=document.createElement('div');
+        div.className='name-item';
+        div.dataset.name=item.name.toLowerCase();
+        div.textContent=`${item.name}  (${item.code})`;
+        w.appendChild(div);
+      });
+      offToday.forEach(item=>{
+        const div=document.createElement('div');
+        div.className='name-item';
+        div.dataset.name=item.name.toLowerCase();
+        div.textContent=`${item.name}  (${item.code})`;
+        o.appendChild(div);
+      });
+    }
+
+    function renderProdStats(){
+      const total = workingToday.length + offToday.length;
+      const workPct = total ? Math.round(workingToday.length/total*100) : 0;
+      const offPct = total ? (100-workPct) : 0;
+      document.getElementById('prodCountsPill').textContent =
+        `Total LAEs: ${total} | Working: ${workingToday.length} (${workPct}%) | Off: ${offToday.length} (${offPct}%)`;
+    }
+
+    function filterProdLists(){
+      const q = document.getElementById('prodSearch').value.trim().toLowerCase();
+      ['workingList','offList'].forEach(id=>{
+        const parent = document.getElementById(id);
+        Array.from(parent.children).forEach(child=>{
+          const name = child.dataset.name || '';
+          child.style.display = name.includes(q) ? '' : 'none';
+        });
+      });
+    }
+
+    function toggleRosterPreview(){
+      rosterPreviewVisible = !rosterPreviewVisible;
+      const el = document.getElementById('rosterPreview');
+      el.classList.toggle('hidden', !rosterPreviewVisible);
+    }
+
+    function renderRosterPreview(){
+      const el = document.getElementById('rosterPreview');
+      if(!el) return;
+      if(!rosterPreviewVisible) return; // only render when visible
+
+      // Build small preview table (up to 30 rows x 20 cols for performance)
+      const maxRows = Math.min(rosterMatrix.length, 30);
+      const maxCols = Math.min((rosterMatrix[0]||[]).length, 20);
+      let html = '<table class="preview"><thead><tr>';
+      for(let c=0;c<maxCols;c++){
+        const head = (rosterMatrix[rosterHeaderRow]||[])[c];
+        html += `<th>${(head==null?'':head)}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+      for(let r=rosterHeaderRow+1; r<maxRows; r++){
+        html += '<tr>';
+        for(let c=0;c<maxCols;c++){
+          const v = rosterMatrix[r] && rosterMatrix[r][c] != null ? rosterMatrix[r][c] : '';
+          html += `<td>${v}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    }
+
+    // Initial date pill
+    updateProdDatePill();
   </script>
 </body>
 </html>
