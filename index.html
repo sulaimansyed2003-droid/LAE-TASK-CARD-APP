@@ -114,6 +114,7 @@
     <button onclick="showSection('assignedTasks'); hideMobileMenu()">Assigned Tasks</button>
     <button onclick="showSection('doneTasks'); hideMobileMenu()">Done</button>
     <button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
+    <button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
     <button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
   </div>
 
@@ -138,6 +139,7 @@
       <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
       <button onclick="showSection('doneTasks')">Done</button>
       <button onclick="showSection('prodDash')">Productivity Dashboard</button>
+      <button onclick="showSection('attendanceSection')">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
     </nav>
 
@@ -162,7 +164,7 @@
     </div>
 
     <div class="container">
-      <div id="attendanceSection"></div>
+      <div id="attendanceSection" class="hidden"></div>
       <div id="ataFilter"></div>
       <div id="allTasks"></div>
       <div id="assignedTasks" class="hidden"></div>
@@ -228,7 +230,6 @@
     let availableATAs = [];
     let attendance = {};
 
-    // Roster Dashboard State
     let rosterMatrix = [];
     let rosterHeaderRow = -1;
     let rosterNameCol = 0;
@@ -236,7 +237,6 @@
     let offToday = [];
     let rosterPreviewVisible = false;
 
-    // NEW: Load saved data from localStorage
     function loadSavedData() {
         try {
             const savedData = localStorage.getItem('batikAirAppData');
@@ -257,7 +257,6 @@
         }
     }
 
-    // NEW: Save data to localStorage
     function saveAppData() {
         const data = {
             tasks: allTasks,
@@ -266,7 +265,6 @@
         localStorage.setItem('batikAirAppData', JSON.stringify(data));
     }
 
-    // NEW: Call this when the page loads
     loadSavedData();
 
     function toggleMobileMenu() {
@@ -302,7 +300,6 @@
         document.getElementById("officerSection").classList.add("hidden"); 
       }
       updateLoginTime();
-      renderAttendance();
       renderTasks();
       updateProdDatePill();
     }
@@ -343,7 +340,6 @@
         }));
         availableATAs=[...new Set(allTasks.map(t=>t.ata).filter(v=>v))];
         
-        // NEW: Save the imported tasks
         saveAppData();
         
         renderTasks();
@@ -362,13 +358,24 @@
         p.textContent=`${name}: ${present ? "Present ✅" : "Off ❌"}`;
         div.appendChild(p);
       });
+      
+      let refreshBtn = document.createElement("button");
+      refreshBtn.textContent = "Refresh Attendance";
+      refreshBtn.className = "btn-toggle";
+      refreshBtn.onclick = renderAttendance;
+      div.appendChild(refreshBtn);
     }
 
     function showSection(id){
       document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
       document.getElementById("allDoneMsg").classList.add("hidden");
-      renderTasks();
+      
+      if(id === "attendanceSection") {
+        renderAttendance();
+      } else {
+        renderTasks();
+      }
     }
 
     function renderTasks(){
@@ -470,7 +477,6 @@
         }
         allTasks[i].assignedTo=name; 
         
-        // NEW: Save after assignment
         saveAppData();
         
         renderTasks(); 
@@ -482,7 +488,6 @@
     function markDone(i,done){ 
       allTasks[i].done=done; 
       
-      // NEW: Save after marking done
       saveAppData();
       
       renderTasks(); 
@@ -524,7 +529,6 @@
         const mat = XLSX.utils.sheet_to_json(sheet, { header:1, raw:true });
         rosterMatrix = mat;
         
-        // NEW: Save the imported roster
         saveAppData();
         
         detectHeaderAndNameColumn();
