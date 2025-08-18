@@ -78,7 +78,6 @@
       <button onclick="showSection('prodDash')">Productivity Dashboard</button>
       <button onclick="signOut()">Sign Out</button>
     </nav>
-
     <div id="officerSection" class="hidden">
       <h2>Officer Panel</h2>
       <input type="file" id="fileInput" accept=".xlsx" onchange="handleFile(event)">
@@ -257,7 +256,6 @@
         div.appendChild(p);
       });
     }
-
     function showSection(id){
       document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
@@ -361,7 +359,6 @@
 
     function assign(i,name){ 
       if(currentUser && currentUser.role==="OFFICER"){ 
-        // Check LAE availability today (simple in-app roster guard)
         let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
         if(name && !(laeRoster[name]||[]).includes(today)){
           alert(`${name} is off today!`);
@@ -395,9 +392,7 @@
       ov.classList.toggle("hidden");
     }
 
-    // --------------------------
-    // NEW: Productivity Dashboard (Roster Upload)
-    // --------------------------
+    // --- ROSTER DASHBOARD FUNCTIONS ---
     function updateProdDatePill(){
       const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
       const nice = nowMY.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric', timeZone:'Asia/Kuala_Lumpur' });
@@ -411,14 +406,9 @@
       reader.onload = function(evt){
         const data = new Uint8Array(evt.target.result);
         const wb = XLSX.read(data, { type:'array' });
-
-        // Prefer "KUL" if it exists; otherwise first sheet
         const targetSheetName = wb.SheetNames.includes("KUL") ? "KUL" : wb.SheetNames[0];
         const sheet = wb.Sheets[targetSheetName];
-
-        // 2D matrix for robust parsing
-        const mat = XLSX.utils.sheet_to_json(sheet, { header:1, raw:true });
-        rosterMatrix = mat;
+        rosterMatrix = XLSX.utils.sheet_to_json(sheet, { header:1, raw:true });
         detectHeaderAndNameColumn();
         computeTodayOnOff();
         renderProdLists();
@@ -430,7 +420,6 @@
 
     function detectHeaderAndNameColumn(){
       rosterHeaderRow = -1; rosterNameCol = 0;
-      // Find a row that contains many day numbers 1..31 (typical roster layout)
       let bestRow = -1, bestCount = -1;
       for(let r=0; r<Math.min(rosterMatrix.length, 10); r++){
         let row = rosterMatrix[r]||[];
@@ -438,17 +427,13 @@
         if(count>bestCount){ bestCount=count; bestRow=r; }
       }
       rosterHeaderRow = bestRow >= 0 ? bestRow : 0;
-
-      // Try find "Name" column, else assume first column
       let nameCol = 0;
       const headerCandidates = [rosterHeaderRow-1, rosterHeaderRow, rosterHeaderRow+1].filter(x=>x>=0);
       for(const hr of headerCandidates){
         const row = rosterMatrix[hr]||[];
         for(let c=0;c<row.length;c++){
           const v = (row[c]||"").toString().trim().toLowerCase();
-          if(v==="name" || v==="employee" || v==="staff" || v==="lae"){
-            nameCol = c; break;
-          }
+          if(v==="name" || v==="employee" || v==="staff" || v==="lae"){ nameCol = c; break; }
         }
       }
       rosterNameCol = nameCol;
@@ -456,32 +441,27 @@
 
     function isDayNumber(cell){
       if(cell == null) return false;
-      // number 1..31 or string "1".."31"
       if(typeof cell === 'number') return cell>=1 && cell<=31;
       const s = cell.toString().trim();
-      if(!s) return false;
       const n = parseInt(s,10);
       return !isNaN(n) && n>=1 && n<=31;
     }
 
     function getTodayDayNumberMYT(){
       const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
-      return nowMY.getDate(); // day of month 1..31
+      return nowMY.getDate();
     }
 
     function findTodayColumnIndex(){
       if(rosterHeaderRow<0 || rosterMatrix.length===0) return -1;
       const header = rosterMatrix[rosterHeaderRow] || [];
       const d = getTodayDayNumberMYT();
-
-      // exact match first (number), then string
       for(let c=0;c<header.length;c++){
         if(typeof header[c]==='number' && header[c]===d) return c;
       }
       for(let c=0;c<header.length;c++){
         if((header[c]||"").toString().trim()===String(d)) return c;
       }
-      // fallback: try zero-padded day ("01")
       for(let c=0;c<header.length;c++){
         if((header[c]||"").toString().trim()===String(d).padStart(2,'0')) return c;
       }
@@ -492,105 +472,47 @@
       workingToday = []; offToday = [];
       const col = findTodayColumnIndex();
       if(col<0) { return; }
-
-      // Start scanning rows after header to the end
       for(let r=rosterHeaderRow+1; r<rosterMatrix.length; r++){
         const row = rosterMatrix[r]||[];
         let name = (row[rosterNameCol]||"").toString().trim();
-        if(!name) continue; // skip blank rows
-
-        let code = row[col];
-        if(code == null) code = "";
+        if(!name) continue;
+        let code = row[col] || "";
         code = code.toString().trim();
-
-        const offCodes = ['OFF','AL','SL','ML','EL','PH','MC','OFFDAY','OFF DAY','LEAVE','HOL','PHL','ANNUAL LEAVE','SICK LEAVE'];
-        const isOff = (code==="" || offCodes.includes(code.toUpperCase()));
-        if(isOff){
-          offToday.push({name, code: code || '—'});
-        } else {
-          workingToday.push({name, code});
-        }
+        const offCodes = ['OFF','AL','SL','ML','EL','PH','MC','OFFDAY','OFF DAY'];
+        if(offCodes.includes(code.toUpperCase())) offToday.push({name, code});
+        else workingToday.push({name, code});
       }
-
-      // Sort alphabetically
-      workingToday.sort((a,b)=> a.name.localeCompare(b.name));
-      offToday.sort((a,b)=> a.name.localeCompare(b.name));
     }
 
     function renderProdLists(){
-      const w = document.getElementById('workingList');
-      const o = document.getElementById('offList');
-      w.innerHTML=""; o.innerHTML="";
-
-      workingToday.forEach(item=>{
-        const div=document.createElement('div');
-        div.className='name-item';
-        div.dataset.name=item.name.toLowerCase();
-        div.textContent=`${item.name}  (${item.code})`;
-        w.appendChild(div);
-      });
-      offToday.forEach(item=>{
-        const div=document.createElement('div');
-        div.className='name-item';
-        div.dataset.name=item.name.toLowerCase();
-        div.textContent=`${item.name}  (${item.code})`;
-        o.appendChild(div);
-      });
+      const workDiv = document.getElementById("workingList");
+      const offDiv = document.getElementById("offList");
+      workDiv.innerHTML = workingToday.map(x=>`<div>${x.name} (${x.code})</div>`).join("");
+      offDiv.innerHTML = offToday.map(x=>`<div>${x.name} (${x.code})</div>`).join("");
     }
 
     function renderProdStats(){
-      const total = workingToday.length + offToday.length;
-      const workPct = total ? Math.round(workingToday.length/total*100) : 0;
-      const offPct = total ? (100-workPct) : 0;
-      document.getElementById('prodCountsPill').textContent =
-        `Total LAEs: ${total} | Working: ${workingToday.length} (${workPct}%) | Off: ${offToday.length} (${offPct}%)`;
-    }
-
-    function filterProdLists(){
-      const q = document.getElementById('prodSearch').value.trim().toLowerCase();
-      ['workingList','offList'].forEach(id=>{
-        const parent = document.getElementById(id);
-        Array.from(parent.children).forEach(child=>{
-          const name = child.dataset.name || '';
-          child.style.display = name.includes(q) ? '' : 'none';
-        });
-      });
+      document.getElementById("prodCountsPill").textContent = `Total LAEs: ${workingToday.length + offToday.length} | Working: ${workingToday.length} | Off: ${offToday.length}`;
     }
 
     function toggleRosterPreview(){
       rosterPreviewVisible = !rosterPreviewVisible;
-      const el = document.getElementById('rosterPreview');
-      el.classList.toggle('hidden', !rosterPreviewVisible);
+      document.getElementById("rosterPreview").classList.toggle("hidden");
     }
 
     function renderRosterPreview(){
-      const el = document.getElementById('rosterPreview');
-      if(!el) return;
-      if(!rosterPreviewVisible) return; // only render when visible
-
-      // Build small preview table (up to 30 rows x 20 cols for performance)
-      const maxRows = Math.min(rosterMatrix.length, 30);
-      const maxCols = Math.min((rosterMatrix[0]||[]).length, 20);
-      let html = '<table class="preview"><thead><tr>';
-      for(let c=0;c<maxCols;c++){
-        const head = (rosterMatrix[rosterHeaderRow]||[])[c];
-        html += `<th>${(head==null?'':head)}</th>`;
-      }
-      html += '</tr></thead><tbody>';
-      for(let r=rosterHeaderRow+1; r<maxRows; r++){
-        html += '<tr>';
-        for(let c=0;c<maxCols;c++){
-          const v = rosterMatrix[r] && rosterMatrix[r][c] != null ? rosterMatrix[r][c] : '';
-          html += `<td>${v}</td>`;
-        }
-        html += '</tr>';
-      }
-      html += '</tbody></table>';
-      el.innerHTML = html;
+      const div = document.getElementById("rosterPreview");
+      if(!rosterPreviewVisible) div.classList.add("hidden");
+      div.innerHTML = rosterMatrix.map(row=>`<div>${row.join(" | ")}</div>`).join("");
     }
 
-    // Initial date pill
-    updateProdDatePill();
+    function filterProdLists(){
+      const term = document.getElementById("prodSearch").value.toLowerCase();
+      const workDiv = document.getElementById("workingList");
+      const offDiv = document.getElementById("offList");
+      workDiv.innerHTML = workingToday.filter(x=>x.name.toLowerCase().includes(term)).map(x=>`<div>${x.name} (${x.code})</div>`).join("");
+      offDiv.innerHTML = offToday.filter(x=>x.name.toLowerCase().includes(term)).map(x=>`<div>${x.name} (${x.code})</div>`).join("");
+    }
   </script>
 </body>
 </html>
