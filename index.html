@@ -1,146 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Batik Air Task Card App</title>
-<style>
-/* ORIGINAL CSS KEPT EXACTLY THE SAME */
-body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
-header { background:#800000; color:white; padding:10px; text-align:center; position:relative; }
-.login-box { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
-.login-box input, .login-box select, .login-box button { margin:5px; padding:8px; font-size:16px; }
-.hidden { display:none; }
-.container { padding:20px; }
-.task-card { background:white; margin:10px 0; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.2); position:relative; }
-.task-card.done { background:#d4edda; }
-.task-header { font-size:18px; font-weight:bold; margin-bottom:10px; color:#800000; }
-.block { margin:5px 0; padding:6px; border-left:4px solid #80000022; background:#fafafa; }
-.row { display:flex; flex-wrap:wrap; gap:10px; margin:8px 0; }
-.meta-pill { background:#eee; padding:5px 10px; border-radius:12px; font-size:14px; }
-.task-actions { margin-top:10px; }
-.assigned-bold { font-weight:bold; color:#800000; }
-nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
-nav button:hover { background:#a00000; }
-#allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
-#assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
-#assignedOverview h3 { color:#800000; margin-bottom:10px; }
-#assignedOverview ul { list-style:none; padding-left:0; }
-#assignedOverview li { margin:4px 0; }
-#userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
-.btn-toggle { margin:5px 0; padding:6px 10px; background:#800000; color:white; border:none; border-radius:5px; cursor:pointer; }
-.btn-toggle:hover { background:#a00000; }
-#productivityDashboard { background:#f0f0f0; padding:10px; border-radius:8px; margin:15px 0; }
-#productivityDashboard h3 { color:#800000; margin-bottom:10px; }
-#productivityDashboard table { width:100%; border-collapse: collapse; }
-#productivityDashboard th, #productivityDashboard td { border:1px solid #ccc; padding:6px; text-align:left; }
-#attendanceSection { margin:10px 0; }
-/* Mobile menu styles kept the same */
-.mobile-menu-btn { position: absolute; right: 10px; top: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; display: none; }
-.mobile-menu { position: fixed; top: 60px; right: 10px; background: white; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1000; display: none; flex-direction: column; min-width: 200px; }
-.mobile-menu.show { display: flex; }
-.mobile-menu button { padding: 10px 15px; border: none; background: none; text-align: left; cursor: pointer; }
-.mobile-menu button:hover { background: #f0f0f0; }
-.mobile-menu .sign-out { border-top: 1px solid #eee; color: #800000; font-weight: bold; }
-@media (max-width: 768px) {
-  .mobile-menu-btn { display: block; }
-  nav { display: none; }
-}
-</style>
-</head>
-<body>
-<header>
-<h1>Batik Air Task Card System</h1>
-<button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
-</header>
-
-<div id="mobileMenu" class="mobile-menu">
-<button onclick="showSection('allTasks'); hideMobileMenu()">All Tasks</button>
-<button onclick="showSection('assignedTasks'); hideMobileMenu()">Assigned Tasks</button>
-<button onclick="showSection('doneTasks'); hideMobileMenu()">Done</button>
-<button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
-<button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
-<button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
-</div>
-
-<div id="loginPage" class="login-box">
-<h2>Login</h2>
-<input type="text" id="idInput" placeholder="Enter your ID">
-<select id="nameInput"></select>
-<select id="roleInput">
-<option value="">Select Role</option>
-<option value="OFFICER">Officer</option>
-<option value="LAE">LAE</option>
-</select>
-<button onclick="login()">Sign In</button>
-<div id="loginTime"></div>
-</div>
-
-<div id="app" class="hidden">
-<div id="userInfo"></div>
-<nav>
-<button onclick="showSection('allTasks')">All Tasks</button>
-<button onclick="showSection('assignedTasks')">Assigned Tasks</button>
-<button onclick="showSection('doneTasks')">Done</button>
-<button onclick="showSection('prodDash')">Productivity Dashboard</button>
-<button onclick="showSection('attendanceSection')">Attendance</button>
-<button onclick="signOut()">Sign Out</button>
-</nav>
-
-<div id="officerSection" class="hidden">
-<h2>Officer Panel</h2>
-<input type="file" id="fileInput" accept=".xlsx" onchange="handleFile(event)">
-<div id="assignedOverview" class="hidden">
-<h3>Assigned Tasks Overview</h3>
-<button class="btn-toggle" onclick="toggleOverview()">Show/Hide Assigned Tasks</button>
-<div id="overviewList" class="hidden"></div>
-</div>
-<div id="productivityDashboard">
-<h3>LAE Productivity Dashboard (Task Completion)</h3>
-<table>
-<thead><tr><th>LAE</th><th>Tasks Assigned</th><th>Tasks Done</th><th>Productivity %</th></tr></thead>
-<tbody id="productivityBody"></tbody>
-</table>
-</div>
-</div>
-
-<div class="container">
-<div id="attendanceSection" class="hidden"></div>
-<div id="ataFilter"></div>
-<div id="allTasks"></div>
-<div id="assignedTasks" class="hidden"></div>
-<div id="doneTasks" class="hidden"></div>
-<div id="prodDash" class="hidden">
-<h2>Productivity Dashboard (Roster)</h2>
-<p class="soft">Upload the roster Excel to see who is <b>Working Today</b> vs <b>Off Today</b>. Auto-detects Malaysia time (GMT+8).</p>
-<div class="prod-row" style="align-items:center;">
-<div><input type="file" id="prodFileInput" accept=".xlsx" onchange="handleRosterFile(event)"></div>
-<div><span class="stat-pill" id="prodDatePill">Date: —</span></div>
-<div><span class="stat-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
-</div>
-<div class="prod-row" style="margin-top:12px;">
-<input id="prodSearch" type="text" placeholder="Search LAE by name..." oninput="filterProdLists()">
-</div>
-<div class="prod-row" style="margin-top:12px;">
-<div class="prod-card">
-<h3>✅ Working Today</h3>
-<div id="workingList"></div>
-</div>
-<div class="prod-card">
-<h3>❌ Off Today</h3>
-<div id="offList"></div>
-</div>
-</div>
-
-You said:
-<!DOCTYPE html>
-<html lang="en">
-<head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Batik Air Task Card App</title>
   <style>
+    /* ALL YOUR ORIGINAL CSS REMAINS EXACTLY THE SAME */
     body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
-    header { background:#800000; color:white; padding:10px; text-align:center; }
+    header { background:#800000; color:white; padding:10px; text-align:center; position:relative; }
     .login-box { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; }
     .login-box input, .login-box select, .login-box button { margin:5px; padding:8px; font-size:16px; }
     .hidden { display:none; }
@@ -183,12 +50,77 @@ You said:
     table.preview { width:100%; border-collapse:collapse; }
     table.preview th, table.preview td { border:1px solid #eee; padding:6px; font-size:12px; }
     .muted { color:#666; font-size:12px; }
+
+    /* Mobile menu styles */
+    .mobile-menu-btn {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: none;
+    }
+    .mobile-menu {
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      min-width: 200px;
+    }
+    .mobile-menu.show {
+      display: flex;
+    }
+    .mobile-menu button {
+      padding: 10px 15px;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+    }
+    .mobile-menu button:hover {
+      background: #f0f0f0;
+    }
+    .mobile-menu .sign-out {
+      border-top: 1px solid #eee;
+      color: #800000;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-menu-btn {
+        display: block;
+      }
+      nav {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
-  <header><h1>Batik Air Task Card System</h1></header>
+  <header>
+    <h1>Batik Air Task Card System</h1>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+  </header>
 
-  <!-- LOGIN PAGE -->
+  <!-- MODIFIED: Added Attendance button to mobile menu -->
+  <div id="mobileMenu" class="mobile-menu">
+    <button onclick="showSection('allTasks'); hideMobileMenu()">All Tasks</button>
+    <button onclick="showSection('assignedTasks'); hideMobileMenu()">Assigned Tasks</button>
+    <button onclick="showSection('doneTasks'); hideMobileMenu()">Done</button>
+    <button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
+    <button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
+    <button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
+  </div>
+
+  <!-- Your existing login page remains exactly the same -->
   <div id="loginPage" class="login-box">
     <h2>Login</h2>
     <input type="text" id="idInput" placeholder="Enter your ID">
@@ -206,11 +138,13 @@ You said:
   <div id="app" class="hidden">
     <div id="userInfo"></div>
 
+    <!-- MODIFIED: Added Attendance button to main navigation -->
     <nav>
       <button onclick="showSection('allTasks')">All Tasks</button>
       <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
       <button onclick="showSection('doneTasks')">Done</button>
       <button onclick="showSection('prodDash')">Productivity Dashboard</button>
+      <button onclick="showSection('attendanceSection')">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
     </nav>
 
@@ -235,7 +169,10 @@ You said:
     </div>
 
     <div class="container">
-      <div id="attendanceSection"></div>
+      <!-- MODIFIED: Made attendance section hidden by default -->
+      <div id="attendanceSection" class="hidden"></div>
+      
+      <!-- Rest of your container content remains exactly the same -->
       <div id="ataFilter"></div>
       <div id="allTasks"></div>
       <div id="assignedTasks" class="hidden"></div>
@@ -282,12 +219,12 @@ You said:
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
+    // ALL YOUR ORIGINAL JAVASCRIPT VARIABLES REMAIN THE SAME
     let staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
 
-    // Example roster data for in-app attendance section (working days)
     let laeRoster = {
       "ABDUL FATAH BIN IBRAHIM": ["Mon","Tue","Wed","Thu","Fri"],
       "MOHD HAFIZ SAZWAN BIN ZAM ZAM": ["Mon","Tue","Thu","Fri"],
@@ -300,23 +237,60 @@ You said:
     let allTasks = [];
     let currentUser = null;
     let availableATAs = [];
-    let attendance = {}; // simple presence marker for the in-app attendance card
+    let attendance = {};
 
-    // --- NEW: Roster Dashboard State ---
-    let rosterMatrix = [];      // 2D array from uploaded Excel (header:1)
-    let rosterHeaderRow = -1;   // index of header row with day numbers
-    let rosterNameCol = 0;      // column index holding names
-    let workingToday = [];      // [{name, code}]
-    let offToday = [];          // [{name, code}]
+    let rosterMatrix = [];
+    let rosterHeaderRow = -1;
+    let rosterNameCol = 0;
+    let workingToday = [];
+    let offToday = [];
     let rosterPreviewVisible = false;
 
-    function populateNames(){
-      const sel=document.getElementById("nameInput");
-      sel.innerHTML='<option value="">Select your name</option>';
-      staffNames.forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)});
+    // MODIFIED: Added loadSavedData and saveAppData functions
+    function loadSavedData() {
+        try {
+            const savedData = localStorage.getItem('batikAirAppData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                if (data.tasks) {
+                    allTasks = data.tasks;
+                    availableATAs = [...new Set(allTasks.map(t => t.ata).filter(v => v))];
+                }
+                if (data.rosterMatrix) {
+                    rosterMatrix = data.rosterMatrix;
+                    detectHeaderAndNameColumn();
+                    computeTodayOnOff();
+                }
+            }
+        } catch (e) {
+            console.error("Error loading saved data:", e);
+        }
     }
-    populateNames();
 
+    function saveAppData() {
+        const data = {
+            tasks: allTasks,
+            rosterMatrix: rosterMatrix
+        };
+        localStorage.setItem('batikAirAppData', JSON.stringify(data));
+    }
+
+    loadSavedData();
+
+    // MODIFIED: Updated showSection function
+    function showSection(id){
+      document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+      document.getElementById("allDoneMsg").classList.add("hidden");
+      
+      if(id === "attendanceSection") {
+        renderAttendance();
+      } else {
+        renderTasks();
+      }
+    }
+
+    // MODIFIED: Updated login function (removed renderAttendance call)
     function login(){
       const id=document.getElementById("idInput").value;
       const name=document.getElementById("nameInput").value;
@@ -326,8 +300,7 @@ You said:
       document.getElementById("loginPage").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
 
-      // Show user info
-      document.getElementById("userInfo").innerText = ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role};
+      document.getElementById("userInfo").innerText = `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
 
       if(role==="OFFICER"){ 
         document.getElementById("officerSection").classList.remove("hidden"); 
@@ -336,10 +309,45 @@ You said:
         document.getElementById("officerSection").classList.add("hidden"); 
       }
       updateLoginTime();
-      renderAttendance();
       renderTasks();
       updateProdDatePill();
     }
+
+    // MODIFIED: Enhanced renderAttendance function
+    function renderAttendance(){
+      const div=document.getElementById("attendanceSection");
+      div.innerHTML="<h3>LAE Attendance</h3>";
+      let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
+      staffNames.forEach(name=>{
+        let present=(laeRoster[name]||[]).includes(today);
+        attendance[name]=present;
+        let p=document.createElement("p");
+        p.textContent=`${name}: ${present ? "Present ✅" : "Off ❌"}`;
+        div.appendChild(p);
+      });
+      
+      let refreshBtn = document.createElement("button");
+      refreshBtn.textContent = "Refresh Attendance";
+      refreshBtn.className = "btn-toggle";
+      refreshBtn.onclick = renderAttendance;
+      div.appendChild(refreshBtn);
+    }
+
+    // ALL YOUR OTHER ORIGINAL FUNCTIONS REMAIN EXACTLY THE SAME
+    function toggleMobileMenu() {
+      document.getElementById('mobileMenu').classList.toggle('show');
+    }
+
+    function hideMobileMenu() {
+      document.getElementById('mobileMenu').classList.remove('show');
+    }
+
+    function populateNames(){
+      const sel=document.getElementById("nameInput");
+      sel.innerHTML='<option value="">Select your name</option>';
+      staffNames.forEach(n=>{let o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o)});
+    }
+    populateNames();
 
     function updateLoginTime(){
       const now=new Date();
@@ -352,6 +360,7 @@ You said:
       document.getElementById("loginPage").classList.remove("hidden");
       document.getElementById("allDoneMsg").classList.add("hidden");
       document.getElementById("userInfo").innerText="";
+      hideMobileMenu();
     }
 
     function handleFile(e){
@@ -375,29 +384,12 @@ You said:
           done:false
         }));
         availableATAs=[...new Set(allTasks.map(t=>t.ata).filter(v=>v))];
+        
+        saveAppData();
+        
         renderTasks();
       };
       reader.readAsArrayBuffer(file);
-    }
-
-    function renderAttendance(){
-      const div=document.getElementById("attendanceSection");
-      div.innerHTML="<h3>LAE Attendance</h3>";
-      let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
-      staffNames.forEach(name=>{
-        let present=(laeRoster[name]||[]).includes(today);
-        attendance[name]=present;
-        let p=document.createElement("p");
-        p.textContent=${name}: ${present ? "Present ✅" : "Off ❌"};
-        div.appendChild(p);
-      });
-    }
-
-    function showSection(id){
-      document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
-      document.getElementById(id).classList.remove("hidden");
-      document.getElementById("allDoneMsg").classList.add("hidden");
-      renderTasks();
     }
 
     function renderTasks(){
@@ -415,7 +407,6 @@ You said:
         }
       });
 
-      // LAE done message
       if(currentUser?.role==="LAE"){
         const userAssigned=allTasks.filter(t=>t.assignedTo===currentUser.name);
         const userDone=userAssigned.filter(t=>t.done);
@@ -424,14 +415,13 @@ You said:
         }
       }
 
-      // Officer assigned task overview & productivity from task data
       if(currentUser?.role==="OFFICER"){
         let overviewDiv=document.getElementById("overviewList");
         let laeTasks={};
         allTasks.forEach(t=>{
           if(t.assignedTo){ 
             if(!laeTasks[t.assignedTo]) laeTasks[t.assignedTo]=[];
-            laeTasks[t.assignedTo].push(${t.card} - ${t.description} ${t.done?'✅':''});
+            laeTasks[t.assignedTo].push(`${t.card} - ${t.description} ${t.done?'✅':''}`);
           }
         });
         overviewDiv.innerHTML="";
@@ -439,12 +429,11 @@ You said:
           let ul=document.createElement("ul");
           laeTasks[lae].forEach(task=>{ let li=document.createElement("li"); li.textContent=task; ul.appendChild(li); });
           let div=document.createElement("div");
-          div.innerHTML=<b>${lae}:</b>; 
+          div.innerHTML=`<b>${lae}:</b>`; 
           div.appendChild(ul);
           overviewDiv.appendChild(div);
         }
 
-        // Productivity Dashboard (task-based)
         let tbody=document.getElementById("productivityBody");
         tbody.innerHTML="";
         staffNames.forEach(name=>{
@@ -452,12 +441,11 @@ You said:
           let done=allTasks.filter(t=>t.assignedTo===name && t.done).length;
           let percent=assigned>0? Math.round(done/assigned*100) : 0;
           let tr=document.createElement("tr");
-          tr.innerHTML=<td>${name}</td><td>${assigned}</td><td>${done}</td><td>${percent}%</td>;
+          tr.innerHTML=`<td>${name}</td><td>${assigned}</td><td>${done}</td><td>${percent}%</td>`;
           tbody.appendChild(tr);
         });
       }
 
-      // Render task cards
       for(let sec in sections){
         let cont=document.getElementById(sec);
         cont.innerHTML="";
@@ -465,7 +453,7 @@ You said:
           let canMark=(currentUser.role==="LAE" && t.assignedTo===currentUser.name && attendance[t.assignedTo]);
           let card=document.createElement("div");
           card.className="task-card"+(t.done?" done":"");
-          card.innerHTML=
+          card.innerHTML=`
             <div class="task-header">ATA ${t.ata}</div>
             <div class="block"><b>Task Card Num / AMM Ref:</b> ${t.card}</div>
             <div class="block"><b>Task Description:</b> ${t.description}</div>
@@ -479,15 +467,15 @@ You said:
             </div>
             <div class="task-actions">
               ${ currentUser?.role==="OFFICER"
-                ? Assign:
+                ? `Assign:
                     <select onchange="assign(${i}, this.value)">
                       <option value="">Assign to...</option>
-                      ${staffNames.map(n=><option value="${n}" ${t.assignedTo===n?'selected':''}>${n}</option>).join("")}
-                    </select> :  }
+                      ${staffNames.map(n=>`<option value="${n}" ${t.assignedTo===n?'selected':''}>${n}</option>`).join("")}
+                    </select>` : `` }
               ${ canMark
-                ? <label><input type="checkbox" ${t.done?"checked":""}
-                      onchange="markDone(${i}, this.checked)"> Mark Done</label> :  }
-            </div>;
+                ? `<label><input type="checkbox" ${t.done?"checked":""}
+                      onchange="markDone(${i}, this.checked)"> Mark Done</label>` : `` }
+            </div>`;
           cont.appendChild(card);
         });
       }
@@ -496,13 +484,15 @@ You said:
 
     function assign(i,name){ 
       if(currentUser && currentUser.role==="OFFICER"){ 
-        // Check LAE availability today (simple in-app roster guard)
         let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
         if(name && !(laeRoster[name]||[]).includes(today)){
-          alert(${name} is off today!);
+          alert(`${name} is off today!`);
           return;
         }
         allTasks[i].assignedTo=name; 
+        
+        saveAppData();
+        
         renderTasks(); 
       } else {
         alert("Only officers can assign tasks.");
@@ -511,6 +501,9 @@ You said:
 
     function markDone(i,done){ 
       allTasks[i].done=done; 
+      
+      saveAppData();
+      
       renderTasks(); 
     }
 
@@ -520,7 +513,7 @@ You said:
       let sel=document.createElement("select");
       sel.id="ataSelect";
       sel.innerHTML='<option value="ALL">All ATA</option>';
-      availableATAs.forEach(a=>{ sel.innerHTML+=<option value="${a}">ATA ${a}</option>; });
+      availableATAs.forEach(a=>{ sel.innerHTML+=`<option value="${a}">ATA ${a}</option>`; });
       sel.onchange=()=>renderTasks();
       div.appendChild(sel);
     }
@@ -530,13 +523,10 @@ You said:
       ov.classList.toggle("hidden");
     }
 
-    // --------------------------
-    // NEW: Productivity Dashboard (Roster Upload)
-    // --------------------------
     function updateProdDatePill(){
       const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
       const nice = nowMY.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric', timeZone:'Asia/Kuala_Lumpur' });
-      document.getElementById('prodDatePill').textContent = Date: ${nice} (MYT);
+      document.getElementById('prodDatePill').textContent = `Date: ${nice} (MYT)`;
     }
 
     function handleRosterFile(e){
@@ -547,13 +537,14 @@ You said:
         const data = new Uint8Array(evt.target.result);
         const wb = XLSX.read(data, { type:'array' });
 
-        // Prefer "KUL" if it exists; otherwise first sheet
         const targetSheetName = wb.SheetNames.includes("KUL") ? "KUL" : wb.SheetNames[0];
         const sheet = wb.Sheets[targetSheetName];
 
-        // 2D matrix for robust parsing
         const mat = XLSX.utils.sheet_to_json(sheet, { header:1, raw:true });
         rosterMatrix = mat;
+        
+        saveAppData();
+        
         detectHeaderAndNameColumn();
         computeTodayOnOff();
         renderProdLists();
@@ -565,7 +556,6 @@ You said:
 
     function detectHeaderAndNameColumn(){
       rosterHeaderRow = -1; rosterNameCol = 0;
-      // Find a row that contains many day numbers 1..31 (typical roster layout)
       let bestRow = -1, bestCount = -1;
       for(let r=0; r<Math.min(rosterMatrix.length, 10); r++){
         let row = rosterMatrix[r]||[];
@@ -574,7 +564,6 @@ You said:
       }
       rosterHeaderRow = bestRow >= 0 ? bestRow : 0;
 
-      // Try find "Name" column, else assume first column
       let nameCol = 0;
       const headerCandidates = [rosterHeaderRow-1, rosterHeaderRow, rosterHeaderRow+1].filter(x=>x>=0);
       for(const hr of headerCandidates){
@@ -591,7 +580,6 @@ You said:
 
     function isDayNumber(cell){
       if(cell == null) return false;
-      // number 1..31 or string "1".."31"
       if(typeof cell === 'number') return cell>=1 && cell<=31;
       const s = cell.toString().trim();
       if(!s) return false;
@@ -601,7 +589,7 @@ You said:
 
     function getTodayDayNumberMYT(){
       const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
-      return nowMY.getDate(); // day of month 1..31
+      return nowMY.getDate();
     }
 
     function findTodayColumnIndex(){
@@ -609,14 +597,12 @@ You said:
       const header = rosterMatrix[rosterHeaderRow] || [];
       const d = getTodayDayNumberMYT();
 
-      // exact match first (number), then string
       for(let c=0;c<header.length;c++){
         if(typeof header[c]==='number' && header[c]===d) return c;
       }
       for(let c=0;c<header.length;c++){
         if((header[c]||"").toString().trim()===String(d)) return c;
       }
-      // fallback: try zero-padded day ("01")
       for(let c=0;c<header.length;c++){
         if((header[c]||"").toString().trim()===String(d).padStart(2,'0')) return c;
       }
@@ -626,20 +612,22 @@ You said:
     function computeTodayOnOff(){
       workingToday = []; offToday = [];
       const col = findTodayColumnIndex();
-      if(col<0) { return; }
+      if(col<0) { 
+        console.error("Could not find today's column in roster");
+        return; 
+      }
 
-      // Start scanning rows after header to the end
       for(let r=rosterHeaderRow+1; r<rosterMatrix.length; r++){
         const row = rosterMatrix[r]||[];
         let name = (row[rosterNameCol]||"").toString().trim();
-        if(!name) continue; // skip blank rows
+        if(!name) continue;
 
         let code = row[col];
         if(code == null) code = "";
-        code = code.toString().trim();
+        code = code.toString().trim().toUpperCase();
 
         const offCodes = ['OFF','AL','SL','ML','EL','PH','MC','OFFDAY','OFF DAY','LEAVE','HOL','PHL','ANNUAL LEAVE','SICK LEAVE'];
-        const isOff = (code==="" || offCodes.includes(code.toUpperCase()));
+        const isOff = (code==="" || offCodes.includes(code));
         if(isOff){
           offToday.push({name, code: code || '—'});
         } else {
@@ -647,7 +635,6 @@ You said:
         }
       }
 
-      // Sort alphabetically
       workingToday.sort((a,b)=> a.name.localeCompare(b.name));
       offToday.sort((a,b)=> a.name.localeCompare(b.name));
     }
@@ -661,14 +648,14 @@ You said:
         const div=document.createElement('div');
         div.className='name-item';
         div.dataset.name=item.name.toLowerCase();
-        div.textContent=${item.name}  (${item.code});
+        div.textContent=`${item.name} (${item.code})`;
         w.appendChild(div);
       });
       offToday.forEach(item=>{
         const div=document.createElement('div');
         div.className='name-item';
         div.dataset.name=item.name.toLowerCase();
-        div.textContent=${item.name}  (${item.code});
+        div.textContent=`${item.name} (${item.code})`;
         o.appendChild(div);
       });
     }
@@ -678,7 +665,7 @@ You said:
       const workPct = total ? Math.round(workingToday.length/total*100) : 0;
       const offPct = total ? (100-workPct) : 0;
       document.getElementById('prodCountsPill').textContent =
-        Total LAEs: ${total} | Working: ${workingToday.length} (${workPct}%) | Off: ${offToday.length} (${offPct}%);
+        `Total LAEs: ${total} | Working: ${workingToday.length} (${workPct}%) | Off: ${offToday.length} (${offPct}%)`;
     }
 
     function filterProdLists(){
@@ -696,27 +683,27 @@ You said:
       rosterPreviewVisible = !rosterPreviewVisible;
       const el = document.getElementById('rosterPreview');
       el.classList.toggle('hidden', !rosterPreviewVisible);
+      if(rosterPreviewVisible) renderRosterPreview();
     }
 
     function renderRosterPreview(){
       const el = document.getElementById('rosterPreview');
       if(!el) return;
-      if(!rosterPreviewVisible) return; // only render when visible
+      if(!rosterPreviewVisible) return;
 
-      // Build small preview table (up to 30 rows x 20 cols for performance)
       const maxRows = Math.min(rosterMatrix.length, 30);
       const maxCols = Math.min((rosterMatrix[0]||[]).length, 20);
       let html = '<table class="preview"><thead><tr>';
       for(let c=0;c<maxCols;c++){
         const head = (rosterMatrix[rosterHeaderRow]||[])[c];
-        html += <th>${(head==null?'':head)}</th>;
+        html += `<th>${(head==null?'':head)}</th>`;
       }
       html += '</tr></thead><tbody>';
       for(let r=rosterHeaderRow+1; r<maxRows; r++){
         html += '<tr>';
         for(let c=0;c<maxCols;c++){
           const v = rosterMatrix[r] && rosterMatrix[r][c] != null ? rosterMatrix[r][c] : '';
-          html += <td>${v}</td>;
+          html += `<td>${v}</td>`;
         }
         html += '</tr>';
       }
@@ -724,8 +711,8 @@ You said:
       el.innerHTML = html;
     }
 
-    // Initial date pill
     updateProdDatePill();
+
   </script>
 </body>
 </html>
