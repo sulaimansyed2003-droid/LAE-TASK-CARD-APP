@@ -218,22 +218,21 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+  // Staff names
+  let staffNames = [
+    "ABDUL FATAH BIN IBRAHIM",
+    "MOHD HAFIZ SAZWAN BIN ZAM ZAM",
+    "MOHAMMAD ZULKIFLEE BIN HUSSIN",
+    "DING JU SHENG",
+    "LEE YOONG JUN",
+    "MUHAMMAD NAZIF BIN ABDUL MALEK"
+  ];
 
-  <script>
-    // ALL YOUR ORIGINAL JAVASCRIPT VARIABLES REMAIN THE SAME
-    let staffNames = [
-      "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
-      "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
-    ];
-
-
-  // existing login() function already here
-
+  // Populate the name dropdown
   function populateNames() {
     const nameSelect = document.getElementById("nameInput");
-   // clear existing
     nameSelect.innerHTML = '<option value="">Select Name</option>';
-
     staffNames.forEach(n => {
       const opt = document.createElement("option");
       opt.value = n;
@@ -242,11 +241,12 @@
     });
   }
 
-  // make sure it runs when page loads
-  window.onload = function() {
+  // Make sure it runs after the page fully loads
+  document.addEventListener("DOMContentLoaded", function() {
     populateNames();
-  };
+  });
 </script>
+
 
 
     let laeRoster = {
