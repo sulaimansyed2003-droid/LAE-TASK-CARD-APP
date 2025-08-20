@@ -313,18 +313,17 @@
       updateProdDatePill();
     }
 
-    // MODIFIED: Enhanced renderAttendance function
-    function renderAttendance(){
-      const div=document.getElementById("attendanceSection");
-      div.innerHTML="<h3>LAE Attendance</h3>";
-      let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
-      staffNames.forEach(name=>{
-        let present=(laeRoster[name]||[]).includes(today);
-        attendance[name]=present;
-        let p=document.createElement("p");
-        p.textContent=`${name}: ${present ? "Present ✅" : "Off ❌"}`;
-        div.appendChild(p);
-      });
+    <!-- Attendance Section -->
+<div id="attendanceSection" class="hidden">
+  <h3>LAE Attendance</h3>
+  <p>ABDUL FATAH BIN IBRAHIM: Present ✅</p>
+  <p>MOHD HAFIZ SAZWAN BIN ZAM ZAM: Off ❌</p>
+  <p>MOHAMMAD ZULKIFLEE BIN HUSSIN: Present ✅</p>
+  <p>DING JU SHENG: Present ✅</p>
+  <p>LEE YOONG JUN: Off ❌</p>
+  <p>MUHAMMAD NAZIF BIN ABDUL MALEK: Present ✅</p>
+</div>
+
       
       let refreshBtn = document.createElement("button");
       refreshBtn.textContent = "Refresh Attendance";
