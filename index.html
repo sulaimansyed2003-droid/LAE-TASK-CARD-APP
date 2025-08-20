@@ -283,12 +283,7 @@
       document.getElementById(id).classList.remove("hidden");
       document.getElementById("allDoneMsg").classList.add("hidden");
       
-      if(id === "attendanceSection") {
-        renderAttendance();
-      } else {
-        renderTasks();
-      }
-    }
+ 
 
     // MODIFIED: Updated login function (removed renderAttendance call)
     function login(){
@@ -333,7 +328,6 @@
       let refreshBtn = document.createElement("button");
       refreshBtn.textContent = "Refresh Attendance";
       refreshBtn.className = "btn-toggle";
-      refreshBtn.onclick = renderAttendance;
       div.appendChild(refreshBtn);
     }
 
@@ -819,7 +813,7 @@ function handleFile(evt){
 <div id="attendanceSection" class="hidden">
   <h3>LAE Attendance</h3>
   <div id="attendanceList"></div>
-  <button class="btn-toggle" onclick="renderAttendance()">Refresh Attendance</button>
+   Attendance</button>
 </div>
 <!-- Task Upload -->
 <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFile(event)" />
