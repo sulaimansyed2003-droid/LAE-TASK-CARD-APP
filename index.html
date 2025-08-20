@@ -218,10 +218,13 @@
   </div>
 
 
+<!-- Login Page -->
 <div id="loginPage" class="login-box">
   <h2>Login</h2>
   <input type="text" id="idInput" placeholder="Enter your ID">
-  <select id="nameInput"></select>
+  <select id="nameInput">
+    <option value="">Select Name</option>
+  </select>
   <select id="roleInput">
     <option value="">Select Role</option>
     <option value="OFFICER">Officer</option>
@@ -230,6 +233,7 @@
   <button onclick="login()">Sign In</button>
   <div id="loginTime"></div>
 </div>
+
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
