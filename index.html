@@ -812,29 +812,10 @@ function handleFile(evt){
     </tbody>
   </table>
 </div>
-<div id="productivityDashboard" class="hidden">
-  <h3>LAE Productivity Dashboard (Task Completion)</h3>
-  <table>
-    <thead>
-      <tr><th>LAE</th><th>Tasks Assigned</th><th>Tasks Done</th><th>Productivity %</th></tr>
-    </thead>
-    <tbody id="productivityBody"></tbody>
-  </table>
-</div>
-<!-- Productivity Dashboard (Officer only) -->
-<div id="productivityDashboard" class="hidden">
-  <h2>LAE Productivity Dashboard (Task Completion)</h2>
-  <table id="prodTable">
-    <thead>
-      <tr>
-        <th>LAE Name</th>
-        <th>Completed Tasks</th>
-        <th>Total Tasks</th>
-        <th>Completion %</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<div id="attendanceSection" class="hidden">
+  <h3>LAE Attendance</h3>
+  <div id="attendanceList"></div>
+  <button class="btn-toggle" onclick="renderAttendance()">Refresh Attendance</button>
 </div>
 <!-- Task Upload -->
 <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFile(event)" />
