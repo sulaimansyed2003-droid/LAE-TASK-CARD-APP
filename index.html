@@ -804,5 +804,79 @@ function handleFile(evt){
     <tbody></tbody>
   </table>
 </div>
+<!-- Task Upload -->
+<input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFile(event)" />
+<div id="shareLinkContainer"></div>
+
+<!-- Task Card Viewer -->
+<div id="taskCardSection" class="hidden">
+  <h3>Uploaded Task Cards</h3>
+  <div id="taskCardList" style="overflow-x:auto;"></div>
+</div>
+
+<script>
+  function handleFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+
+      // Read first sheet
+      const firstSheet = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheet];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // Display tasks
+      displayTasks(jsonData);
+
+      // Generate shareable link
+      const encoded = encodeURIComponent(btoa(JSON.stringify(jsonData)));
+      const url = window.location.origin + window.location.pathname + "?data=" + encoded;
+
+      document.getElementById("shareLinkContainer").innerHTML =
+        `<p>Open this on your phone: <a href="${url}" target="_blank">${url}</a></p>`;
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function displayTasks(data) {
+    const container = document.getElementById("taskCardList");
+    container.innerHTML = "";
+
+    if (data.length === 0) {
+      container.innerHTML = "<p>No tasks found.</p>";
+      return;
+    }
+
+    const table = document.createElement("table");
+    table.border = "1";
+    data.forEach((row, i) => {
+      const tr = document.createElement("tr");
+      row.forEach(cell => {
+        const td = document.createElement(i === 0 ? "th" : "td");
+        td.textContent = cell;
+        tr.appendChild(td);
+      });
+      table.appendChild(tr);
+    });
+
+    container.appendChild(table);
+    document.getElementById("taskCardSection").classList.remove("hidden");
+  }
+
+  // Load from shareable link
+  window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dataParam = urlParams.get("data");
+    if (dataParam) {
+      const decoded = JSON.parse(atob(decodeURIComponent(dataParam)));
+      displayTasks(decoded);
+    }
+  };
+</script>
+
 </body>
 </html>
