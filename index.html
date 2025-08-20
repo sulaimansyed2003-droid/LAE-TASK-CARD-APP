@@ -282,8 +282,10 @@
       document.querySelectorAll(".container > div").forEach(d=>d.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
       document.getElementById("allDoneMsg").classList.add("hidden");
+      renderTasks();
+    }
       
- 
+
 
     // MODIFIED: Updated login function (removed renderAttendance call)
     function login(){
@@ -308,28 +310,19 @@
       updateProdDatePill();
     }
 
+    <!-- Attendance Section -->
 <div id="attendanceSection" class="hidden">
   <h3>LAE Attendance</h3>
-  <table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-      <tr>
-        <th>LAE Name</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>ANANTA KUMAAR A/L PUSPANATHAN</td><td>Present ✅</td></tr>
-      <tr><td>SIM REN JIN</td><td>Off ❌</td></tr>
-      <tr><td>NAYAN NAIMUL HOQUE</td><td>Present ✅</td></tr>
-      <tr><td>DANISWARA SATRIO ARYA</td><td>Off ❌</td><
-
+  <p>ABDUL FATAH BIN IBRAHIM: Present ✅</p>
+  <p>MOHD HAFIZ SAZWAN BIN ZAM ZAM: Off ❌</p>
+  <p>MOHAMMAD ZULKIFLEE BIN HUSSIN: Present ✅</p>
+  <p>DING JU SHENG: Present ✅</p>
+  <p>LEE YOONG JUN: Off ❌</p>
+  <p>MUHAMMAD NAZIF BIN ABDUL MALEK: Present ✅</p>
+</div>
 
       
-      let refreshBtn = document.createElement("button");
-      refreshBtn.textContent = "Refresh Attendance";
-      refreshBtn.className = "btn-toggle";
-      div.appendChild(refreshBtn);
-    }
+
 
     // ALL YOUR OTHER ORIGINAL FUNCTIONS REMAIN EXACTLY THE SAME
     function toggleMobileMenu() {
@@ -809,11 +802,6 @@ function handleFile(evt){
       </tr>
     </tbody>
   </table>
-</div>
-<div id="attendanceSection" class="hidden">
-  <h3>LAE Attendance</h3>
-  <div id="attendanceList"></div>
-   Attendance</button>
 </div>
 <!-- Task Upload -->
 <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFile(event)" />
