@@ -777,8 +777,40 @@ function handleFile(evt){
 </div>
 <div id="attendanceSection" class="hidden">
   <h3>LAE Attendance</h3>
-  <div id="attendanceList"></div>
-  <button class="btn-toggle" onclick="renderAttendance()">Refresh Attendance</button>
+  <table border="1" cellpadding="5" cellspacing="0" style="width:100%; text-align:left;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ABDUL FATAH BIN IBRAHIM</td>
+        <td>Present ✅</td>
+      </tr>
+      <tr>
+        <td>MOHD HAFIZ SAZWAN BIN ZAM ZAM</td>
+        <td>Off ❌</td>
+      </tr>
+      <tr>
+        <td>MOHAMMAD ZULKIFLEE BIN HUSSIN</td>
+        <td>Present ✅</td>
+      </tr>
+      <tr>
+        <td>DING JU SHENG</td>
+        <td>Present ✅</td>
+      </tr>
+      <tr>
+        <td>LEE YOONG JUN</td>
+        <td>Off ❌</td>
+      </tr>
+      <tr>
+        <td>MUHAMMAD NAZIF BIN ABDUL MALEK</td>
+        <td>Present ✅</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 <div id="productivityDashboard" class="hidden">
   <h3>LAE Productivity Dashboard (Task Completion)</h3>
@@ -808,43 +840,6 @@ function handleFile(evt){
 <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFile(event)" />
 <div id="shareLinkContainer"></div>
 
-<div id="attendanceSection" style="display:none;">
-  <h3>Attendance</h3>
-  <table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody id="attendanceTableBody">
-      <tr>
-        <td>ABDUL FATAH BIN IBRAHIM</td>
-        <td>Present ✅</td>
-      </tr>
-      <tr>
-        <td>MOHD HAFIZ SAZWAN BIN ZAM ZAM</td>
-        <td>Off ❌</td>
-      </tr>
-      <tr>
-        <td>MOHAMMAD ZULKIFLEE BIN HUSSIN</td>
-        <td>Present ✅</td>
-      </tr>
-      <tr>
-        <td>DING JU SHENG</td>
-        <td>Present ✅</td>
-      </tr>
-      <tr>
-        <td>LEE YOONG JUN</td>
-        <td>Off ❌</td>
-      </tr>
-      <tr>
-        <td>MUHAMMAD NAZIF BIN ABDUL MALEK</td>
-        <td>Present ✅</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
 
 
 <!-- Task Card Viewer -->
