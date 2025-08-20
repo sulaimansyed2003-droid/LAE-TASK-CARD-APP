@@ -218,12 +218,36 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <script>
     // ALL YOUR ORIGINAL JAVASCRIPT VARIABLES REMAIN THE SAME
     let staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
+
+
+  // existing login() function already here
+
+  function populateNames() {
+    const nameSelect = document.getElementById("nameInput");
+   // clear existing
+    nameSelect.innerHTML = '<option value="">Select Name</option>';
+
+    staffNames.forEach(n => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      opt.textContent = n;
+      nameSelect.appendChild(opt);
+    });
+  }
+
+  // make sure it runs when page loads
+  window.onload = function() {
+    populateNames();
+  };
+</script>
+
 
     let laeRoster = {
       "ABDUL FATAH BIN IBRAHIM": ["Mon","Tue","Wed","Thu","Fri"],
