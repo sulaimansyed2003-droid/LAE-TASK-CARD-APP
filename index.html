@@ -761,5 +761,24 @@ function handleFile(evt){
     reader.readAsArrayBuffer(file);
 }
 </script>
+<div style="margin:10px 0;">
+  <input type="text" id="taskSearch" placeholder="Search tasks..." />
+</div>
+<div style="margin:10px 0;">
+  <button id="exportBtn">Export Tasks</button>
+</div>
+<button class="btn-toggle" style="position:absolute; left:10px; top:10px;" onclick="toggleDarkMode()">🌓 Dark Mode</button>
+<div id="ataFilter" style="margin:10px 0;">
+  <label for="ataSelect">Filter by ATA:</label>
+  <select id="ataSelect">
+    <option value="ALL">All ATA</option>
+    <!-- Options populated dynamically via JS -->
+  </select>
+</div>
+<div id="attendanceSection" class="hidden">
+  <h3>LAE Attendance</h3>
+  <div id="attendanceList"></div>
+  <button class="btn-toggle" onclick="renderAttendance()">Refresh Attendance</button>
+</div>
 </body>
 </html>
