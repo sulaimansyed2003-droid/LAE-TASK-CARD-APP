@@ -148,15 +148,20 @@
       <button onclick="signOut()">Sign Out</button>
     </nav>
 
-    <div id="officerSection" class="hidden">
-      <h2>Officer Panel</h2>
-      <input type="file" id="fileInput" accept=".xlsx" onchange="handleFile(event)">
-      <div id="assignedOverview" class="hidden">
-        <h3>Assigned Tasks Overview</h3>
-        <button class="btn-toggle" onclick="toggleOverview()">Show/Hide Assigned Tasks</button>
-        <div id="overviewList" class="hidden"></div>
-      </div>
- <!-- Productivity Dashboard (hidden by default) -->
+   <div id="officerSection" class="hidden">
+  <h2>Officer Panel</h2>
+
+  <!-- File Upload -->
+  <input type="file" id="fileInput" accept=".xlsx" onchange="handleFile(event)">
+
+  <!-- Assigned Tasks Overview -->
+  <div id="assignedOverview" class="hidden">
+    <h3>Assigned Tasks Overview</h3>
+    <button class="btn-toggle" onclick="toggleOverview()">Show/Hide Assigned Tasks</button>
+    <div id="overviewList" class="hidden"></div>
+  </div>
+
+  <!-- Productivity Dashboard (hidden by default) -->
   <div id="productivityDashboard" class="hidden">
     <h3>LAE Productivity Dashboard (Task Completion)</h3>
     <table>
@@ -175,11 +180,14 @@
       </tbody>
     </table>
   </div>
+</div>
+
 
   <script>
     function showSection(sectionId) {
       // hide all
-      ['allTasks','assignedTasks','doneTasks','attendanceSection','productivityDashboard']
+      ['allTasks','assignedTasks','doneTasks','attend
+anceSection','productivityDashboard']
         .forEach(id => {
           const el = document.getElementById(id);
           if (el) {
