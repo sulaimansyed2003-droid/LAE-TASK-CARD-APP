@@ -804,7 +804,18 @@ function handleFile(evt){
 }
 </script>
 <div style="margin:10px 0;">
-  <input type="text" id="taskSearch" placeholder="Search tasks..." />
+  <label for="nameInput">Name:</label>
+<input list="nameList" id="nameInput" placeholder="Type or choose your name">
+<datalist id="nameList">
+  <option value="ABDUL FATAH BIN IBRAHIM">
+  <option value="MOHD HAFIZ SAZWAN BIN ZAM ZAM">
+  <option value="MOHAMMAD ZULKIFLEE BIN HUSSIN">
+  <option value="DING JU SHENG">
+  <option value="LEE YOONG JUN">
+  <option value="MUHAMMAD NAZIF BIN ABDUL MALEK">
+  <!-- Add all other names here -->
+</datalist>
+
 </div>
 <div style="margin:10px 0;">
   <button id="exportBtn">Export Tasks</button>
