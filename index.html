@@ -209,6 +209,9 @@
               <button class="btn-toggle" onclick="toggleRosterPreview()">Show/Hide</button>
             </div>
             <div id="rosterPreview" class="table-wrap hidden"></div>
+	    <!-- Add this right below your rosterPreview div -->
+<input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="margin:10px 0;"/>
+
             <p class="muted">Tip: Make sure the top header row has day numbers (1–31) and the first column has names.</p>
           </div>
         </div>
@@ -723,7 +726,23 @@
     }
     setInterval(updateClock, 1000);
     updateClock(); // run once immediately
-    </script>
+   
+    // Excel Upload for Roster
+    document.getElementById('excelFileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, {type: 'binary'});
+            const firstSheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[firstSheetName];
+            rosterMatrix = XLSX.utils.sheet_to_json(sheet, {header:1});
+            renderRosterPreview();
+        };
+        reader.readAsBinaryString(file);
+    });
 
   
 <!-- Dark Mode Toggle Button in Header -->
