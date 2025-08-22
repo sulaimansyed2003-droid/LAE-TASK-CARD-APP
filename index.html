@@ -287,7 +287,6 @@
         renderAttendance();
       } else {
         renderTasks();
-        updateProgressBar()
       }
     }
 
@@ -311,7 +310,6 @@
       }
       updateLoginTime();
       renderTasks();
-      updateProgressBar()
       updateProdDatePill();
     }
 
@@ -390,7 +388,6 @@
         saveAppData();
         
         renderTasks();
-	updateProgressBar()
       };
       reader.readAsArrayBuffer(file);
     }
@@ -399,7 +396,6 @@
       let ataFilter=document.getElementById("ataSelect")?.value||"ALL";
       let filterFn=t=>(ataFilter==="ALL"||t.ata==ataFilter);
       let sections={allTasks:[], assignedTasks:[], doneTasks:[]};
-      updateProgressBar()
 
       allTasks.forEach((t,i)=>{
         if(filterFn(t)){
@@ -498,7 +494,6 @@
         saveAppData();
         
         renderTasks(); 
-	updateProgressBar()
       } else {
         alert("Only officers can assign tasks.");
       }
@@ -510,7 +505,6 @@
       saveAppData();
       
       renderTasks(); 
-      updateProgressBar()
     }
 
     function populateATAFilter(){
@@ -763,7 +757,6 @@ function handleFile(evt){
             status: row['Status'] || 'PENDING'
         }));
         renderTasks();
-	updateProgressBar()
     };
     reader.readAsArrayBuffer(file);
 }
