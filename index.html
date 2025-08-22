@@ -684,8 +684,32 @@
       rosterPreviewVisible = !rosterPreviewVisible;
       const el = document.getElementById('rosterPreview');
       el.classList.toggle('hidden', !rosterPreviewVisible);
-      if(rosterPreviewVisible) renderRosterPreview();
+      if(rosterPreviewVisible){
+        renderRosterPreview();
+      }
     }
+
+    }
+    function renderRosterPreview(){
+      const div = document.getElementById('rosterPreview');
+      if(!rosterPreviewVisible){ div.innerHTML = ""; return; }
+
+      let html = "<table class='preview'><thead><tr>";
+      const header = rosterMatrix[rosterHeaderRow] || [];
+      header.forEach(cell=>{ html += `<th>${cell||""}</th>`; });
+      html += "</tr></thead><tbody>";
+
+      for(let r=rosterHeaderRow+1; r<rosterMatrix.length; r++){
+        const row = rosterMatrix[r] || [];
+        if(row.every(c=>!c)) continue; // skip empty
+        html += "<tr>";
+        row.forEach(cell=>{ html += `<td>${cell||""}</td>`; });
+        html += "</tr>";
+      }
+      html += "</tbody></table>";
+      div.innerHTML = html;
+    }
+
 
     function renderRosterPreview(){
       const el = document.getElementById('rosterPreview');
