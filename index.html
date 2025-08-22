@@ -105,7 +105,10 @@
   </style>
 </head>
 <body>
-
+  <header>
+    <h1>Batik Air Task Card System</h1>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+  </header>
 
   <!-- MODIFIED: Added Attendance button to mobile menu -->
   <div id="mobileMenu" class="mobile-menu">
@@ -164,8 +167,6 @@
         </table>
       </div>
     </div>
-
-   
 
     <div class="container">
       <!-- MODIFIED: Made attendance section hidden by default -->
@@ -286,7 +287,6 @@
         renderAttendance();
       } else {
         renderTasks();
- 	updateProgressBar();
       }
     }
 
@@ -310,7 +310,6 @@
       }
       updateLoginTime();
       renderTasks();
-      updateProgressBar();
       updateProdDatePill();
     }
 
@@ -389,18 +388,14 @@
         saveAppData();
         
         renderTasks();
- 	updateProgressBar();
       };
       reader.readAsArrayBuffer(file);
     }
-
-    
 
     function renderTasks(){
       let ataFilter=document.getElementById("ataSelect")?.value||"ALL";
       let filterFn=t=>(ataFilter==="ALL"||t.ata==ataFilter);
       let sections={allTasks:[], assignedTasks:[], doneTasks:[]};
-      updateProgressBar();
 
       allTasks.forEach((t,i)=>{
         if(filterFn(t)){
@@ -499,7 +494,6 @@
         saveAppData();
         
         renderTasks(); 
-        updateProgressBar();
       } else {
         alert("Only officers can assign tasks.");
       }
@@ -511,7 +505,6 @@
       saveAppData();
       
       renderTasks(); 
-      updateProgressBar();
     }
 
     function populateATAFilter(){
@@ -764,22 +757,9 @@ function handleFile(evt){
             status: row['Status'] || 'PENDING'
         }));
         renderTasks();
-        updateProgressBar();
     };
     reader.readAsArrayBuffer(file);
 }
-// ✅ Progress bar update
-function updateProgressBar(){
-  const total = allTasks.length;
-  const done = allTasks.filter(t => t.status && t.status.toLowerCase()==="done").length;
-  const percent = total ? Math.round((done/total)*100) : 0;
-  document.getElementById("progress-bar").style.width = percent+"%";
-  document.getElementById("progress-text").textContent = `${done}/${total} tasks completed (${percent}%)`;
-}
- 
-renderTasks();
-updateProgressBar(); // ✅ keep tasks + progress in sync
-
 </script>
 <div style="margin:10px 0;">
   <input type="text" id="taskSearch" placeholder="Search tasks..." />
