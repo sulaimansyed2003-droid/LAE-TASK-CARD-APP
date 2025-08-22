@@ -165,106 +165,7 @@
       </div>
     </div>
 
-    <!-- ✅ XLSX load status -->
-  <div id="xlsx-status" style="background:#f9f9f9;border-bottom:1px solid #ccc;padding:6px;font-size:14px;color:#333;">
-    Loading Excel support…
-  </div>
-  <header>
-
- <header>
-    <h1>Batik Air Task Card App</h1>
-  </header>
-    <h1>Batik Air Task Card System</h1>
-    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
-  </header>
-  
-  <div class="container">
-    <!-- ✅ Progress Bar -->
-    <div style="padding:10px;">
-      <div style="margin-bottom:6px;">Progress:</div>
-      <div style="background:#ddd;width:100%;height:20px;border-radius:10px;overflow:hidden;">
-        <div id="progress-bar" style="height:100%;width:0;background:#4caf50;"></div>
-      </div>
-      <div id="progress-text" style="margin-top:4px;font-size:14px;"></div>
-    </div>
-
-    <div class="toolbar">
-      <button onclick="exportTasksToExcel()">Export Tasks</button>
-      <!-- You may already have Import XLSX button somewhere -->
-    </div>
-
-    <div id="taskList"></div>
-  </div>
-
-  <script>
-    let allTasks = [
-      {id:1,title:"Check Landing Gear",description:"Inspect landing gear for wear.",status:"Pending"},
-      {id:2,title:"Engine Oil Check",description:"Verify engine oil levels.",status:"Done"},
-      {id:3,title:"Avionics Update",description:"Update navigation software.",status:"Pending"}
-    ];
-
-    // ✅ Ensure XLSX library loads
-    async function ensureXLSX(){
-      if(window.XLSX) return;
-      return new Promise((resolve, reject)=>{
-        const script=document.createElement("script");
-        script.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
-        script.onload=()=>resolve();
-        script.onerror=()=>reject(new Error("XLSX failed to load"));
-        document.head.appendChild(script);
-      });
-    }
-
-    // ✅ Show XLSX load status
-    async function showXLSXStatus(){
-      const status = document.getElementById("xlsx-status");
-      try {
-        await ensureXLSX();
-        status.textContent = "✅ Excel support loaded successfully.";
-        status.style.color = "green";
-      } catch(err) {
-        status.textContent = "❌ Failed to load Excel support. Please check your internet or use a local copy.";
-        status.style.color = "red";
-      }
-    }
-    showXLSXStatus();
-
-    // ✅ Export tasks to Excel
-    async function exportTasksToExcel(){
-      await ensureXLSX();
-      const ws = XLSX.utils.json_to_sheet(allTasks);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Tasks");
-      XLSX.writeFile(wb, "TaskCards.xlsx");
-    }
-   // ✅ Render tasks
-    function renderTasks(){
-      const list=document.getElementById("taskList");
-      list.innerHTML="";
-      allTasks.forEach(t=>{
-        const div=document.createElement("div");
-        div.className="task";
-        div.innerHTML=`
-          <h3>${t.title}</h3>
-          <p>${t.description}</p>
-          <p class="meta">Status: ${t.status}</p>
-        `;
-        list.appendChild(div);
-      });
-      updateProgressBar(); // <-- update progress after rendering
-    }
-
-    // ✅ Progress bar update
-    function updateProgressBar(){
-      const total = allTasks.length;
-      const done = allTasks.filter(t => t.status && t.status.toLowerCase()==="done").length;
-      const percent = total ? Math.round((done/total)*100) : 0;
-      document.getElementById("progress-bar").style.width = percent+"%";
-      document.getElementById("progress-text").textContent = `${done}/${total} tasks completed (${percent}%)`;
-    }
-
-    renderTasks();
-
+   
 
     <div class="container">
       <!-- MODIFIED: Made attendance section hidden by default -->
@@ -385,6 +286,7 @@
         renderAttendance();
       } else {
         renderTasks();
+ 	updateProgressBar();
       }
     }
 
@@ -408,6 +310,7 @@
       }
       updateLoginTime();
       renderTasks();
+      updateProgressBar();
       updateProdDatePill();
     }
 
@@ -486,14 +389,18 @@
         saveAppData();
         
         renderTasks();
+ 	updateProgressBar();
       };
       reader.readAsArrayBuffer(file);
     }
+
+    
 
     function renderTasks(){
       let ataFilter=document.getElementById("ataSelect")?.value||"ALL";
       let filterFn=t=>(ataFilter==="ALL"||t.ata==ataFilter);
       let sections={allTasks:[], assignedTasks:[], doneTasks:[]};
+      updateProgressBar();
 
       allTasks.forEach((t,i)=>{
         if(filterFn(t)){
@@ -592,6 +499,7 @@
         saveAppData();
         
         renderTasks(); 
+        updateProgressBar();
       } else {
         alert("Only officers can assign tasks.");
       }
@@ -603,6 +511,7 @@
       saveAppData();
       
       renderTasks(); 
+      updateProgressBar();
     }
 
     function populateATAFilter(){
@@ -855,9 +764,22 @@ function handleFile(evt){
             status: row['Status'] || 'PENDING'
         }));
         renderTasks();
+        updateProgressBar();
     };
     reader.readAsArrayBuffer(file);
 }
+// ✅ Progress bar update
+function updateProgressBar(){
+  const total = allTasks.length;
+  const done = allTasks.filter(t => t.status && t.status.toLowerCase()==="done").length;
+  const percent = total ? Math.round((done/total)*100) : 0;
+  document.getElementById("progress-bar").style.width = percent+"%";
+  document.getElementById("progress-text").textContent = `${done}/${total} tasks completed (${percent}%)`;
+}
+ 
+renderTasks();
+updateProgressBar(); // ✅ keep tasks + progress in sync
+
 </script>
 <div style="margin:10px 0;">
   <input type="text" id="taskSearch" placeholder="Search tasks..." />
