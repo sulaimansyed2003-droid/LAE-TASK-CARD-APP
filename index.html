@@ -209,9 +209,6 @@
               <button class="btn-toggle" onclick="toggleRosterPreview()">Show/Hide</button>
             </div>
             <div id="rosterPreview" class="table-wrap hidden"></div>
-	    <!-- Add this right below your rosterPreview div -->
-<input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv" style="margin:10px 0;"/>
-
             <p class="muted">Tip: Make sure the top header row has day numbers (1–31) and the first column has names.</p>
           </div>
         </div>
@@ -716,49 +713,10 @@
     }
 
     updateProdDatePill();
-    // Live Clock Function
-    function updateClock(){
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const dateStr = now.toLocaleDateString('en-US', options);
-      const timeStr = now.toLocaleTimeString('en-US');
-      document.getElementById("clock").textContent = `${dateStr} | ${timeStr}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock(); // run once immediately
-   
-    // Excel Upload for Roster
-    document.getElementById('excelFileInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if(!file) return;
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const data = e.target.result;
-            const workbook = XLSX.read(data, {type: 'binary'});
-            const firstSheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[firstSheetName];
-            rosterMatrix = XLSX.utils.sheet_to_json(sheet, {header:1});
-            renderRosterPreview();
-        };
-        reader.readAsBinaryString(file);
-    });
-
-  
+  </script>
 <!-- Dark Mode Toggle Button in Header -->
 <button class="btn-toggle" style="position:absolute; left:10px; top:10px;" onclick="toggleDarkMode()">🌓</button>
-
-<!-- Replace your old clock <div> with this -->
-<div id="clock" 
-     style="position:absolute; right:10px; top:10px; 
-            font-weight:bold; 
-            font-size:20px; 
-            color:#b30000; 
-            background:rgba(255,255,255,0.8); 
-            padding:6px 12px; 
-            border-radius:8px;">
-</div>
-
 
 <!-- Dark Mode CSS -->
 <style>
@@ -781,26 +739,46 @@ function toggleDarkMode(){
 
 <!-- Fixed Excel Upload for Task Cards -->
 <script>
-
+function handleFile(evt){
+    const file = evt.target.files[0];
+    if(!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e){
+        let data = new Uint8Array(e.target.result);
+        let workbook = XLSX.read(data, {type:'array'});
+        let firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        let jsonData = XLSX.utils.sheet_to_json(firstSheet,{defval:''});
+        taskCards = jsonData.map(row => ({
+            number: row['Task Card Number'] || row['No'] || 'N/A',
+            description: row['Description'] || '',
+            assignedTo: row['Assigned To'] || '',
+            due: row['Due'] || '',
+            manHour: row['Man Hour'] || '',
+            status: row['Status'] || 'PENDING'
+        }));
+        renderTasks();
+    };
+    reader.readAsArrayBuffer(file);
+}
 </script>
 <div style="margin:10px 0;">
-  <label for="nameInput">Name:</label>
-<input list="nameList" id="nameInput" placeholder="Type or choose your name">
-<datalist id="nameList">
-  <option value="ABDUL FATAH BIN IBRAHIM">
-  <option value="MOHD HAFIZ SAZWAN BIN ZAM ZAM">
-  <option value="MOHAMMAD ZULKIFLEE BIN HUSSIN">
-  <option value="DING JU SHENG">
-  <option value="LEE YOONG JUN">
-  <option value="MUHAMMAD NAZIF BIN ABDUL MALEK">
-  <!-- Add all other names here -->
-</datalist>
-
+  <input type="text" id="taskSearch" placeholder="Search tasks..." />
 </div>
 <div style="margin:10px 0;">
   <button id="exportBtn">Export Tasks</button>
 </div>
 <button class="btn-toggle" style="position:absolute; left:10px; top:10px;" onclick="toggleDarkMode()">🌓 Dark Mode</button>
+
+<div id="clock" 
+     style="position:absolute; right:10px; top:10px; 
+            font-weight:bold; 
+            font-size:20px; 
+            color:#b30000; 
+            background:rgba(255,255,255,0.8); 
+            padding:6px 12px; 
+            border-radius:8px;">
+</div>
+
 <div id="ataFilter" style="margin:10px 0;">
   <label for="ataSelect">Filter by ATA:</label>
   <select id="ataSelect">
@@ -839,3 +817,5 @@ function toggleDarkMode(){
 </div>
 </body>
 </html>
+
+
