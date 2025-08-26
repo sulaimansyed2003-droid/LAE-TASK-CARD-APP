@@ -684,33 +684,31 @@
       rosterPreviewVisible = !rosterPreviewVisible;
       const el = document.getElementById('rosterPreview');
       el.classList.toggle('hidden', !rosterPreviewVisible);
-      if(rosterPreviewVisible) renderRosterPreview();
+      if(rosterPreviewVisible){
+        renderRosterPreview();
+      }
     }
 
-    function renderRosterPreview(){
-      const el = document.getElementById('rosterPreview');
-      if(!el) return;
-      if(!rosterPreviewVisible) return;
 
-      const maxRows = Math.min(rosterMatrix.length, 30);
-      const maxCols = Math.min((rosterMatrix[0]||[]).length, 20);
-      let html = '<table class="preview"><thead><tr>';
-      for(let c=0;c<maxCols;c++){
-        const head = (rosterMatrix[rosterHeaderRow]||[])[c];
-        html += `<th>${(head==null?'':head)}</th>`;
-      }
-      html += '</tr></thead><tbody>';
-      for(let r=rosterHeaderRow+1; r<maxRows; r++){
-        html += '<tr>';
-        for(let c=0;c<maxCols;c++){
-          const v = rosterMatrix[r] && rosterMatrix[r][c] != null ? rosterMatrix[r][c] : '';
-          html += `<td>${v}</td>`;
-        }
-        html += '</tr>';
-      }
-      html += '</tbody></table>';
-      el.innerHTML = html;
-    }
+     function renderRosterPreview(){
+       const div = document.getElementById('rosterPreview');
+       if(!rosterPreviewVisible){ div.innerHTML = ""; return; }
+
+       let html = "<table class='preview'><thead><tr>";
+       const header = rosterMatrix[rosterHeaderRow] || [];
+       header.forEach(cell=>{ html += `<th>${cell||""}</th>`; });
+       html += "</tr></thead><tbody>";
+
+       for(let r=rosterHeaderRow+1; r<rosterMatrix.length; r++){
+         const row = rosterMatrix[r] || [];
+         if(row.every(c=>!c)) continue; // skip empty
+         html += "<tr>";
+         row.forEach(cell=>{ html += `<td>${cell||""}</td>`; });
+          html += "</tr>";
+       }
+       html += "</tbody></table>";
+       div.innerHTML = html;
+     }
 
     updateProdDatePill();
 
