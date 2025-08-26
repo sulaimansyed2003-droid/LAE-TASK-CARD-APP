@@ -712,9 +712,34 @@
 
     updateProdDatePill();
 
+
+    // Live Clock Function
+    function updateClock(){
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString('en-US', options);
+      const timeStr = now.toLocaleTimeString('en-US');
+      document.getElementById("clock").textContent = `${dateStr} | ${timeStr}`;
+}
+setInterval(updateClock, 1000);
+updateClock(); // run once immediately
+</script>
+
   </script>
 <!-- Dark Mode Toggle Button in Header -->
 <button class="btn-toggle" style="position:absolute; left:10px; top:10px;" onclick="toggleDarkMode()">🌓</button>
+
+<div id="clock" 
+     style="position:absolute; right:10px; top:10px; 
+            font-weight:bold; 
+            font-size:20px; 
+            color:#b30000; 
+            background:rgba(255,255,255,0.8); 
+            padding:6px 12px; 
+            border-radius:8px;">
+</div>
+
+
 
 <!-- Dark Mode CSS -->
 <style>
