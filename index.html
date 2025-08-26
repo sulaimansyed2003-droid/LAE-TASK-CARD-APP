@@ -124,8 +124,7 @@
   <div id="loginPage" class="login-box">
     <h2>Login</h2>
     <input type="text" id="idInput" placeholder="Enter your ID">
-    <input list="nameList" id="nameInput" placeholder="Type or choose your name">
-<datalist id="nameList"></datalist>
+    <select id="nameInput"></select>
     <select id="roleInput">
       <option value="">Select Role</option>
       <option value="OFFICER">Officer</option>
@@ -313,6 +312,19 @@
       renderTasks();
       updateProdDatePill();
     }
+    // Live Clock Function
+    function updateClock(){
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString('en-US', options);
+      const timeStr = now.toLocaleTimeString('en-US');
+      document.getElementById("clock").textContent = `${dateStr} | ${timeStr}`;
+    }
+   setInterval(updateClock, 1000);
+   updateClock(); // run once immediately
+   </script>
+
+    
 
     // MODIFIED: Enhanced renderAttendance function
     function renderAttendance(){
@@ -685,51 +697,41 @@
       rosterPreviewVisible = !rosterPreviewVisible;
       const el = document.getElementById('rosterPreview');
       el.classList.toggle('hidden', !rosterPreviewVisible);
-      if(rosterPreviewVisible){
-        renderRosterPreview();
-      }
+      if(rosterPreviewVisible) renderRosterPreview();
     }
 
+    function renderRosterPreview(){
+      const el = document.getElementById('rosterPreview');
+      if(!el) return;
+      if(!rosterPreviewVisible) return;
 
-     function renderRosterPreview(){
-       const div = document.getElementById('rosterPreview');
-       if(!rosterPreviewVisible){ div.innerHTML = ""; return; }
-
-       let html = "<table class='preview'><thead><tr>";
-       const header = rosterMatrix[rosterHeaderRow] || [];
-       header.forEach(cell=>{ html += `<th>${cell||""}</th>`; });
-       html += "</tr></thead><tbody>";
-
-       for(let r=rosterHeaderRow+1; r<rosterMatrix.length; r++){
-         const row = rosterMatrix[r] || [];
-         if(row.every(c=>!c)) continue; // skip empty
-         html += "<tr>";
-         row.forEach(cell=>{ html += `<td>${cell||""}</td>`; });
-          html += "</tr>";
-       }
-       html += "</tbody></table>";
-       div.innerHTML = html;
-     }
+      const maxRows = Math.min(rosterMatrix.length, 30);
+      const maxCols = Math.min((rosterMatrix[0]||[]).length, 20);
+      let html = '<table class="preview"><thead><tr>';
+      for(let c=0;c<maxCols;c++){
+        const head = (rosterMatrix[rosterHeaderRow]||[])[c];
+        html += `<th>${(head==null?'':head)}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+      for(let r=rosterHeaderRow+1; r<maxRows; r++){
+        html += '<tr>';
+        for(let c=0;c<maxCols;c++){
+          const v = rosterMatrix[r] && rosterMatrix[r][c] != null ? rosterMatrix[r][c] : '';
+          html += `<td>${v}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    }
 
     updateProdDatePill();
-
-
-    // Live Clock Function
-    function updateClock(){
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const dateStr = now.toLocaleDateString('en-US', options);
-      const timeStr = now.toLocaleTimeString('en-US');
-      document.getElementById("clock").textContent = `${dateStr} | ${timeStr}`;
-}
-setInterval(updateClock, 1000);
-updateClock(); // run once immediately
-</script>
 
   </script>
 <!-- Dark Mode Toggle Button in Header -->
 <button class="btn-toggle" style="position:absolute; left:10px; top:10px;" onclick="toggleDarkMode()">🌓</button>
 
+<!-- Live Clock Display -->
 <div id="clock" style="position:absolute; right:10px; top:10px; font-weight:bold;"></div>
 
 
@@ -783,17 +785,6 @@ function handleFile(evt){
   <button id="exportBtn">Export Tasks</button>
 </div>
 <button class="btn-toggle" style="position:absolute; left:10px; top:10px;" onclick="toggleDarkMode()">🌓 Dark Mode</button>
-
-<div id="clock" 
-     style="position:absolute; right:10px; top:10px; 
-            font-weight:bold; 
-            font-size:20px; 
-            color:#b30000; 
-            background:rgba(255,255,255,0.8); 
-            padding:6px 12px; 
-            border-radius:8px;">
-</div>
-
 <div id="ataFilter" style="margin:10px 0;">
   <label for="ataSelect">Filter by ATA:</label>
   <select id="ataSelect">
