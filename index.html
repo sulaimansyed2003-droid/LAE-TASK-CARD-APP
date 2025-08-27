@@ -1,3 +1,4 @@
+You said:
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -300,7 +301,7 @@
       document.getElementById("loginPage").classList.add("hidden");
       document.getElementById("app").classList.remove("hidden");
 
-      document.getElementById("userInfo").innerText = `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
+      document.getElementById("userInfo").innerText = ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role};
 
       if(role==="OFFICER"){ 
         document.getElementById("officerSection").classList.remove("hidden"); 
@@ -312,19 +313,6 @@
       renderTasks();
       updateProdDatePill();
     }
-    // Live Clock Function
-    function updateClock(){
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const dateStr = now.toLocaleDateString('en-US', options);
-      const timeStr = now.toLocaleTimeString('en-US');
-      document.getElementById("clock").textContent = `${dateStr} | ${timeStr}`;
-    }
-   setInterval(updateClock, 1000);
-   updateClock(); // run once immediately
-   </script>
-
-    
 
     // MODIFIED: Enhanced renderAttendance function
     function renderAttendance(){
@@ -335,7 +323,7 @@
         let present=(laeRoster[name]||[]).includes(today);
         attendance[name]=present;
         let p=document.createElement("p");
-        p.textContent=`${name}: ${present ? "Present ✅" : "Off ❌"}`;
+        p.textContent=${name}: ${present ? "Present ✅" : "Off ❌"};
         div.appendChild(p);
       });
       
@@ -434,7 +422,7 @@
         allTasks.forEach(t=>{
           if(t.assignedTo){ 
             if(!laeTasks[t.assignedTo]) laeTasks[t.assignedTo]=[];
-            laeTasks[t.assignedTo].push(`${t.card} - ${t.description} ${t.done?'✅':''}`);
+            laeTasks[t.assignedTo].push(${t.card} - ${t.description} ${t.done?'✅':''});
           }
         });
         overviewDiv.innerHTML="";
@@ -442,7 +430,7 @@
           let ul=document.createElement("ul");
           laeTasks[lae].forEach(task=>{ let li=document.createElement("li"); li.textContent=task; ul.appendChild(li); });
           let div=document.createElement("div");
-          div.innerHTML=`<b>${lae}:</b>`; 
+          div.innerHTML=<b>${lae}:</b>; 
           div.appendChild(ul);
           overviewDiv.appendChild(div);
         }
@@ -454,7 +442,7 @@
           let done=allTasks.filter(t=>t.assignedTo===name && t.done).length;
           let percent=assigned>0? Math.round(done/assigned*100) : 0;
           let tr=document.createElement("tr");
-          tr.innerHTML=`<td>${name}</td><td>${assigned}</td><td>${done}</td><td>${percent}%</td>`;
+          tr.innerHTML=<td>${name}</td><td>${assigned}</td><td>${done}</td><td>${percent}%</td>;
           tbody.appendChild(tr);
         });
       }
@@ -466,7 +454,7 @@
           let canMark=(currentUser.role==="LAE" && t.assignedTo===currentUser.name && attendance[t.assignedTo]);
           let card=document.createElement("div");
           card.className="task-card"+(t.done?" done":"");
-          card.innerHTML=`
+          card.innerHTML=
             <div class="task-header">ATA ${t.ata}</div>
             <div class="block"><b>Task Card Num / AMM Ref:</b> ${t.card}</div>
             <div class="block"><b>Task Description:</b> ${t.description}</div>
@@ -480,15 +468,15 @@
             </div>
             <div class="task-actions">
               ${ currentUser?.role==="OFFICER"
-                ? `Assign:
+                ? Assign:
                     <select onchange="assign(${i}, this.value)">
                       <option value="">Assign to...</option>
-                      ${staffNames.map(n=>`<option value="${n}" ${t.assignedTo===n?'selected':''}>${n}</option>`).join("")}
-                    </select>` : `` }
+                      ${staffNames.map(n=><option value="${n}" ${t.assignedTo===n?'selected':''}>${n}</option>).join("")}
+                    </select> :  }
               ${ canMark
-                ? `<label><input type="checkbox" ${t.done?"checked":""}
-                      onchange="markDone(${i}, this.checked)"> Mark Done</label>` : `` }
-            </div>`;
+                ? <label><input type="checkbox" ${t.done?"checked":""}
+                      onchange="markDone(${i}, this.checked)"> Mark Done</label> :  }
+            </div>;
           cont.appendChild(card);
         });
       }
@@ -499,7 +487,7 @@
       if(currentUser && currentUser.role==="OFFICER"){ 
         let today=new Date().toLocaleDateString("en-US",{weekday:'short'});
         if(name && !(laeRoster[name]||[]).includes(today)){
-          alert(`${name} is off today!`);
+          alert(${name} is off today!);
           return;
         }
         allTasks[i].assignedTo=name; 
@@ -526,7 +514,7 @@
       let sel=document.createElement("select");
       sel.id="ataSelect";
       sel.innerHTML='<option value="ALL">All ATA</option>';
-      availableATAs.forEach(a=>{ sel.innerHTML+=`<option value="${a}">ATA ${a}</option>`; });
+      availableATAs.forEach(a=>{ sel.innerHTML+=<option value="${a}">ATA ${a}</option>; });
       sel.onchange=()=>renderTasks();
       div.appendChild(sel);
     }
@@ -539,7 +527,7 @@
     function updateProdDatePill(){
       const nowMY = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kuala_Lumpur'}));
       const nice = nowMY.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric', timeZone:'Asia/Kuala_Lumpur' });
-      document.getElementById('prodDatePill').textContent = `Date: ${nice} (MYT)`;
+      document.getElementById('prodDatePill').textContent = Date: ${nice} (MYT);
     }
 
     function handleRosterFile(e){
@@ -662,14 +650,14 @@
         const div=document.createElement('div');
         div.className='name-item';
         div.dataset.name=item.name.toLowerCase();
-        div.textContent=`${item.name} (${item.code})`;
+        div.textContent=${item.name} (${item.code});
         w.appendChild(div);
       });
       offToday.forEach(item=>{
         const div=document.createElement('div');
         div.className='name-item';
         div.dataset.name=item.name.toLowerCase();
-        div.textContent=`${item.name} (${item.code})`;
+        div.textContent=${item.name} (${item.code});
         o.appendChild(div);
       });
     }
@@ -679,7 +667,7 @@
       const workPct = total ? Math.round(workingToday.length/total*100) : 0;
       const offPct = total ? (100-workPct) : 0;
       document.getElementById('prodCountsPill').textContent =
-        `Total LAEs: ${total} | Working: ${workingToday.length} (${workPct}%) | Off: ${offToday.length} (${offPct}%)`;
+        Total LAEs: ${total} | Working: ${workingToday.length} (${workPct}%) | Off: ${offToday.length} (${offPct}%);
     }
 
     function filterProdLists(){
@@ -710,14 +698,14 @@
       let html = '<table class="preview"><thead><tr>';
       for(let c=0;c<maxCols;c++){
         const head = (rosterMatrix[rosterHeaderRow]||[])[c];
-        html += `<th>${(head==null?'':head)}</th>`;
+        html += <th>${(head==null?'':head)}</th>;
       }
       html += '</tr></thead><tbody>';
       for(let r=rosterHeaderRow+1; r<maxRows; r++){
         html += '<tr>';
         for(let c=0;c<maxCols;c++){
           const v = rosterMatrix[r] && rosterMatrix[r][c] != null ? rosterMatrix[r][c] : '';
-          html += `<td>${v}</td>`;
+          html += <td>${v}</td>;
         }
         html += '</tr>';
       }
@@ -728,26 +716,8 @@
     updateProdDatePill();
 
   </script>
-
-  <!-- Dark Mode Toggle Button in Header -->
-  <button class="btn-toggle" 
-          style="position:absolute; left:10px; top:10px;" 
-          onclick="toggleDarkMode()">🌓</button>
-
-  <!-- Replace your old clock <div> with this -->
-  <div id="clock" 
-       style="position:absolute; right:10px; top:10px; 
-              font-weight:bold; 
-              font-size:20px; 
-              color:#b30000; 
-              background:rgba(255,255,255,0.8); 
-              padding:6px 12px; 
-              border-radius:8px;">
-  </div>
-
-
-
-
+<!-- Dark Mode Toggle Button in Header -->
+<button class="btn-toggle" style="position:absolute; left:10px; top:10px;" onclick="toggleDarkMode()">🌓</button>
 
 <!-- Dark Mode CSS -->
 <style>
@@ -791,6 +761,35 @@ function handleFile(evt){
     };
     reader.readAsArrayBuffer(file);
 }
+
+ function renderRosterPreview(){
+      const el = document.getElementById('rosterPreview');
+      if(!el) return;
+      if(!rosterPreviewVisible) return;
+
+      const maxRows = Math.min(rosterMatrix.length, 30);
+      const maxCols = Math.min((rosterMatrix[0]||[]).length, 20);
+      let html = '<table class="preview"><thead><tr>';
+      for(let c=0;c<maxCols;c++){
+        const head = (rosterMatrix[rosterHeaderRow]||[])[c];
+        html += `<th>${(head==null?'':head)}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+      for(let r=rosterHeaderRow+1; r<maxRows; r++){
+        html += '<tr>';
+        for(let c=0;c<maxCols;c++){
+          const v = rosterMatrix[r] && rosterMatrix[r][c] != null ? rosterMatrix[r][c] : '';
+          html += `<td>${v}</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    }
+
+    updateProdDatePill();
+
+
 </script>
 <div style="margin:10px 0;">
   <input type="text" id="taskSearch" placeholder="Search tasks..." />
@@ -799,6 +798,18 @@ function handleFile(evt){
   <button id="exportBtn">Export Tasks</button>
 </div>
 <button class="btn-toggle" style="position:absolute; left:10px; top:10px;" onclick="toggleDarkMode()">🌓 Dark Mode</button>
+
+<!-- Replace your old clock <div> with this -->
+  <div id="clock" 
+       style="position:absolute; right:10px; top:10px; 
+              font-weight:bold; 
+              font-size:20px; 
+              color:#b30000; 
+              background:rgba(255,255,255,0.8); 
+              padding:6px 12px; 
+              border-radius:8px;">
+  </div>
+
 <div id="ataFilter" style="margin:10px 0;">
   <label for="ataSelect">Filter by ATA:</label>
   <select id="ataSelect">
@@ -837,5 +848,3 @@ function handleFile(evt){
 </div>
 </body>
 </html>
-
-
