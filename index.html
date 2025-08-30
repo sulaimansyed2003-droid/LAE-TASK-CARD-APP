@@ -420,12 +420,20 @@
       allTasks.forEach((t, i) => {
         const matchesSearch = !search || JSON.stringify(t).toLowerCase().includes(search);
         if (!matchesSearch) return;
-        if (t.done) sections.done.push([t, i]);
-        else {
-          sections.all.push([t, i]);
-          if (currentUser && t.assignedTo === currentUser.name) sections.assigned.push([t, i]);
-        }
-      });
+        if (t.done) {
+         sections.done.push([t, i]);
+       } else {
+         sections.all.push([t, i]);
+
+         if (currentUser) {
+           if (currentUser.role === 'LAE' && t.assignedTo === currentUser.name) {
+             sections.assigned.push([t, i]);
+           }
+           if (currentUser.role === 'OFFICER' && t.assignedTo) {
+             sections.assigned.push([t, i]);
+           }
+         }
+       } 
 
       // show all-done message for LAE
       if (currentUser && currentUser.role === 'LAE') {
