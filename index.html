@@ -424,7 +424,6 @@
          sections.done.push([t, i]);
        } else {
          sections.all.push([t, i]);
-
          if (currentUser) {
            if (currentUser.role === 'LAE' && t.assignedTo === currentUser.name) {
              sections.assigned.push([t, i]);
@@ -434,6 +433,7 @@
            }
          }
        } 
+});
 
       // show all-done message for LAE
       if (currentUser && currentUser.role === 'LAE') {
