@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Batik Air Task Card App</title>
 
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "XXXX",
+      appId: "XXXX"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script> 
+
   <style>
     body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; color:#222; }
     header { background:#800000; color:white; padding:14px; text-align:center; position:relative; }
@@ -221,22 +237,30 @@
     function saveAppData() {
       try {
         const data = { tasks: allTasks, rosterMatrix };
-        localStorage.setItem('batikAirAppData', JSON.stringify(data));
-      } catch (e) { console.error(e); }
+        firebase.database().ref("batikAirAppData").set(data);
+      } catch (e) { 
+        console.error(e); 
+      }
     }
+
+    // Load from Firebase instead of localStorage
     function loadSavedData() {
       try {
-        const raw = localStorage.getItem('batikAirAppData');
-        if (!raw) return;
-        const d = JSON.parse(raw);
-        if (d.tasks) allTasks = d.tasks;
-        if (d.rosterMatrix) {
-          rosterMatrix = d.rosterMatrix;
-          detectHeaderAndNameColumn();
-          computeTodayOnOff();
-        }
-        availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
-      } catch (e) { console.warn("Load saved data failed", e); }
+        firebase.database().ref("batikAirAppData").on("value", (snapshot) => {
+          const d = snapshot.val();
+          if (!d) return;
+          if (d.tasks) allTasks = d.tasks;
+          if (d.rosterMatrix) {
+            rosterMatrix = d.rosterMatrix;
+            detectHeaderAndNameColumn();
+            computeTodayOnOff();
+          }
+          availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+          renderTasks && renderTasks(); // refresh UI if function exists
+        });
+      } catch (e) { 
+        console.warn("Load saved data failed", e); 
+     }
     }
 
     // Set clock
@@ -797,3 +821,5 @@
   </script>
 </body>
 </html>
+
+
