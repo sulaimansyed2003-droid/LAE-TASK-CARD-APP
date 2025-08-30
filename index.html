@@ -237,31 +237,53 @@
     function saveAppData() {
       try {
         const data = { tasks: allTasks, rosterMatrix };
-        firebase.database().ref("batikAirAppData").set(data);
+        localStorage.setItem('batikAirAppData', JSON.stringify(data));
+
+        // 🔥 Save to Firebase too
+        firebase.database().ref("batikAirAppData").set(data)
+          .then(() => console.log("✅ Data saved to Firebase:", data))
+          .catch(err => console.error("❌ Firebase save failed:", err));
       } catch (e) { 
-        console.error(e); 
+        console.error("❌ Local save failed:", e); 
       }
     }
+
 
     // Load from Firebase instead of localStorage
     function loadSavedData() {
       try {
-        firebase.database().ref("batikAirAppData").on("value", (snapshot) => {
-          const d = snapshot.val();
-          if (!d) return;
-          if (d.tasks) allTasks = d.tasks;
-          if (d.rosterMatrix) {
-            rosterMatrix = d.rosterMatrix;
-            detectHeaderAndNameColumn();
-            computeTodayOnOff();
-          }
-          availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
-          renderTasks && renderTasks(); // refresh UI if function exists
-        });
+        // 🔥 Load from Firebase first
+        firebase.database().ref("batikAirAppData").once("value")
+          .then(snapshot => {
+            if (snapshot.exists()) {
+              const d = snapshot.val();
+              console.log("✅ Data loaded from Firebase:", d);
+
+              if (d.tasks) allTasks = d.tasks;
+              if (d.rosterMatrix) {
+                rosterMatrix = d.rosterMatrix;
+                detectHeaderAndNameColumn();
+                computeTodayOnOff();
+              }
+              availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+              renderTasks();
+            } else {
+              console.warn("⚠️ No data found in Firebase");
+            }
+          })
+         .catch(err => console.error("❌ Firebase load failed:", err));
+
+        // Fallback to localStorage
+        const raw = localStorage.getItem('batikAirAppData');
+        if (raw) {
+          const d = JSON.parse(raw);
+          console.log("📦 Data loaded from localStorage:", d);
+        }
       } catch (e) { 
-        console.warn("Load saved data failed", e); 
-     }
+        console.warn("❌ Load failed:", e); 
+      }
     }
+
 
     // Set clock
     function updateClock() {
