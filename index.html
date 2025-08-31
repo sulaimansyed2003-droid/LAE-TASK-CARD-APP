@@ -55,11 +55,21 @@
     .mobile-menu button { padding: 10px 15px; border: none; background: none; text-align: left; cursor: pointer; }
     .mobile-menu .sign-out { border-top: 1px solid #eee; color: #800000; font-weight: bold; }
 
+    /* New styles for two-step verification */
+    .approval-section { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 8px; background: #f9f9f9; border-radius: 6px; }
+    .approval-status { font-weight: bold; }
+    .status-pending { color: #ff9800; }
+    .status-submitted { color: #2196f3; }
+    .status-verified { color: #4caf50; }
+    .btn-approve { background: #4caf50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    .btn-reject { background: #f44336; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+
     @media (max-width: 768px) {
       .mobile-menu-btn { display: block; }
       nav { display: none; }
       .attendance-table { font-size: 14px; }
       .attendance-table th, .attendance-table td { padding: 6px; }
+      .approval-section { flex-direction: column; align-items: flex-start; }
     }
 
     /* Dark mode */
@@ -75,6 +85,7 @@
     body.dark-mode .attendance-table tr:nth-child(even) { background-color: #2a2a2a; }
     body.dark-mode .attendance-table tr:hover { background-color: #333; }
     body.dark-mode .attendance-summary { background: #2a1a1a; }
+    body.dark-mode .approval-section { background: #2a2a2a; }
   </style>
 </head>
 <body>
@@ -252,7 +263,7 @@
       "MUHAMMAD NAZIF BIN ABDUL MALEK": ["Mon","Tue","Wed","Thu","Fri"]
     };
 
-    let allTasks = []; // task objects: {ata, card, description, tools, consumables, remarks, manhour, due, assignedTo, done}
+    let allTasks = []; // task objects: {ata, card, description, tools, consumables, remarks, manhour, due, assignedTo, status, completedBy, completedAt, verifiedBy, verifiedAt}
     let currentUser = null;
     let availableATAs = [];
     let attendance = {}; // name -> present boolean
@@ -304,6 +315,12 @@
     }
     setInterval(updateClock, 1000);
     updateClock();
+
+    // Format date for display
+    function formatDate(date) {
+      if (!date) return 'N/A';
+      return new Date(date).toLocaleString();
+    }
 
     // ---------- DOM helpers ----------
     function showSection(id) {
@@ -513,7 +530,11 @@
           manhour: row['DURATION MANHOUR'] || row['Man Hour'] || '',
           due: row['DUE'] || '',
           assignedTo: row['Assigned To'] || '',
-          done: !!((row['Status'] || '').toString().toLowerCase().includes('done') || row['Status'] === 'COMPLETE')
+          status: 'pending', // Default status
+          completedBy: '',
+          completedAt: null,
+          verifiedBy: '',
+          verifiedAt: null
         }));
         availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
         saveAppData();
@@ -540,7 +561,7 @@
       allTasks.forEach((t, i) => {
         const matchesSearch = !search || JSON.stringify(t).toLowerCase().includes(search);
         if (!matchesSearch) return;
-        if (t.done) {
+        if (t.status === "verified") {
          sections.done.push([t, i]);
        } else {
          sections.all.push([t, i]);
@@ -553,12 +574,12 @@
            }
          }
        } 
-});
+      });
 
       // show all-done message for LAE
       if (currentUser && currentUser.role === 'LAE') {
         const userAssigned = allTasks.filter(t => t.assignedTo === currentUser.name);
-        const userDone = userAssigned.filter(t => t.done);
+        const userDone = userAssigned.filter(t => t.status === "verified");
         if (userAssigned.length > 0 && userAssigned.length === userDone.length) {
           document.getElementById('allDoneMsg').classList.remove('hidden');
         } else {
@@ -574,7 +595,8 @@
         allTasks.forEach(t => {
           if (t.assignedTo) {
             laeTasks[t.assignedTo] = laeTasks[t.assignedTo] || [];
-            laeTasks[t.assignedTo].push(`${t.card} - ${t.description} ${t.done ? '✅' : ''}`);
+            const statusIcon = t.status === "verified" ? '✅' : (t.status === "submitted" ? '🟡' : '');
+            laeTasks[t.assignedTo].push(`${t.card} - ${t.description} ${statusIcon}`);
           }
         });
         for (const lae in laeTasks) {
@@ -594,7 +616,7 @@
         tbody.innerHTML = '';
         staffNames.forEach(name => {
           const assigned = allTasks.filter(t => t.assignedTo === name).length;
-          const done = allTasks.filter(t => t.assignedTo === name && t.done).length;
+          const done = allTasks.filter(t => t.assignedTo === name && t.status === "verified").length;
           const percent = assigned > 0 ? Math.round(done / assigned * 100) : 0;
           const tr = document.createElement('tr');
           tr.innerHTML = `<td style="border:1px solid #eee;padding:6px;">${name}</td><td style="border:1px solid #eee;padding:6px;text-align:center">${assigned}</td><td style="border:1px solid #eee;padding:6px;text-align:center">${done}</td><td style="border:1px solid #eee;padding:6px;text-align:center">${percent}%</td>`;
@@ -605,7 +627,7 @@
       // create cards
       function createCard(t, i) {
         const card = document.createElement('div');
-        card.className = 'task-card' + (t.done ? ' done' : '');
+        card.className = 'task-card' + (t.status === "verified" ? ' done' : '');
         const assignedSpan = t.assignedTo ? `<span class="assigned-bold">${t.assignedTo}</span>` : 'None';
         card.innerHTML = `
           <div class="task-header">ATA ${t.ata || '—'}</div>
@@ -618,9 +640,24 @@
             <div class="meta-pill">Manhour: ${escapeHtml(t.manhour || 'N/A')}</div>
             <div class="meta-pill">Due: ${escapeHtml(t.due || 'N/A')}</div>
             <div class="meta-pill">Assigned To: ${assignedSpan}</div>
+            <div class="meta-pill status-${t.status}">Status: ${t.status.toUpperCase()}</div>
           </div>
           <div class="task-actions"></div>
         `;
+        
+        // Add completion/verification info if available
+        const infoRow = document.createElement('div');
+        infoRow.className = 'row';
+        if (t.completedBy) {
+          infoRow.innerHTML += `<div class="meta-pill">Completed by: ${t.completedBy} at ${formatDate(t.completedAt)}</div>`;
+        }
+        if (t.verifiedBy) {
+          infoRow.innerHTML += `<div class="meta-pill">Verified by: ${t.verifiedBy} at ${formatDate(t.verifiedAt)}</div>`;
+        }
+        if (t.completedBy || t.verifiedBy) {
+          card.querySelector('.row').after(infoRow);
+        }
+        
         // actions
         const actions = card.querySelector('.task-actions');
 
@@ -643,25 +680,47 @@
         }
 
         // LAE checkbox to mark done (only if assigned to them and present)
-        const canMark = currentUser && currentUser.role === 'LAE' && t.assignedTo === currentUser.name;
+        const canMark = currentUser && currentUser.role === 'LAE' && t.assignedTo === currentUser.name && t.status === "pending";
         if (canMark) {
           const chkLabel = document.createElement('label');
           chkLabel.style.marginLeft = '10px';
           const chk = document.createElement('input');
           chk.type = 'checkbox';
-          chk.checked = !!t.done;
           chk.addEventListener('change', () => {
             // optional attendance check
             if (!attendance[currentUser.name]) {
               alert(`${currentUser.name} appears to be off today (attendance). Cannot mark done.`);
-              chk.checked = !chk.checked; // revert
+              chk.checked = false;
               return;
             }
-            markDone(i, chk.checked);
+            markTaskDoneByLAE(i);
           });
           chkLabel.appendChild(chk);
           chkLabel.appendChild(document.createTextNode(' Mark Done'));
           actions.appendChild(chkLabel);
+        }
+
+        // Officer approval section
+        if (currentUser && currentUser.role === 'OFFICER' && t.status === "submitted") {
+          const approvalSection = document.createElement('div');
+          approvalSection.className = 'approval-section';
+          approvalSection.innerHTML = `
+            <span class="approval-status status-submitted">Awaiting Approval</span>
+          `;
+          
+          const approveBtn = document.createElement('button');
+          approveBtn.className = 'btn-approve';
+          approveBtn.textContent = 'Approve';
+          approveBtn.onclick = () => verifyTaskByOfficer(i, true);
+          
+          const rejectBtn = document.createElement('button');
+          rejectBtn.className = 'btn-reject';
+          rejectBtn.textContent = 'Reject';
+          rejectBtn.onclick = () => verifyTaskByOfficer(i, false);
+          
+          approvalSection.appendChild(approveBtn);
+          approvalSection.appendChild(rejectBtn);
+          actions.appendChild(approvalSection);
         }
 
         return card;
@@ -690,14 +749,59 @@
         if (!present) { alert(`${name} is off today!`); return; }
       }
       allTasks[i].assignedTo = name;
+      allTasks[i].status = "pending"; // Reset status when reassigning
+      allTasks[i].completedBy = "";
+      allTasks[i].completedAt = null;
+      allTasks[i].verifiedBy = "";
+      allTasks[i].verifiedAt = null;
       saveAppData();
       renderTasks();
     }
 
-    function markDone(i, done) {
-      allTasks[i].done = !!done;
+    function markTaskDoneByLAE(index) {
+      if (allTasks[index].status !== "pending") return;
+      
+      allTasks[index].status = "submitted";
+      allTasks[index].completedBy = currentUser.name;
+      allTasks[index].completedAt = new Date();
+      
       saveAppData();
       renderTasks();
+    }
+
+    function verifyTaskByOfficer(index, approved) {
+      if (allTasks[index].status !== "submitted") return;
+      
+      if (approved) {
+        allTasks[index].status = "verified";
+        allTasks[index].verifiedBy = currentUser.name;
+        allTasks[index].verifiedAt = new Date();
+      } else {
+        allTasks[index].status = "pending";
+        allTasks[index].completedBy = "";
+        allTasks[index].completedAt = null;
+      }
+      
+      saveAppData();
+      renderTasks();
+      checkAllTasksVerified();
+    }
+
+    function checkAllTasksVerified() {
+      if (!currentUser) return;
+      
+      let allVerified = true;
+      let userTasks = [];
+      
+      if (currentUser.role === 'LAE') {
+        userTasks = allTasks.filter(t => t.assignedTo === currentUser.name);
+        allVerified = userTasks.length > 0 && userTasks.every(t => t.status === "verified");
+      } else if (currentUser.role === 'OFFICER') {
+        // For officer, maybe show when all assigned tasks are verified
+        userTasks = allTasks.filter(t => t.assignedTo && t.status === "verified");
+      }
+      
+      document.getElementById('allDoneMsg').classList.toggle('hidden', !allVerified);
     }
 
     // ATA filter (simple)
