@@ -80,24 +80,12 @@
     .approval-history { margin-top: 10px; font-size: 12px; color: #666; }
     .approval-history div { margin-bottom: 4px; }
 
-    /* Modal styles for approval */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: white; padding: 20px; border-radius: 8px; width: 500px; max-width: 90%; max-height: 80vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .modal-title { font-size: 1.2rem; font-weight: bold; color: #800000; }
-    .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-    .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; min-height: 100px; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-
     @media (max-width: 768px) {
       .mobile-menu-btn { display: block; }
       nav { display: none; }
       .attendance-table { font-size: 14px; }
       .attendance-table th, .attendance-table td { padding: 6px; }
       .approval-section { padding: 8px; }
-      .modal-content { padding: 15px; }
     }
   </style>
 </head>
@@ -252,32 +240,6 @@
 
   </div>
 
-  <!-- Approval Modal -->
-  <div class="modal" id="approvalModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Review Task Card: <span id="modalTaskId"></span></h3>
-        <button class="close-modal" onclick="closeModal()">&times;</button>
-      </div>
-      <div class="form-group">
-        <label>Task Description:</label>
-        <div id="modalTaskDesc" style="padding:8px; background:#f9f9f9; border-radius:4px;"></div>
-      </div>
-      <div class="form-group">
-        <label>LAE Comments:</label>
-        <div id="modalLaeComments" style="padding:8px; background:#f9f9f9; border-radius:4px;"></div>
-      </div>
-      <div class="form-group">
-        <label for="officerComments">Your Comments:</label>
-        <textarea id="officerComments" placeholder="Enter your review comments here..."></textarea>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-reject" onclick="rejectTask()">Request Changes</button>
-        <button class="btn-approve" onclick="approveTask()">Approve Task</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Clock + Dark mode -->
   <button class="btn-toggle" style="position:fixed; left:12px; top:12px; z-index:1200;" onclick="toggleDarkMode()">🌓</button>
   <div id="clock" style="position:fixed; right:12px; top:12px; font-weight:bold; font-size:14px; color:#b30000; background:rgba(255,255,255,0.85); padding:6px 10px; border-radius:8px; z-index:1200;"></div>
@@ -316,9 +278,6 @@
     let workingToday = [];
     let offToday = [];
     let rosterPreviewVisible = false;
-
-    // Current task being reviewed
-    let currentTaskIndex = -1;
 
     // ---------- Utilities ----------
     function saveAppData() {
@@ -495,7 +454,7 @@
         
         // Actions column
         const tdActions = document.createElement('td');
-        tdActions.style.textAlign: 'center';
+        tdActions.style.textAlign = 'center';
         
         if (isScheduled) {
           const presentBtn = document.createElement('button');
@@ -750,12 +709,18 @@
             <div class="approval-status status-submitted">Awaiting Approval</div>
           `;
           
-          const reviewBtn = document.createElement('button');
-          reviewBtn.className = 'btn-primary';
-          reviewBtn.innerHTML = '<i class="fas fa-clipboard-check"></i> Review';
-          reviewBtn.onclick = () => openApprovalModal(i);
+          const approveBtn = document.createElement('button');
+          approveBtn.className = 'btn-approve';
+          approveBtn.textContent = 'Approve';
+          approveBtn.onclick = () => verifyTaskByOfficer(i, true);
           
-          approvalSection.appendChild(reviewBtn);
+          const rejectBtn = document.createElement('button');
+          rejectBtn.className = 'btn-reject';
+          rejectBtn.textContent = 'Reject';
+          rejectBtn.onclick = () => verifyTaskByOfficer(i, false);
+          
+          approvalSection.appendChild(approveBtn);
+          approvalSection.appendChild(rejectBtn);
           actions.appendChild(approvalSection);
         }
 
@@ -805,63 +770,22 @@
       renderTasks();
     }
 
-    function openApprovalModal(index) {
-      currentTaskIndex = index;
-      const task = allTasks[index];
+    function verifyTaskByOfficer(index, approved) {
+      if (allTasks[index].status !== "submitted") return;
       
-      document.getElementById('modalTaskId').textContent = task.card || 'N/A';
-      document.getElementById('modalTaskDesc').textContent = task.description || 'No description';
-      document.getElementById('modalLaeComments').textContent = task.remarks || 'No comments from LAE';
-      document.getElementById('officerComments').value = '';
-      
-      document.getElementById('approvalModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-      document.getElementById('approvalModal').style.display = 'none';
-      currentTaskIndex = -1;
-    }
-
-    function approveTask() {
-      if (currentTaskIndex === -1) return;
-      
-      const comments = document.getElementById('officerComments').value;
-      if (!comments) {
-        alert('Please add your comments before approving.');
-        return;
+      if (approved) {
+        allTasks[index].status = "verified";
+        allTasks[index].verifiedBy = currentUser.name;
+        allTasks[index].verifiedAt = new Date();
+      } else {
+        allTasks[index].status = "pending";
+        allTasks[index].completedBy = "";
+        allTasks[index].completedAt = null;
       }
-      
-      allTasks[currentTaskIndex].status = "verified";
-      allTasks[currentTaskIndex].verifiedBy = currentUser.name;
-      allTasks[currentTaskIndex].verifiedAt = new Date();
-      allTasks[currentTaskIndex].remarks = (allTasks[currentTaskIndex].remarks || '') + 
-        '\n\nOFFICER APPROVAL: ' + comments;
       
       saveAppData();
       renderTasks();
-      closeModal();
-      alert('Task approved successfully!');
-    }
-
-    function rejectTask() {
-      if (currentTaskIndex === -1) return;
-      
-      const comments = document.getElementById('officerComments').value;
-      if (!comments) {
-        alert('Please provide reasons for rejection.');
-        return;
-      }
-      
-      allTasks[currentTaskIndex].status = "pending";
-      allTasks[currentTaskIndex].completedBy = "";
-      allTasks[currentTaskIndex].completedAt = null;
-      allTasks[currentTaskIndex].remarks = (allTasks[currentTaskIndex].remarks || '') + 
-        '\n\nREJECTED BY OFFICER: ' + comments;
-      
-      saveAppData();
-      renderTasks();
-      closeModal();
-      alert('Task rejected and sent back to LAE for rework.');
+      checkAllTasksVerified();
     }
 
     function checkAllTasksVerified() {
