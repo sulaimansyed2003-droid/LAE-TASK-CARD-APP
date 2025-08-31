@@ -55,23 +55,6 @@
     .mobile-menu button { padding: 10px 15px; border: none; background: none; text-align: left; cursor: pointer; }
     .mobile-menu .sign-out { border-top: 1px solid #eee; color: #800000; font-weight: bold; }
 
-    /* New styles for two-step verification */
-    .approval-section { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 8px; background: #f9f9f9; border-radius: 6px; }
-    .approval-status { font-weight: bold; }
-    .status-pending { color: #ff9800; }
-    .status-submitted { color: #2196f3; }
-    .status-verified { color: #4caf50; }
-    .btn-approve { background: #4caf50; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-    .btn-reject { background: #f44336; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-
-    @media (max-width: 768px) {
-      .mobile-menu-btn { display: block; }
-      nav { display: none; }
-      .attendance-table { font-size: 14px; }
-      .attendance-table th, .attendance-table td { padding: 6px; }
-      .approval-section { flex-direction: column; align-items: flex-start; }
-    }
-
     /* Dark mode */
     body.dark-mode { background:#121212; color:#f5f5f5; }
     body.dark-mode .task-card { background:#1e1e1e; border-left:4px solid #ff4444; }
@@ -85,7 +68,25 @@
     body.dark-mode .attendance-table tr:nth-child(even) { background-color: #2a2a2a; }
     body.dark-mode .attendance-table tr:hover { background-color: #333; }
     body.dark-mode .attendance-summary { background: #2a1a1a; }
-    body.dark-mode .approval-section { background: #2a2a2a; }
+
+    /* NEW STYLES FOR OFFICER APPROVAL SYSTEM */
+    .approval-section { margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 6px; border-left: 4px solid #3498db; }
+    .approval-status { font-weight: bold; margin-bottom: 8px; }
+    .status-pending { color: #e74c3c; }
+    .status-submitted { color: #f39c12; }
+    .status-verified { color: #2ecc71; }
+    .btn-approve { background: #2ecc71; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 8px; }
+    .btn-reject { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    .approval-history { margin-top: 10px; font-size: 12px; color: #666; }
+    .approval-history div { margin-bottom: 4px; }
+
+    @media (max-width: 768px) {
+      .mobile-menu-btn { display: block; }
+      nav { display: none; }
+      .attendance-table { font-size: 14px; }
+      .attendance-table th, .attendance-table td { padding: 6px; }
+      .approval-section { padding: 8px; }
+    }
   </style>
 </head>
 <body>
@@ -705,7 +706,7 @@
           const approvalSection = document.createElement('div');
           approvalSection.className = 'approval-section';
           approvalSection.innerHTML = `
-            <span class="approval-status status-submitted">Awaiting Approval</span>
+            <div class="approval-status status-submitted">Awaiting Approval</div>
           `;
           
           const approveBtn = document.createElement('button');
