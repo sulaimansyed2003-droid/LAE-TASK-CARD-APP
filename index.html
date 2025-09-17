@@ -86,7 +86,6 @@
       .attendance-table { font-size: 14px; }
       .attendance-table th, .attendance-table td { padding: 6px; }
       .approval-section { padding: 8px; }
-      #app { padding: 15px; }
     }
   </style>
 </head>
@@ -245,6 +244,9 @@
   <button class="btn-toggle" style="position:fixed; left:12px; top:12px; z-index:1200;" onclick="toggleDarkMode()">🌓</button>
   <div id="clock" style="position:fixed; right:12px; top:12px; font-weight:bold; font-size:14px; color:#b30000; background:rgba(255,255,255,0.85); padding:6px 10px; border-radius:8px; z-index:1200;"></div>
 
+  <!-- XLSX lib -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <script>
     // ---------- App state ----------
     const staffNames = [
@@ -266,7 +268,6 @@
     let currentUser = null;
     let availableATAs = [];
     let attendance = {}; // name -> present boolean
-    let attendanceRecords = {}; // Format: { "YYYY-MM-DD": { "LAE Name":
     let attendanceRecords = {}; // Format: { "YYYY-MM-DD": { "LAE Name": "present"/"absent", ... } }
     let currentAttendanceDate = new Date().toISOString().split('T')[0];
 
@@ -709,7 +710,6 @@
           `;
           
           const approveBtn = document.createElement('button');
-          approveBtn.className =
           approveBtn.className = 'btn-approve';
           approveBtn.textContent = 'Approve';
           approveBtn.onclick = () => verifyTaskByOfficer(i, true);
@@ -836,7 +836,8 @@
         const chosen = sel.value;
         if (chosen === 'ALL') {
           // no change to dataset, but user might expect filtered view
-          // We'll temporarily filter display by adjusting allTasksTemp (simple approach: rebuild UI using it)
+          // We'll temporarily filter display by adjusting allTasksTemp (simple approach: rebuild UI using filter)
+          // For simplicity, we'll store chosen in a global and filter renderTasks based on it:
           selectedATAFilter = 'ALL';
         } else selectedATAFilter = chosen;
         renderTasks();
@@ -1073,6 +1074,7 @@
       // make sure roster preview button state correct
       renderProdLists();
     })();
+
   </script>
 </body>
 </html>
