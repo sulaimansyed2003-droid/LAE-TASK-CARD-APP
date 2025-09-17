@@ -857,8 +857,7 @@
     }
 
     function markTaskDoneByLAE(index) {
-      if (allTasks[index].status !== "pending") return;
-      
+            
       allTasks[index].status = "submitted";
       allTasks[index].completedBy = currentUser.name;
       allTasks[index].completedAt = new Date();
