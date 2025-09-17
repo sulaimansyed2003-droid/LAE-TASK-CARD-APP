@@ -280,32 +280,41 @@
     let rosterPreviewVisible = false;
 
     // ---------- Utilities ----------
-    function saveAppData() {
+     function saveAppData() {
       try {
-        const data = { tasks: allTasks, rosterMatrix, attendanceRecords };
-        localStorage.setItem('batikAirAppData', JSON.stringify(data));
-      } catch (e) { 
-        console.error("❌ Local save failed:", e); 
+        const data = { tasks: allTasks, attendanceRecords };
+        if (window.sharedStorage) {
+          // Save data using sharedStorage (for cross-device syncing)
+          sharedStorage.set('batikAirAppData', JSON.stringify(data));
+        } else {
+          // Fallback to localStorage if sharedStorage is not available
+          localStorage.setItem('batikAirAppData', JSON.stringify(data));
+        }
+      } catch (e) {
+        console.error("❌ SharedStorage save failed:", e);
       }
     }
 
     function loadSavedData() {
       try {
-        const raw = localStorage.getItem('batikAirAppData');
-        if (raw) {
-          const d = JSON.parse(raw);
-          if (d.tasks) allTasks = d.tasks;
-          if (d.rosterMatrix) {
-            rosterMatrix = d.rosterMatrix;
-            detectHeaderAndNameColumn();
-            computeTodayOnOff();
-          }
-          if (d.attendanceRecords) attendanceRecords = d.attendanceRecords;
+        let data;
+        if (window.sharedStorage) {
+          // Load data using sharedStorage (for cross-device syncing)
+          data = sharedStorage.get('batikAirAppData');
+        } else {
+          // Fallback to localStorage if sharedStorage is not available
+          const raw = localStorage.getItem('batikAirAppData');
+          data = raw ? JSON.parse(raw) : null;
+        }
+
+        if (data) {
+          if (data.tasks) allTasks = data.tasks;
+          if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
           renderTasks();
         }
-      } catch (e) { 
-        console.warn("❌ Load failed:", e); 
+      } catch (e) {
+        console.warn("❌ Load failed:", e);
       }
     }
 
