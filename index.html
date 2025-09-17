@@ -737,12 +737,6 @@
           const chk = document.createElement('input');
           chk.type = 'checkbox';
           chk.addEventListener('change', () => {
-            // optional attendance check
-            if (!attendance[currentUser.name]) {
-              alert(`${currentUser.name} appears to be off today (attendance). Cannot mark done.`);
-              chk.checked = false;
-              return;
-            }
             markTaskDoneByLAE(i);
           });
           chkLabel.appendChild(chk);
@@ -857,7 +851,8 @@
     }
 
     function markTaskDoneByLAE(index) {
-            
+      if (allTasks[index].status !== "pending") return;
+      
       allTasks[index].status = "submitted";
       allTasks[index].completedBy = currentUser.name;
       allTasks[index].completedAt = new Date();
