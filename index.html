@@ -787,20 +787,20 @@
         return;
       }
 
-  submittedTasks.forEach((t, i) => {
-    const div = document.createElement('div');
-    div.className = 'task-card';
-    div.innerHTML = `
-      <div class="task-header">ATA ${t.ata || '—'}</div>
-      <div class="block"><b>Task Card:</b> ${escapeHtml(t.card || '—')}</div>
-      <div class="block"><b>Description:</b> ${escapeHtml(t.description || '—')}</div>
-      <div class="block"><b>Assigned To:</b> ${escapeHtml(t.assignedTo || 'None')}</div>
-      <div class="block"><b>Status:</b> ${t.status}</div>
-      <button class="btn-approve" onclick="approveTask(${i})">Approve</button>
-    `;
-    container.appendChild(div);
-  });
-}
+      submittedTasks.forEach((t, i) => {
+        const div = document.createElement('div');
+        div.className = 'task-card';
+        div.innerHTML = `
+          <div class="task-header">ATA ${t.ata || '—'}</div>
+          <div class="block"><b>Task Card:</b> ${escapeHtml(t.card || '—')}</div>
+          <div class="block"><b>Description:</b> ${escapeHtml(t.description || '—')}</div>
+          <div class="block"><b>Assigned To:</b> ${escapeHtml(t.assignedTo || 'None')}</div>
+          <div class="block"><b>Status:</b> ${t.status}</div>
+          <button class="btn-approve" onclick="approveTask(${i})">Approve</button>
+        `;
+        container.appendChild(div);
+      });
+    }
 
     function approveTask(index) {
       // Use your existing verify function so flow stays consistent
@@ -818,12 +818,7 @@
       renderApproval();
       renderTasks();
     }
-       }
-     });
-     saveAppData();
-     renderApproval();
-     renderTasks();
-   }
+
 
 
     // simple escape
