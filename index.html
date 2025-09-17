@@ -247,6 +247,35 @@
   <!-- XLSX lib -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+<!-- XLSX lib -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Firebase SDK (must be before your app script) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+  // 🔹 Paste your Firebase config here (from console)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCii_mcKN6cL7Ep8VYdfNnKHFgi2AYAMpI",
+    authDomain:"batik-air-taskcard.firebaseapp.com",
+    projectId: "batik-air-taskcard",
+    storageBucket: "batik-air-taskcardappspot.com",
+    messagingSenderId:  "396150494337",
+    appId:  "1:396150494337:web:a882db879da9eac5ade980"
+  };
+
+  // Initialize Firebase and Firestore, expose to window
+  window.firebaseApp = initializeApp(firebaseConfig);
+  window.db = getFirestore(window.firebaseApp);
+</script>
+
+<!-- Your app code -->
+<script>
+  // ---------- App state ----------
+  const staffNames = [
+
+
   <script>
     // ---------- App state ----------
     const staffNames = [
@@ -280,47 +309,47 @@
     let rosterPreviewVisible = false;
 
     // ---------- Utilities ----------
-     function saveAppData() {
-       try {
-         const data = { tasks: allTasks, attendanceRecords };
-         if (window.sharedStorage) {
-           // Save data using sharedStorage (for cross-device syncing)
-           sharedStorage.set('batikAirAppData', JSON.stringify(data));
-         } else {
-           // Fallback to localStorage if sharedStorage is not available
-           localStorage.setItem('batikAirAppData', JSON.stringify(data));
-         }
-       } catch (e) {
-         console.error("❌ SharedStorage save failed:", e);
-       }
-     }
+    // ---------- Firebase Firestore version ----------
 
-    function loadSavedData() {
+    // Save data to Firestore
+    async function saveAppData() {
       try {
-        let data;
-        if (window.sharedStorage) {
-          // Load data using sharedStorage (for cross-device syncing)
-          data = sharedStorage.get('batikAirAppData');
-       } else {
-          // Fallback to localStorage if sharedStorage is not available
-          const raw = localStorage.getItem('batikAirAppData');
-          data = raw ? JSON.parse(raw) : null;
-        }
+        const data = { tasks: allTasks, attendanceRecords };
+        await setDoc(doc(window.db, "appData", "batikAir"), data);
+        console.log("✅ Data saved to Firestore");
+      } catch (e) {
+        console.error("❌ Firestore save failed:", e);
+      }
+    }
 
-        if (data) {
+    // Load data from Firestore (once)
+    async function loadSavedData() {
+      try {
+        const snap = await getDoc(doc(window.db, "appData", "batikAir"));
+        if (snap.exists()) {
+          const data = snap.data();
           if (data.tasks) allTasks = data.tasks;
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
           renderTasks();
         }
       } catch (e) {
-        console.warn("❌ Load failed:", e);
+        console.error("❌ Firestore load failed:", e);
       }
     }
 
-    if (!window.sharedStorage) {
-  alert("SharedStorage is not supported in your browser. Falling back to localStorage.");
-}
+    // Live updates (sync across devices)
+    function enableRealtimeSync() {
+      const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.tasks) allTasks = data.tasks;
+          if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
+          availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+          renderTasks();
+        }
+      });
+    }
 
 
     // Set clock
