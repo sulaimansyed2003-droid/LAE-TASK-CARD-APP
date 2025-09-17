@@ -787,7 +787,7 @@
       const container = document.getElementById('approvalList');
       container.innerHTML = '';
 
-      const pendingTasks = allTasks.filter(t => t.status === "pending");
+      const pendingTasks = allTasks.filter(t => t.status === "submitted");
       if (pendingTasks.length === 0) {
         container.innerHTML = "<p>No pending tasks 🎉</p>";
         return;
