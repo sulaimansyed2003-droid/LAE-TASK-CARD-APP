@@ -781,13 +781,13 @@
       const container = document.getElementById('approvalList');
       container.innerHTML = '';
 
-      const pendingTasks = allTasks.filter(t => t.status === "submitted");
-      if (pendingTasks.length === 0) {
-        container.innerHTML = "<p>No pending tasks 🎉</p>";
+      const submittedTasks = allTasks.filter(t => t.status === "submitted");
+      if (submittedTasks.length === 0) {
+        container.innerHTML = "<p>No tasks waiting for approval 🎉</p>";
         return;
       }
 
-  pendingTasks.forEach((t, i) => {
+  submittedTasks.forEach((t, i) => {
     const div = document.createElement('div');
     div.className = 'task-card';
     div.innerHTML = `
@@ -803,20 +803,21 @@
 }
 
     function approveTask(index) {
-      allTasks[index].status = "verified";
-      allTasks[index].verifiedBy = currentUser?.name || "Officer";
-      allTasks[index].verifiedAt = new Date();
-      saveAppData();
+      // Use your existing verify function so flow stays consistent
+      verifyTaskByOfficer(index, true);  
+      renderApproval();  // refresh approval list
+      renderTasks();     // refresh task sections (moves it to Done)
+    }
+
+    function approveAllPending() {
+      allTasks.forEach((t, i) => {
+        if (t.status === "submitted") {
+          verifyTaskByOfficer(i, true);
+        }
+      });
       renderApproval();
       renderTasks();
     }
-
-   function approveAllPending() {
-     allTasks.forEach(t => {
-       if (t.status === "pending") {
-         t.status = "verified";
-         t.verifiedBy = currentUser?.name || "Officer";
-         t.verifiedAt = new Date();
        }
      });
      saveAppData();
