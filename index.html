@@ -281,19 +281,19 @@
 
     // ---------- Utilities ----------
      function saveAppData() {
-      try {
-        const data = { tasks: allTasks, attendanceRecords };
-        if (window.sharedStorage) {
-          // Save data using sharedStorage (for cross-device syncing)
-          sharedStorage.set('batikAirAppData', JSON.stringify(data));
-        } else {
-          // Fallback to localStorage if sharedStorage is not available
-          localStorage.setItem('batikAirAppData', JSON.stringify(data));
-        }
-      } catch (e) {
-        console.error("❌ SharedStorage save failed:", e);
-      }
-    }
+       try {
+         const data = { tasks: allTasks, attendanceRecords };
+         if (window.sharedStorage) {
+           // Save data using sharedStorage (for cross-device syncing)
+           sharedStorage.set('batikAirAppData', JSON.stringify(data));
+         } else {
+           // Fallback to localStorage if sharedStorage is not available
+           localStorage.setItem('batikAirAppData', JSON.stringify(data));
+         }
+       } catch (e) {
+         console.error("❌ SharedStorage save failed:", e);
+       }
+     }
 
     function loadSavedData() {
       try {
@@ -301,7 +301,7 @@
         if (window.sharedStorage) {
           // Load data using sharedStorage (for cross-device syncing)
           data = sharedStorage.get('batikAirAppData');
-        } else {
+       } else {
           // Fallback to localStorage if sharedStorage is not available
           const raw = localStorage.getItem('batikAirAppData');
           data = raw ? JSON.parse(raw) : null;
@@ -317,6 +317,11 @@
         console.warn("❌ Load failed:", e);
       }
     }
+
+    if (!window.sharedStorage) {
+  alert("SharedStorage is not supported in your browser. Falling back to localStorage.");
+}
+
 
     // Set clock
     function updateClock() {
