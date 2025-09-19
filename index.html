@@ -561,7 +561,7 @@
     }
 
     // ---------- Task upload and rendering ----------
-    function handleTaskFile(file) {
+    async function handleTaskFile(file) {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = async function(e) {
@@ -588,11 +588,20 @@
           verifiedAt: null
         }));
         availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
-        saveAppData();
+
+        // 🔹 Save both tasks + Excel base64 into Firestore
+        const base64Excel = btoa(String.fromCharCode(...data));
+        await setDoc(doc(window.db, "appData", "batikAir"), {
+          tasks: allTasks,
+          attendanceRecords,
+          excelBase64: base64Excel
+        });
+
+        console.log("✅ Excel + tasks saved to Firestore");
         renderTasks();
       };
       reader.readAsArrayBuffer(file);
-}
+    }
 
 
     document.getElementById('fileInput').addEventListener('change', ev => {
