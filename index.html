@@ -593,8 +593,8 @@
         const base64Excel = btoa(String.fromCharCode(...data));
         await setDoc(doc(window.db, "appData", "batikAir"), {
           tasks: allTasks,
-          attendanceRecords,
-          excelBase64: base64Excel
+    	  attendanceRecords,
+      	  excelBase64: base64Excel
         });
 
         console.log("✅ Excel + tasks saved to Firestore");
@@ -602,6 +602,7 @@
       };
       reader.readAsArrayBuffer(file);
     }
+
 
 
     document.getElementById('fileInput').addEventListener('change', ev => {
