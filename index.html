@@ -564,12 +564,13 @@
     function handleTaskFile(file) {
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = async function(e) {
         const data = new Uint8Array(e.target.result);
         const wb = XLSX.read(data, { type:'array' });
         const sh = wb.Sheets[wb.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(sh, { defval: '' });
-        // Map known columns to internal fields (be forgiving)
+
+        // Map known columns to internal fields
         allTasks = json.map(row => ({
           ata: row['ATA'] || row['ATA REF'] || row['ATA REF.'] || '',
           card: row['TASK CARD NUM/ AMM REF'] || row['Task Card Number'] || row['No'] || '',
@@ -580,7 +581,7 @@
           manhour: row['DURATION MANHOUR'] || row['Man Hour'] || '',
           due: row['DUE'] || '',
           assignedTo: row['Assigned To'] || '',
-          status: 'pending', // Default status
+          status: 'pending',
           completedBy: '',
           completedAt: null,
           verifiedBy: '',
@@ -591,7 +592,8 @@
         renderTasks();
       };
       reader.readAsArrayBuffer(file);
-    }
+}
+
 
     document.getElementById('fileInput').addEventListener('change', ev => {
       const f = ev.target.files[0];
