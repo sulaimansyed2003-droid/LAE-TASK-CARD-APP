@@ -410,26 +410,38 @@
       document.getElementById('loginTime').innerText = "Login Time: " + now.toLocaleString();
     }
 
-    document.getElementById('signInBtn').addEventListener('click', () => {
+    document.getElementById('signInBtn').addEventListener('click', async () => {
       const id = document.getElementById('idInput').value.trim();
       const name = document.getElementById('nameInput').value;
       const role = document.getElementById('roleInput').value;
       if (!id || !name || !role) { alert('Please fill all login fields'); return; }
+
       currentUser = { id, name, role };
+
+  // Hide login, show app
       document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
 
-      document.getElementById('userInfo').textContent = `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
+  // Show logged-in user info
+      document.getElementById('userInfo').textContent =
+        `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
+
+  // Officer-specific UI
       if (role === 'OFFICER') {
         document.getElementById('officerSection').classList.remove('hidden');
         document.getElementById('assignedOverview').classList.remove('hidden');
       } else {
         document.getElementById('officerSection').classList.add('hidden');
       }
+
       updateLoginTime();
+
+  // 🔹 Load tasks from Firestore first before rendering
+      await loadSavedData();
       renderTasks();
       updateProdDatePill();
     });
+
 
     function signOut() {
       currentUser = null;
