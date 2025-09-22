@@ -235,15 +235,6 @@
       </div>
 
 
-      <div id="prodDash" class="hidden">
-        <h3>Productivity Dashboard (Roster)</h3>
-        <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
-        <div class="prod-row">
-          <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
-          <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
-          <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
-        </div>
-
         <div style="margin-top:12px;" class="prod-row">
           <input id="prodSearch" type="text" placeholder="Search LAE by name..." oninput="filterProdLists()" />
         </div>
@@ -285,6 +276,17 @@
       <p>Most frequently reported issues across task cards</p>
       <div id="defectsList"></div>
     </div>
+
+    <div id="prodDash" class="hidden">
+      <h3>Productivity Dashboard (Roster)</h3>
+      <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
+      <div class="prod-row">
+        <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
+        <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
+        <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
+      </div>
+    </div>
+
 
 
   </div>
