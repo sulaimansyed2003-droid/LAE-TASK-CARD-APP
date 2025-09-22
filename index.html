@@ -129,6 +129,7 @@
     <button onclick="showSection('doneTasks'); hideMobileMenu()">Done</button>
     <button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
     <button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
+    <button onclick="showSection('commonDefects', this)">Common Defects</button>
     <button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
   </div>
 
@@ -158,6 +159,8 @@
       <button onclick="showSection('attendanceSection', this)">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
       <button onclick="showSection('approvalSection', this)">Approval</button>
+      <button onclick="showSection('commonDefects', this)">Common Defects</button>
+
 
     </nav>
 
@@ -276,6 +279,13 @@
       <input type="text" id="taskSearch" placeholder="Search tasks..." style="padding:8px;width:60%;" />
       <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
     </div>
+
+    <div id="commonDefects" class="hidden">
+      <h2>Common Defects</h2>
+      <p>Most frequently reported issues across task cards</p>
+      <div id="defectsList"></div>
+    </div>
+
 
   </div>
 
@@ -422,6 +432,8 @@
         renderProdStats();
       } else if (id === "approvalSection") {
         renderApproval(); 
+      } else if (id === "commonDefects") {
+  renderCommonDefects();
       } else {
         renderTasks();
       }
@@ -867,6 +879,40 @@
         container.appendChild(div);
       });
     }
+
+    function renderCommonDefects() {
+      const container = document.getElementById("defectsList");
+      container.innerHTML = "";
+
+      // collect all descriptions
+      const descriptions = allTasks.map(t => t.description?.toLowerCase() || "");
+
+      // keywords we care about (expand as needed)
+      const keywords = ["engine", "nose cone", "landing gear", "wing", "fuselage", "rudder", "avionics"];
+
+      const counts = {};
+      keywords.forEach(kw => {
+        counts[kw] = descriptions.filter(d => d.includes(kw)).length;
+      });
+
+      // filter only common ones
+      const common = Object.entries(counts)
+        .filter(([_, v]) => v > 1)
+        .sort((a,b) => b[1] - a[1]); // sort high → low
+
+      if (common.length === 0) {
+        container.innerHTML = "<p>No common defects found ✅</p>";
+        return;
+      }
+
+      common.forEach(([kw, count]) => {
+        const div = document.createElement("div");
+        div.className = "task-card";
+        div.innerHTML = `<b>${kw}</b> — found in <b>${count}</b> task cards`;
+        container.appendChild(div);
+      });
+    }
+
 
 
     function approveTask(index) {
