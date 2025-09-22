@@ -151,13 +151,13 @@
     <div id="userInfo"></div>
 
     <nav>
-      <button onclick="showSection('allTasks')">All Tasks</button>
-      <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
-      <button onclick="showSection('doneTasks')">Done</button>
-      <button onclick="showSection('prodDash')">Productivity Dashboard</button>
-      <button onclick="showSection('attendanceSection')">Attendance</button>
+      <button onclick="showSection('allTasks',this)">All Tasks</button>
+      <button onclick="showSection('assignedTasks', this)">Assigned Tasks</button>
+      <button onclick="showSection('doneTasks', this)">Done</button>
+      <button onclick="showSection('prodDash', this)">Productivity Dashboard</button>
+      <button onclick="showSection('attendanceSection', this)">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
-      <button onclick="showSection('approvalSection')">Approval</button>
+      <button onclick="showSection('approvalSection', this)">Approval</button>
 
     </nav>
 
@@ -398,7 +398,7 @@
     }
 
     // ---------- DOM helpers ----------
-    function showSection(id) {
+    function showSection(id, btn) {
       // hide all sections
       const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
       sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
@@ -408,14 +408,11 @@
       const el = document.getElementById(id);
       if (el) el.classList.remove('hidden');
 
-     // 🔹 highlight active button (desktop + mobile)
-    document.querySelectorAll("nav button, .mobile-menu button").forEach(btn => btn.classList.remove("active"));
-    const clicked = Array.from(document.querySelectorAll("nav button, .mobile-menu button"))
-      .find(b => b.getAttribute("onclick")?.includes(id));
-    if (clicked) clicked.classList.add("active");
+      // 🔹 highlight only the clicked button
+      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
 
-
-  // existing logic
+      // existing logic
       if (id === "attendanceSection") {
         document.getElementById('attendanceDate').value = currentAttendanceDate;
         loadAttendanceForDate();
@@ -429,6 +426,7 @@
         renderTasks();
       }
     }
+
 
 
 
