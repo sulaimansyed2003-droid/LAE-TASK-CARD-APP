@@ -172,6 +172,11 @@
           <label>Upload Task Excel (.xlsx)</label><br/>
           <input type="file" id="fileInput" accept=".xlsx" />
         </div>
+        <div id="assignedOverview" class="hidden" style="flex:1;">
+          <h4>Assigned Tasks Overview</h4>
+          <button class="btn-toggle" onclick="toggleOverview()">Show/Hide Assigned Tasks</button>
+          <div id="overviewList" class="hidden" style="margin-top:8px;"></div>
+        </div>
       </div>
 
 
@@ -220,6 +225,7 @@
        <div id="approvalList"></div>
        <button class="btn-toggle" onclick="approveAllPending()">Approve All      Pending</button>
       </div>
+
 
 
 
