@@ -22,7 +22,10 @@
     .task-actions { margin-top:10px; }
     .assigned-bold { font-weight:bold; color:#800000; }
     nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
-    nav button:hover { background:#a00000; }
+    nav button:hover { background:#a00000; } nav button.active {
+  background: #007bff !important; /* blue */
+  color: white !important;
+}
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
     #assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
     #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
@@ -383,7 +386,7 @@
     // ---------- DOM helpers ----------
     function showSection(id) {
       // hide all sections
-      const sections =    ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
+      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
       sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
       document.getElementById("allDoneMsg").classList.add('hidden');
 
@@ -391,13 +394,13 @@
       const el = document.getElementById(id);
       if (el) el.classList.remove('hidden');
 
-      // 🔹 highlight active button
-      document.querySelectorAll("nav button").forEach(btn =>    btn.classList.remove("active"));
+  // 🔹 highlight active button
+      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
       const clicked = Array.from(document.querySelectorAll("nav button"))
-        .find(b => b.getAttribute("onclick")?.includes(id));
+    .find(b => b.getAttribute("onclick")?.includes(id));
       if (clicked) clicked.classList.add("active");
 
-      // existing logic
+  // existing logic
       if (id === "attendanceSection") {
         document.getElementById('attendanceDate').value = currentAttendanceDate;
         loadAttendanceForDate();
@@ -411,6 +414,7 @@
         renderTasks();
       }
     }
+
 
 
     // ---------- Login / user ----------
