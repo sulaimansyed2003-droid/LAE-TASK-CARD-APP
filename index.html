@@ -172,6 +172,11 @@
           <label>Upload Task Excel (.xlsx)</label><br/>
           <input type="file" id="fileInput" accept=".xlsx" />
         </div>
+        <div id="assignedOverview" class="hidden" style="flex:1;">
+          <h4>Assigned Tasks Overview</h4>
+          <button class="btn-toggle" onclick="toggleOverview()">Show/Hide Assigned Tasks</button>
+          <div id="overviewList" class="hidden" style="margin-top:8px;"></div>
+        </div>
       </div>
  
 
@@ -223,23 +228,16 @@
       </div>
 
       <div id="allTasks" style="margin-top:12px;"></div>
+      <div id="assignedTasks" class="hidden" style="margin-top:12px;"></div>
+      <div id="doneTasks" class="hidden" style="margin-top:12px;"></div>
+      <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
 
-      <div id="assignedTasks" class="hidden" style="margin-top:12px;">
-        <div id="assignedOverview" class="hidden" style="margin-top:12px;">
-          <h4>Assigned Tasks Overview</h4>
-          <button class="btn-toggle" onclick="toggleOverview()">Show/Hide Assigned Tasks</button>
-          <div id="overviewList" class="hidden" style="margin-top:8px;"></div>
-        </div>
-      </div> <!-- ✅ assignedTasks closes here -->
+    </div>
 
-     <div id="doneTasks" class="hidden" style="margin-top:12px;"></div>
-     <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
-
-      <div style="margin-top:10px;">
-        <input type="text" id="taskSearch" placeholder="Search tasks..." style="padding:8px;width:60%;" />
-        <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
-      </div>
-
+    <div style="margin-top:10px;">
+      <input type="text" id="taskSearch" placeholder="Search tasks..." style="padding:8px;width:60%;" />
+      <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
+    </div>
 
     <div id="commonDefects" class="hidden">
       <h2>Common Defects</h2>
