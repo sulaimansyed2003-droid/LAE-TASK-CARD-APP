@@ -398,20 +398,34 @@
 
     // ---------- DOM helpers ----------
     function showSection(id, btn) {
-      // hide all sections
-      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection","commonDefects","rosterPreview"];
+      // hide all main sections
+      const sections = [
+        "attendanceSection",
+        "prodDash",
+        "allTasks",
+        "assignedTasks",
+        "doneTasks",
+        "approvalSection",
+        "commonDefects"
+      ];
       sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
+
+      // always hide "All Done" message
       document.getElementById("allDoneMsg").classList.add('hidden');
+
+      // always hide roster preview when switching sections
+      const roster = document.getElementById("rosterPreview");
+      if (roster) roster.classList.add("hidden");
 
       // show requested section
       const el = document.getElementById(id);
       if (el) el.classList.remove('hidden');
 
-      // 🔹 highlight only the clicked button
+      // highlight only the clicked button
       document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
       if (btn) btn.classList.add("active");
 
-      // existing logic
+      // section-specific logic
       if (id === "attendanceSection") {
         document.getElementById('attendanceDate').value = currentAttendanceDate;
         loadAttendanceForDate();
@@ -419,16 +433,15 @@
         updateProdDatePill();
         renderProdLists();
         renderProdStats();
+        // rosterPreview will stay hidden until Show/Hide button is clicked
       } else if (id === "approvalSection") {
-        renderApproval(); 
+        renderApproval();
       } else if (id === "commonDefects") {
-  renderCommonDefects();
+        renderCommonDefects();
       } else {
         renderTasks();
       }
     }
-
-
 
 
     // ---------- Login / user ----------
