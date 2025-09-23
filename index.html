@@ -507,12 +507,6 @@
       updateLoginTime();  
     });
 
-  // 🔹 Load tasks from Firestore first before rendering
-      await loadSavedData();
-      renderTasks();
-      updateProdDatePill();
-    });
-
 
     function signOut() {
       currentUser = null;
