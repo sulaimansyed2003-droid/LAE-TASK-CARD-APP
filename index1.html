@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Batik Air Task Card App</title>
 
+
   <style>
     body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; color:#222; }
     header { background:#800000; color:white; padding:14px; text-align:center; position:relative; }
@@ -20,8 +21,25 @@
     .meta-pill { background:#eee; padding:6px 10px; border-radius:12px; font-size:13px; }
     .task-actions { margin-top:10px; }
     .assigned-bold { font-weight:bold; color:#800000; }
-    nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
-    nav button:hover { background:#a00000; }
+    nav button { 
+      margin:5px; 
+      padding:8px 12px; 
+      border:none;
+      border-radius:5px; 
+      background:#800000; 
+      color:white; 
+      cursor:pointer; 
+    }
+    nav button:hover { background:#a00000; } 
+    nav button.active {
+      background: #007bff !important; /* blue */
+      color: white !important;
+    }
+    .mobile-menu button.active {
+      background: #007bff !important;
+      color: white !important;
+    }
+
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
     #assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
     #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
@@ -80,13 +98,21 @@
     .approval-history { margin-top: 10px; font-size: 12px; color: #666; }
     .approval-history div { margin-bottom: 4px; }
 
+    /* 🔹 Make fonts bigger everywhere */
+    body, input, select, button, table, .task-card, #clock {
+      font-size: 18px !important;
+    }
+    header h1 { font-size: 26px !important; }
+    .task-header { font-size: 20px !important; }
+    .meta-pill { font-size: 15px !important; }
+
+
     @media (max-width: 768px) {
       .mobile-menu-btn { display: block; }
       nav { display: none; }
       .attendance-table { font-size: 14px; }
       .attendance-table th, .attendance-table td { padding: 6px; }
       .approval-section { padding: 8px; }
-      #app { padding: 15px; }
     }
   </style>
 </head>
@@ -103,6 +129,7 @@
     <button onclick="showSection('doneTasks'); hideMobileMenu()">Done</button>
     <button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
     <button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
+    <button onclick="showSection('commonDefects', this)">Common Defects</button>
     <button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
   </div>
 
@@ -125,12 +152,16 @@
     <div id="userInfo"></div>
 
     <nav>
-      <button onclick="showSection('allTasks')">All Tasks</button>
-      <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
-      <button onclick="showSection('doneTasks')">Done</button>
-      <button onclick="showSection('prodDash')">Productivity Dashboard</button>
-      <button onclick="showSection('attendanceSection')">Attendance</button>
+      <button onclick="showSection('allTasks',this)">All Tasks</button>
+      <button onclick="showSection('assignedTasks', this)">Assigned Tasks</button>
+      <button onclick="showSection('doneTasks', this)">Done</button>
+      <button onclick="showSection('prodDash', this)">Productivity Dashboard</button>
+      <button onclick="showSection('attendanceSection', this)">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
+      <button onclick="showSection('approvalSection', this)">Approval</button>
+      <button onclick="showSection('commonDefects', this)">Common Defects</button>
+
+
     </nav>
 
     <!-- Officer controls -->
@@ -147,15 +178,8 @@
           <div id="overviewList" class="hidden" style="margin-top:8px;"></div>
         </div>
       </div>
+ 
 
-      <div id="productivityDashboard" style="margin-top:12px;">
-        <h4>LAE Productivity Dashboard (Task Completion)</h4>
-        <table style="width:100%; border-collapse:collapse;">
-          <thead><tr><th style="border:1px solid #eee;padding:6px;text-align:left;">LAE</th><th style="border:1px solid #eee;padding:6px;">Assigned</th><th style="border:1px solid #eee;padding:6px;">Done</th><th style="border:1px solid #eee;padding:6px;">%</th></tr></thead>
-          <tbody id="productivityBody"></tbody>
-        </table>
-      </div>
-    </div>
 
     <div style="margin-top:16px;">
       <!-- Enhanced Attendance Section -->
@@ -164,6 +188,7 @@
         
         <div class="attendance-controls">
           <div>
+     
             <label for="attendanceDate">Select Date: </label>
             <input type="date" id="attendanceDate" style="padding:6px;">
           </div>
@@ -194,37 +219,12 @@
         </div>
       </div>
 
-      <div id="prodDash" class="hidden">
-        <h3>Productivity Dashboard (Roster)</h3>
-        <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
-        <div class="prod-row">
-          <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
-          <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
-          <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
-        </div>
 
-        <div style="margin-top:12px;" class="prod-row">
-          <input id="prodSearch" type="text" placeholder="Search LAE by name..." oninput="filterProdLists()" />
-        </div>
-
-        <div class="prod-row" style="margin-top:12px;">
-          <div class="prod-card">
-            <h4>✅ Working Today</h4>
-            <div id="workingList"></div>
-          </div>
-          <div class="prod-card">
-            <h4>❌ Off Today</h4>
-            <div id="offList"></div>
-          </div>
-        </div>
-
-        <div style="margin-top:12px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <h4>Roster Preview</h4>
-            <button class="btn-toggle" onclick="toggleRosterPreview()">Show/Hide</button>
-          </div>
-          <div id="rosterPreview" class="table-wrap hidden"></div>
-        </div>
+      <div id="approvalSection" class="hidden" style="margin-top:16px;">
+       <h3>Officer Approval Panel</h3>
+       <p class="muted">Here you can approve tasks that are still pending.</p>
+       <div id="approvalList"></div>
+       <button class="btn-toggle" onclick="approveAllPending()">Approve All      Pending</button>
       </div>
 
       <div id="allTasks" style="margin-top:12px;"></div>
@@ -239,11 +239,93 @@
       <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
     </div>
 
+
+    <!-- 🔹 Firebase SDKs (MUST be before your code) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBJUABbLzFwgIs1bVquqS6J1rH8bglPT0A",
+        authDomain: "lae-task-card.firebaseapp.com",
+        projectId: "lae-task-card",
+        storageBucket: "lae-task-card.firebasestorage.app",
+        messagingSenderId: "240040374142",
+        appId: "1:240040374142:web:9afffe133bd1a594394d2f",
+        measurementId: "G-YF70MKH6BG"
+      };
+
+      // Initialize Firebase
+      const app = firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+    </script>
+
+    <div id="commonDefects" class="hidden">
+      <h2>Common Defects</h2>
+      <p>Most frequently reported issues across task cards</p>
+      <div id="defectsList"></div>
+    </div>
+
+
+      <div id="productivityDashboard" style="margin-top:12px;">
+        <h4>LAE Productivity Dashboard (Task Completion)</h4>
+        <table style="width:100%; border-collapse:collapse;">
+          <thead><tr><th style="border:1px solid #eee;padding:6px;text-align:left;">LAE</th><th style="border:1px solid #eee;padding:6px;">Assigned</th><th style="border:1px solid #eee;padding:6px;">Done</th><th style="border:1px solid #eee;padding:6px;">%</th></tr></thead>
+          <tbody id="productivityBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="prodDash" class="hidden">
+      <h3>Productivity Dashboard (Roster)</h3>
+      <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
+      <div class="prod-row">
+        <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
+        <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
+        <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
+      </div>
+    </div>
+
+ <div style="margin-top:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h4>Roster Preview</h4>
+            <button class="btn-toggle" onclick="toggleRosterPreview()">Show/Hide</button>
+          </div>
+          <div id="rosterPreview" class="table-wrap hidden"></div>
+        </div>
+      </div>
+
+
+
   </div>
 
   <!-- Clock + Dark mode -->
   <button class="btn-toggle" style="position:fixed; left:12px; top:12px; z-index:1200;" onclick="toggleDarkMode()">🌓</button>
   <div id="clock" style="position:fixed; right:12px; top:12px; font-weight:bold; font-size:14px; color:#b30000; background:rgba(255,255,255,0.85); padding:6px 10px; border-radius:8px; z-index:1200;"></div>
+
+<!-- XLSX lib -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Firebase SDK (must be before your app script) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+  // 🔹 Paste your Firebase config here (from console)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCii_mcKN6cL7Ep8VYdfNnKHFgi2AYAMpI",
+    authDomain:"batik-air-taskcard.firebaseapp.com",
+    projectId: "batik-air-taskcard",
+    storageBucket: "batik-air-taskcardappspot.com",
+    messagingSenderId:  "396150494337",
+    appId:  "1:396150494337:web:a882db879da9eac5ade980"
+  };
+
+  // Initialize Firebase and Firestore, expose to window
+  window.firebaseApp = initializeApp(firebaseConfig);
+  window.db = getFirestore(window.firebaseApp);
+</script>
+
 
   <script>
     // ---------- App state ----------
@@ -266,7 +348,6 @@
     let currentUser = null;
     let availableATAs = [];
     let attendance = {}; // name -> present boolean
-    let attendanceRecords = {}; // Format: { "YYYY-MM-DD": { "LAE Name":
     let attendanceRecords = {}; // Format: { "YYYY-MM-DD": { "LAE Name": "present"/"absent", ... } }
     let currentAttendanceDate = new Date().toISOString().split('T')[0];
 
@@ -279,34 +360,48 @@
     let rosterPreviewVisible = false;
 
     // ---------- Utilities ----------
-    function saveAppData() {
+    // ---------- Firebase Firestore version ----------
+
+    // Save data to Firestore
+    async function saveAppData() {
       try {
-        const data = { tasks: allTasks, rosterMatrix, attendanceRecords };
-        localStorage.setItem('batikAirAppData', JSON.stringify(data));
-      } catch (e) { 
-        console.error("❌ Local save failed:", e); 
+        const data = { tasks: allTasks, attendanceRecords };
+        await setDoc(doc(window.db, "appData", "batikAir"), data);
+        console.log("✅ Data saved to Firestore");
+      } catch (e) {
+        console.error("❌ Firestore save failed:", e);
       }
     }
 
-    function loadSavedData() {
+    // Load data from Firestore (once)
+    async function loadSavedData() {
       try {
-        const raw = localStorage.getItem('batikAirAppData');
-        if (raw) {
-          const d = JSON.parse(raw);
-          if (d.tasks) allTasks = d.tasks;
-          if (d.rosterMatrix) {
-            rosterMatrix = d.rosterMatrix;
-            detectHeaderAndNameColumn();
-            computeTodayOnOff();
-          }
-          if (d.attendanceRecords) attendanceRecords = d.attendanceRecords;
+        const snap = await getDoc(doc(window.db, "appData", "batikAir"));
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.tasks) allTasks = data.tasks;
+          if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
           renderTasks();
         }
-      } catch (e) { 
-        console.warn("❌ Load failed:", e); 
+      } catch (e) {
+        console.error("❌ Firestore load failed:", e);
       }
     }
+
+    // Live updates (sync across devices)
+    function enableRealtimeSync() {
+      const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.tasks) allTasks = data.tasks;
+          if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
+          availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+          renderTasks();
+        }
+      });
+    }
+
 
     // Set clock
     function updateClock() {
@@ -323,14 +418,35 @@
     }
 
     // ---------- DOM helpers ----------
-    function showSection(id) {
-      // hide main content sections (those direct children where id matches)
-      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks"];
+    function showSection(id, btn) {
+      // hide all main sections
+      const sections = [
+        "attendanceSection",
+        "prodDash",
+        "allTasks",
+        "assignedTasks",
+        "doneTasks",
+        "approvalSection",
+        "commonDefects"
+      ];
       sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
+
+      // always hide "All Done" message
       document.getElementById("allDoneMsg").classList.add('hidden');
+
+      // always hide roster preview when switching sections
+      const roster = document.getElementById("rosterPreview");
+      if (roster) roster.classList.add("hidden");
+
+      // show requested section
       const el = document.getElementById(id);
       if (el) el.classList.remove('hidden');
 
+      // highlight only the clicked button
+      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+
+      // section-specific logic
       if (id === "attendanceSection") {
         document.getElementById('attendanceDate').value = currentAttendanceDate;
         loadAttendanceForDate();
@@ -338,10 +454,16 @@
         updateProdDatePill();
         renderProdLists();
         renderProdStats();
+        // rosterPreview will stay hidden until Show/Hide button is clicked
+      } else if (id === "approvalSection") {
+        renderApproval();
+      } else if (id === "commonDefects") {
+        renderCommonDefects();
       } else {
         renderTasks();
       }
     }
+
 
     // ---------- Login / user ----------
     function populateNames() {
@@ -360,26 +482,38 @@
       document.getElementById('loginTime').innerText = "Login Time: " + now.toLocaleString();
     }
 
-    document.getElementById('signInBtn').addEventListener('click', () => {
+    document.getElementById('signInBtn').addEventListener('click', async () => {
       const id = document.getElementById('idInput').value.trim();
       const name = document.getElementById('nameInput').value;
       const role = document.getElementById('roleInput').value;
       if (!id || !name || !role) { alert('Please fill all login fields'); return; }
+
       currentUser = { id, name, role };
+
+  // Hide login, show app
       document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
 
-      document.getElementById('userInfo').textContent = `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
+  // Show logged-in user info
+      document.getElementById('userInfo').textContent =
+        `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
+
+  // Officer-specific UI
       if (role === 'OFFICER') {
         document.getElementById('officerSection').classList.remove('hidden');
         document.getElementById('assignedOverview').classList.remove('hidden');
       } else {
         document.getElementById('officerSection').classList.add('hidden');
       }
+
       updateLoginTime();
+
+  // 🔹 Load tasks from Firestore first before rendering
+      await loadSavedData();
       renderTasks();
       updateProdDatePill();
     });
+
 
     function signOut() {
       currentUser = null;
@@ -511,15 +645,16 @@
     }
 
     // ---------- Task upload and rendering ----------
-    function handleTaskFile(file) {
+    async function handleTaskFile(file) {
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = async function(e) {
         const data = new Uint8Array(e.target.result);
         const wb = XLSX.read(data, { type:'array' });
         const sh = wb.Sheets[wb.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(sh, { defval: '' });
-        // Map known columns to internal fields (be forgiving)
+
+        // Map known columns to internal fields
         allTasks = json.map(row => ({
           ata: row['ATA'] || row['ATA REF'] || row['ATA REF.'] || '',
           card: row['TASK CARD NUM/ AMM REF'] || row['Task Card Number'] || row['No'] || '',
@@ -530,18 +665,29 @@
           manhour: row['DURATION MANHOUR'] || row['Man Hour'] || '',
           due: row['DUE'] || '',
           assignedTo: row['Assigned To'] || '',
-          status: 'pending', // Default status
+          status: 'pending',
           completedBy: '',
           completedAt: null,
           verifiedBy: '',
           verifiedAt: null
         }));
         availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
-        saveAppData();
+
+        // 🔹 Save both tasks + Excel base64 into Firestore
+        const base64Excel = btoa(String.fromCharCode(...data));
+        await setDoc(doc(window.db, "appData", "batikAir"), {
+          tasks: allTasks,
+    	  attendanceRecords,
+      	  excelBase64: base64Excel
+        });
+
+        console.log("✅ Excel + tasks saved to Firestore");
         renderTasks();
       };
       reader.readAsArrayBuffer(file);
     }
+
+
 
     document.getElementById('fileInput').addEventListener('change', ev => {
       const f = ev.target.files[0];
@@ -687,12 +833,6 @@
           const chk = document.createElement('input');
           chk.type = 'checkbox';
           chk.addEventListener('change', () => {
-            // optional attendance check
-            if (!attendance[currentUser.name]) {
-              alert(`${currentUser.name} appears to be off today (attendance). Cannot mark done.`);
-              chk.checked = false;
-              return;
-            }
             markTaskDoneByLAE(i);
           });
           chkLabel.appendChild(chk);
@@ -709,7 +849,6 @@
           `;
           
           const approveBtn = document.createElement('button');
-          approveBtn.className =
           approveBtn.className = 'btn-approve';
           approveBtn.textContent = 'Approve';
           approveBtn.onclick = () => verifyTaskByOfficer(i, true);
@@ -733,6 +872,101 @@
 
       populateATAFilter();
     } // renderTasks
+
+    function renderApproval() {
+      const container = document.getElementById('approvalList');
+      container.innerHTML = '';
+
+      const submittedTasks = allTasks.map((t, i) => ({...t, index: i})).filter(t => t.status === "submitted");
+      if (submittedTasks.length === 0) {
+        container.innerHTML = "<p>No tasks waiting for approval 🎉</p>";
+        return;
+      }
+
+      submittedTasks.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'task-card';
+        div.innerHTML = `
+          <div class="task-header">ATA ${t.ata || '—'}</div>
+          <div class="block"><b>Task Card:</b> ${escapeHtml(t.card || '—')}</div>
+          <div class="block"><b>Description:</b> ${escapeHtml(t.description || '—')}</div>
+          <div class="block"><b>Assigned To:</b> ${escapeHtml(t.assignedTo || 'None')}</div>
+          <div class="block"><b>Status:</b> ${t.status}</div>
+          <button class="btn-approve">Approve</button>
+        `;
+        div.querySelector(".btn-approve").onclick = () => {
+          verifyTaskByOfficer(t.index, true);
+          renderApproval();
+          renderTasks(); // refresh so task moves into Done
+        };
+        container.appendChild(div);
+      });
+    }
+
+    function renderCommonDefects() {
+      const container = document.getElementById("defectsList");
+      container.innerHTML = "";
+
+      // collect all descriptions
+      const descriptions = allTasks.map(t => t.description || "");
+
+      // keywords to check
+      const keywords = ["engine", "nose cone", "landing gear", "wing", "fuselage", "rudder", "avionics"];
+
+      const results = [];
+
+      keywords.forEach(kw => {
+        const matches = descriptions.filter(d => d.toLowerCase().includes(kw));
+        if (matches.length > 1) {
+          results.push({ keyword: kw, count: matches.length, details: matches });
+        }
+      });
+
+      // sort high → low
+      results.sort((a, b) => b.count - a.count);
+
+      if (results.length === 0) {
+        container.innerHTML = "<p>No common defects found ✅</p>";
+        return;
+      }
+
+      results.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "task-card";
+
+        // build details list
+        let detailList = "<ul style='margin-top:6px;'>";
+        r.details.forEach(d => {
+          detailList += `<li>${d}</li>`;
+        });
+        detailList += "</ul>";
+
+        div.innerHTML = `<b>${r.keyword}</b> — found in <b>${r.count}</b> task cards ${detailList}`;
+        container.appendChild(div);
+      });
+    }
+
+
+
+
+    function approveTask(index) {
+      // Use your existing verify function so flow stays consistent
+      verifyTaskByOfficer(index, true);  
+      renderApproval();  // refresh approval list
+      renderTasks();     // refresh task sections (moves it to Done)
+    }
+
+    function approveAllPending() {
+      allTasks.forEach((t, i) => {
+        if (t.status === "submitted") {
+          verifyTaskByOfficer(i, true);
+        }
+      });
+      renderApproval();
+      renderTasks();
+    }
+
+
 
     // simple escape
     function escapeHtml(s) {
@@ -836,7 +1070,8 @@
         const chosen = sel.value;
         if (chosen === 'ALL') {
           // no change to dataset, but user might expect filtered view
-          // We'll temporarily filter display by adjusting allTasksTemp (simple approach: rebuild UI using it)
+          // We'll temporarily filter display by adjusting allTasksTemp (simple approach: rebuild UI using filter)
+          // For simplicity, we'll store chosen in a global and filter renderTasks based on it:
           selectedATAFilter = 'ALL';
         } else selectedATAFilter = chosen;
         renderTasks();
@@ -1073,6 +1308,7 @@
       // make sure roster preview button state correct
       renderProdLists();
     })();
+
   </script>
 </body>
 </html>
