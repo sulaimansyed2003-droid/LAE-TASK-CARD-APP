@@ -114,6 +114,27 @@
       .approval-section { padding: 8px; }
     }
   </style>
+
+  <!-- XLSX lib -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Firebase init (module) - exposes window.db -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCii_mcKN6cL7Ep8VYdfNnKHFgi2AYAMpI",
+      authDomain:"batik-air-taskcard.firebaseapp.com",
+      projectId: "batik-air-taskcard",
+      storageBucket: "batik-air-taskcard.appspot.com",
+      messagingSenderId:  "396150494337",
+      appId:  "1:396150494337:web:a882db879da9eac5ade980"
+    };
+
+    window.firebaseApp = initializeApp(firebaseConfig);
+    window.db = getFirestore(window.firebaseApp);
+  </script>
 </head>
 <body>
   <header>
@@ -270,9 +291,6 @@
   <button class="btn-toggle" style="position:fixed; left:12px; top:12px; z-index:1200;" onclick="toggleDarkMode()">🌓</button>
   <div id="clock" style="position:fixed; right:12px; top:12px; font-weight:bold; font-size:14px; color:#b30000; background:rgba(255,255,255,0.85); padding:6px 10px; border-radius:8px; z-index:1200;"></div>
 
-<!-- XLSX lib -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 <!-- Main app script (module) -->
 <script type="module">
   import { doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
@@ -283,7 +301,6 @@
     "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
   ];
 
-  // Example roster (days of week) for quick testing if user doesn't upload roster
   const laeRoster = {
     "ABDUL FATAH BIN IBRAHIM": ["Mon","Tue","Wed","Thu","Fri"],
     "MOHD HAFIZ SAZWAN BIN ZAM ZAM": ["Mon","Tue","Thu","Fri"],
@@ -309,7 +326,6 @@
   let rosterPreviewVisible = false;
 
   // ---------- Utilities ----------
-  // Save data to Firestore
   async function saveAppData() {
     try {
       const data = { tasks: allTasks, attendanceRecords };
@@ -320,7 +336,6 @@
     }
   }
 
-  // Load data from Firestore (once)
   async function loadSavedData() {
     try {
       const snap = await getDoc(doc(window.db, "appData", "batikAir"));
@@ -330,23 +345,26 @@
         if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
         availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
         renderTasks();
+      } else {
+        console.log("No appData doc yet.");
       }
     } catch (e) {
       console.error("❌ Firestore load failed:", e);
     }
   }
 
-  // Live updates (sync across devices)
   function enableRealtimeSync() {
-    // Listen to the same document; when it changes, update local state and UI
     onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
       if (snap.exists()) {
         const data = snap.data();
         if (data.tasks) allTasks = data.tasks;
         if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
         availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+        console.log("🔔 Firestore update received — rendering tasks");
         renderTasks();
       }
+    }, err => {
+      console.error("onSnapshot error:", err);
     });
   }
 
@@ -358,7 +376,6 @@
   setInterval(updateClock, 1000);
   updateClock();
 
-  // Format date for display
   function formatDate(date) {
     if (!date) return 'N/A';
     return new Date(date).toLocaleString();
@@ -572,53 +589,71 @@
   }
 
   // ---------- Task upload and rendering ----------
+  // Robust Excel parser — normalize headers, update allTasks locally immediately, save and render
   async function handleTaskFile(file) {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, { type:'array' });
-      const sh = wb.Sheets[wb.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(sh, { defval: '' });
+    console.log("📥 Excel file selected:", file.name);
+    const arrayBuffer = await file.arrayBuffer();
+    const data = new Uint8Array(arrayBuffer);
+    const wb = XLSX.read(data, { type:'array' });
+    const sh = wb.Sheets[wb.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(sh, { defval: '' });
 
-      allTasks = json.map(row => ({
-        ata: row['ATA'] || row['ATA REF'] || row['ATA REF.'] || '',
-        card: row['TASK CARD NUM/ AMM REF'] || row['Task Card Number'] || row['No'] || '',
-        description: row['TASK DESCRIPTION'] || row['Description'] || '',
-        tools: row['TOOLS / TESTSET'] || row['Tools'] || '',
-        consumables: row['CONSUMABLES / MSL'] || row['Consumables'] || '',
-        remarks: row['REMARKS'] || '',
-        manhour: row['DURATION MANHOUR'] || row['Man Hour'] || '',
-        due: row['DUE'] || '',
-        assignedTo: row['Assigned To'] || '',
-        status: 'pending',
-        completedBy: '',
-        completedAt: null,
-        verifiedBy: '',
-        verifiedAt: null
-      }));
-      availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+    // Map rows robustly by normalizing header keys
+    const mapped = json.map(row => {
+      const norm = {};
+      Object.keys(row || {}).forEach(k => {
+        const nk = (k || '').toString().trim().toLowerCase();
+        if (nk) norm[nk] = row[k];
+      });
 
-      // Save both tasks + Excel base64 into Firestore
+      return {
+        ata: norm['ata'] || norm['ata ref'] || norm['ata ref.'] || norm['ataref'] || norm['ata ref no'] || '',
+        card: norm['task card num/ amm ref'] || norm['task card number'] || norm['no'] || norm['taskcard'] || norm['task card'] || '',
+        description: norm['task description'] || norm['description'] || '',
+        tools: norm['tools / testset'] || norm['tools'] || '',
+        consumables: norm['consumables / msl'] || norm['consumables'] || '',
+        remarks: norm['remarks'] || '',
+        manhour: norm['duration manhour'] || norm['man hour'] || norm['manhour'] || '',
+        due: norm['due'] || '',
+        assignedTo: norm['assigned to'] || norm['assigned'] || '',
+        status: (norm['status'] && norm['status'].toString().trim()) || 'pending',
+        completedBy: norm['completed by'] || '',
+        completedAt: norm['completed at'] || null,
+        verifiedBy: norm['verified by'] || '',
+        verifiedAt: norm['verified at'] || null
+      };
+    });
+
+    // Update local state first
+    allTasks = mapped;
+    availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+
+    // Save to Firestore (also include base64 for reference)
+    try {
       const base64Excel = btoa(String.fromCharCode(...data));
       await setDoc(doc(window.db, "appData", "batikAir"), {
         tasks: allTasks,
         attendanceRecords,
         excelBase64: base64Excel
       });
+      console.log("✅ Excel + tasks saved to Firestore (immediately after upload)");
+    } catch (err) {
+      console.error("❌ Firestore save failed during Excel upload:", err);
+    }
 
-      console.log("✅ Excel + tasks saved to Firestore");
-      renderTasks();
-    };
-    reader.readAsArrayBuffer(file);
+    // Render immediately (so no need to wait for onSnapshot)
+    renderTasks();
   }
 
   document.getElementById('fileInput').addEventListener('change', ev => {
     const f = ev.target.files[0];
+    if (!f) return;
     handleTaskFile(f);
   });
 
   function renderTasks() {
+    console.log("🔹 Rendering tasks:", allTasks.length);
     const search = document.getElementById('taskSearch')?.value?.toLowerCase?.() || '';
     const sAll = document.getElementById('allTasks');
     const sAssigned = document.getElementById('assignedTasks');
