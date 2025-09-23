@@ -672,10 +672,16 @@
           tasks: allTasks,
     	  attendanceRecords,
       	  excelBase64: base64Excel
-        });
+        },
+        { merge: true }
+      );
 
-        console.log("✅ Excel + tasks saved to Firestore");
-        renderTasks();
+      console.log("✅ Excel + tasks saved to Firestore");
+      await saveAppData();
+
+      // Re-render tasks locally
+      renderTasks();
+       
       };
       reader.readAsArrayBuffer(file);
     }
