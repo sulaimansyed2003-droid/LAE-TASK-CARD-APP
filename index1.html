@@ -242,7 +242,9 @@
 
    <!-- 🔹 Firebase SDKs (Modular API) -->
    <script type="module">
-     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+     import { 
+       initializeApp 
+     } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
      import { 
        getFirestore, 
        doc, 
@@ -271,6 +273,12 @@
       window.getDoc = getDoc;
       window.onSnapshot = onSnapshot;
     </script>
+    <!-- 🔹 Your main app logic -->
+    <script>
+      let currentUser = null;
+      let allTasks = [];
+      let attendanceRecords = {};
+      let availableATAs = [];
 
     <div id="commonDefects" class="hidden">
       <h2>Common Defects</h2>
@@ -374,14 +382,16 @@
     // ---------- Utilities ----------
     // ---------- Firebase Firestore version ----------
 
-    // Save data to Firestore
+    // ---------- Firestore helpers ----------
     async function saveAppData() {
       try {
-        const data = { tasks: allTasks, attendanceRecords };
-        await setDoc(doc(window.db, "appData", "batikAir"), data);
+        await setDoc(doc(window.db, "appData", "batikAir"), {
+          tasks: allTasks,
+          attendanceRecords: attendanceRecords
+        }, { merge: true });
         console.log("✅ Data saved to Firestore");
-      } catch (e) {
-        console.error("❌ Firestore save failed:", e);
+      } catch (err) {
+        console.error("❌ Firestore save failed:", err);
       }
     }
 
@@ -394,10 +404,12 @@
           if (data.tasks) allTasks = data.tasks;
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
-          renderTasks();
+          console.log("✅ Data loaded from Firestore");
+        } else {
+          console.warn("⚠️ No Firestore data found yet");
         }
-      } catch (e) {
-        console.error("❌ Firestore load failed:", e);
+      } catch (err) {
+        console.error("❌ Firestore load failed:", err);
       }
     }
 
