@@ -394,10 +394,13 @@
       const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
         if (snap.exists()) {
           const data = snap.data();
+          console.log("📲 Live update from Firestore:", data);
           if (data.tasks) allTasks = data.tasks;
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
           renderTasks();
+        } else {
+          console.log("⚠️ No data found in Firestore (appData/batikAir)");
         }
       });
     }
@@ -486,13 +489,17 @@
       const id = document.getElementById('idInput').value.trim();
       const name = document.getElementById('nameInput').value;
       const role = document.getElementById('roleInput').value;
-      if (!id || !name || !role) { alert('Please fill all login fields'); return; }
+      if (!id || !name || !role) { 
+        alert('Please fill all login fields'); 
+        return; 
+      }
 
       currentUser = { id, name, role };
 
       document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
-      document.getElementById('userInfo').textContent = `ID: ${id} | Name: ${name} | Role: ${role}`;
+      document.getElementById('userInfo').textContent = 
+        `ID: ${id} | Name: ${name} | Role: ${role}`;
 
       if (role === 'OFFICER') {
         document.getElementById('officerSection').classList.remove('hidden');
