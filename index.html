@@ -23,9 +23,14 @@
     .assigned-bold { font-weight:bold; color:#800000; }
     nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
     nav button:hover { background:#a00000; } nav button.active {
-  background: #007bff !important; /* blue */
-  color: white !important;
-}
+      background: #007bff !important; /* blue */
+      color: white !important;
+    } 
+    .mobile-menu button.active {
+      background: #007bff !important;
+      color: white !important;
+    }  
+
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
     #assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
     #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
@@ -144,7 +149,6 @@
       <button onclick="showSection('attendanceSection')">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
       <button onclick="showSection('approvalSection')">Approval</button>
-      <button onclick="showSection('commonDefects')">Common Defects</button>
 
     </nav>
 
@@ -256,13 +260,6 @@
       <div id="assignedTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="doneTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
-
-    <div id="commonDefects" class="hidden">
-      <h2>Common Defects</h2>
-      <p>Most frequently reported issues across task cards</p>
-      <div id="defectsList"></div>
-    </div>
-
 
     </div>
 
@@ -392,38 +389,37 @@
     }
 
     // ---------- DOM helpers ----------
-      
-      function showSection(id, btn) {
-        // hide all sections
-        const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection","commonDefects"];
-        sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
-        document.getElementById("allDoneMsg").classList.add('hidden');
+    function showSection(id) {
+      // hide all sections
+      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
+      sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
+      document.getElementById("allDoneMsg").classList.add('hidden');
 
-        // show requested section
-        const el = document.getElementById(id);
-        if (el) el.classList.remove('hidden');
+      // show requested section
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
 
-        // highlight nav buttons
-        document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-        if (btn) btn.classList.add("active");
+     // 🔹 highlight active button (desktop + mobile)
+    document.querySelectorAll("nav button, .mobile-menu button").forEach(btn => btn.classList.remove("active"));
+    const clicked = Array.from(document.querySelectorAll("nav button, .mobile-menu button"))
+      .find(b => b.getAttribute("onclick")?.includes(id));
+    if (clicked) clicked.classList.add("active");
 
-       // section-specific logic
-       if (id === "attendanceSection") {
-         document.getElementById('attendanceDate').value = currentAttendanceDate;
-         loadAttendanceForDate();
-       } else if (id === "prodDash") {
-         updateProdDatePill();
-         renderProdLists();
-         renderProdStats();
-       } else if (id === "approvalSection") {
-         renderApproval();
-       } else if (id === "commonDefects") {
-         renderCommonDefects();
-       } else {
-         renderTasks();
-       }
-     }
 
+  // existing logic
+      if (id === "attendanceSection") {
+        document.getElementById('attendanceDate').value = currentAttendanceDate;
+        loadAttendanceForDate();
+      } else if (id === "prodDash") {
+        updateProdDatePill();
+        renderProdLists();
+        renderProdStats();
+      } else if (id === "approvalSection") {
+        renderApproval(); 
+      } else {
+        renderTasks();
+      }
+    }
 
 
 
@@ -605,41 +601,6 @@
       saveAppData();
       alert('Attendance records saved successfully!');
     }
-
-
-
-    function renderCommonDefects() {
-      const container = document.getElementById('defectsList');
-      container.innerHTML = '';
-
-      if (allTasks.length === 0) {
-        container.innerHTML = "<p>No defects reported yet.</p>";
-        return;
-      }
-
-      // Count defects by remarks field
-      const defectCounts = {};
-      allTasks.forEach(t => {
-        if (t.remarks) {
-          defectCounts[t.remarks] = (defectCounts[t.remarks] || 0) + 1;
-        }
-      });
-
-      if (Object.keys(defectCounts).length === 0) {
-        container.innerHTML = "<p>No defects recorded in tasks.</p>";
-        return;
-      }
-
-      // Build a list
-      const ul = document.createElement('ul');
-      for (const [remark, count] of Object.entries(defectCounts)) {
-        const li = document.createElement('li');
-        li.textContent = `${remark} (${count})`;
-        ul.appendChild(li);
-      }
-      container.appendChild(ul);
-    }
-
 
     // ---------- Task upload and rendering ----------
     async function handleTaskFile(file) {
