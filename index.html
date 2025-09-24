@@ -144,6 +144,7 @@
       <button onclick="showSection('attendanceSection')">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
       <button onclick="showSection('approvalSection')">Approval</button>
+      <button onclick="showSection('commonDefects')">Common Defects</button>
 
     </nav>
 
@@ -255,6 +256,13 @@
       <div id="assignedTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="doneTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
+
+    <div id="commonDefects" class="hidden">
+      <h2>Common Defects</h2>
+      <p>Most frequently reported issues across task cards</p>
+      <div id="defectsList"></div>
+    </div>
+
 
     </div>
 
@@ -597,6 +605,41 @@
       saveAppData();
       alert('Attendance records saved successfully!');
     }
+
+
+
+    function renderCommonDefects() {
+      const container = document.getElementById('defectsList');
+      container.innerHTML = '';
+
+      if (allTasks.length === 0) {
+        container.innerHTML = "<p>No defects reported yet.</p>";
+        return;
+      }
+
+      // Count defects by remarks field
+      const defectCounts = {};
+      allTasks.forEach(t => {
+        if (t.remarks) {
+          defectCounts[t.remarks] = (defectCounts[t.remarks] || 0) + 1;
+        }
+      });
+
+      if (Object.keys(defectCounts).length === 0) {
+        container.innerHTML = "<p>No defects recorded in tasks.</p>";
+        return;
+      }
+
+      // Build a list
+      const ul = document.createElement('ul');
+      for (const [remark, count] of Object.entries(defectCounts)) {
+        const li = document.createElement('li');
+        li.textContent = `${remark} (${count})`;
+        ul.appendChild(li);
+      }
+      container.appendChild(ul);
+    }
+
 
     // ---------- Task upload and rendering ----------
     async function handleTaskFile(file) {
