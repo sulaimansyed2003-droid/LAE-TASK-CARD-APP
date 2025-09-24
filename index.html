@@ -384,36 +384,38 @@
     }
 
     // ---------- DOM helpers ----------
-    function showSection(id) {
-      // hide all sections
-      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
-      sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
-      document.getElementById("allDoneMsg").classList.add('hidden');
+      
+      function showSection(id, btn) {
+        // hide all sections
+        const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection","commonDefects"];
+        sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
+        document.getElementById("allDoneMsg").classList.add('hidden');
 
-      // show requested section
-      const el = document.getElementById(id);
-      if (el) el.classList.remove('hidden');
+        // show requested section
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('hidden');
 
-  // 🔹 highlight active button
-      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
-      const clicked = Array.from(document.querySelectorAll("nav button"))
-    .find(b => b.getAttribute("onclick")?.includes(id));
-      if (clicked) clicked.classList.add("active");
+        // highlight nav buttons
+        document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+        if (btn) btn.classList.add("active");
 
-  // existing logic
-      if (id === "attendanceSection") {
-        document.getElementById('attendanceDate').value = currentAttendanceDate;
-        loadAttendanceForDate();
-      } else if (id === "prodDash") {
-        updateProdDatePill();
-        renderProdLists();
-        renderProdStats();
-      } else if (id === "approvalSection") {
-        renderApproval(); 
-      } else {
-        renderTasks();
-      }
-    }
+       // section-specific logic
+       if (id === "attendanceSection") {
+         document.getElementById('attendanceDate').value = currentAttendanceDate;
+         loadAttendanceForDate();
+       } else if (id === "prodDash") {
+         updateProdDatePill();
+         renderProdLists();
+         renderProdStats();
+       } else if (id === "approvalSection") {
+         renderApproval();
+       } else if (id === "commonDefects") {
+         renderCommonDefects();
+       } else {
+         renderTasks();
+       }
+     }
+
 
 
 
