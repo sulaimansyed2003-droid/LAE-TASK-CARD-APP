@@ -144,6 +144,7 @@
       <button onclick="showSection('attendanceSection')">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
       <button onclick="showSection('approvalSection')">Approval</button>
+      <button onclick="showSection('commonDefects')">Common Defects</button>
 
     </nav>
 
@@ -255,6 +256,13 @@
       <div id="assignedTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="doneTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
+
+    <div id="commonDefects" class="hidden">
+      <h2>Common Defects</h2>
+      <p>Most frequently reported issues across task cards</p>
+      <div id="defectsList"></div>
+    </div>
+
 
     </div>
 
@@ -384,36 +392,38 @@
     }
 
     // ---------- DOM helpers ----------
-    function showSection(id) {
-      // hide all sections
-      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
-      sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
-      document.getElementById("allDoneMsg").classList.add('hidden');
+      
+      function showSection(id, btn) {
+        // hide all sections
+        const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection","commonDefects"];
+        sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
+        document.getElementById("allDoneMsg").classList.add('hidden');
 
-      // show requested section
-      const el = document.getElementById(id);
-      if (el) el.classList.remove('hidden');
+        // show requested section
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('hidden');
 
-  // 🔹 highlight active button
-      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
-      const clicked = Array.from(document.querySelectorAll("nav button"))
-    .find(b => b.getAttribute("onclick")?.includes(id));
-      if (clicked) clicked.classList.add("active");
+        // highlight nav buttons
+        document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+        if (btn) btn.classList.add("active");
 
-  // existing logic
-      if (id === "attendanceSection") {
-        document.getElementById('attendanceDate').value = currentAttendanceDate;
-        loadAttendanceForDate();
-      } else if (id === "prodDash") {
-        updateProdDatePill();
-        renderProdLists();
-        renderProdStats();
-      } else if (id === "approvalSection") {
-        renderApproval(); 
-      } else {
-        renderTasks();
-      }
-    }
+       // section-specific logic
+       if (id === "attendanceSection") {
+         document.getElementById('attendanceDate').value = currentAttendanceDate;
+         loadAttendanceForDate();
+       } else if (id === "prodDash") {
+         updateProdDatePill();
+         renderProdLists();
+         renderProdStats();
+       } else if (id === "approvalSection") {
+         renderApproval();
+       } else if (id === "commonDefects") {
+         renderCommonDefects();
+       } else {
+         renderTasks();
+       }
+     }
+
 
 
 
@@ -595,6 +605,52 @@
       saveAppData();
       alert('Attendance records saved successfully!');
     }
+
+
+
+    function renderCommonDefects() {
+      const container = document.getElementById('defectsList');
+      container.innerHTML = '';
+
+      if (allTasks.length === 0) {
+        container.innerHTML = "<p>No defects reported yet.</p>";
+        return;
+      }
+
+      // Group defects by ATA
+      const defectsByATA = {};
+
+      allTasks.forEach(t => {
+        if (t.remarks) {
+          const ata = t.ata || "Unspecified ATA";
+          if (!defectsByATA[ata]) defectsByATA[ata] = {};
+
+          // Split remarks into smaller pieces
+          const parts = t.remarks.split(/[\n;*]+/).map(s => s.trim()).filter(Boolean);
+
+          parts.forEach(p => {
+            defectsByATA[ata][p] = (defectsByATA[ata][p] || 0) + 1;
+          });
+        }
+      });
+
+     // Build grouped list
+     for (const [ata, remarks] of Object.entries(defectsByATA)) {
+       const section = document.createElement('div');
+       section.innerHTML = `<h4>ATA ${ata}</h4>`;
+       const ul = document.createElement('ul');
+
+     for (const [remark, count] of Object.entries(remarks)) {
+       const li = document.createElement('li');
+       li.textContent = `${remark} (${count})`;
+       ul.appendChild(li);
+     }
+
+     section.appendChild(ul);
+     container.appendChild(section);
+   }
+ }
+
 
     // ---------- Task upload and rendering ----------
     async function handleTaskFile(file) {
