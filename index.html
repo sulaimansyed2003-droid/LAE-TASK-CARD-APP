@@ -240,18 +240,11 @@
     </div>
 
 
-   <!-- 🔹 Firebase SDKs (Modular API) -->
-   <script type="module">
-     import { 
-       initializeApp 
-     } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-     import { 
-       getFirestore, 
-       doc, 
-       setDoc, 
-       getDoc, 
-       onSnapshot 
-     } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+    <!-- 🔹 Firebase SDKs (MUST be before your code) -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+      import { getFirestore, doc, setDoc, getDoc, onSnapshot }
+        from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyBJUABbLzFwgIs1bVquqS6J1rH8bglPT0A",
@@ -264,21 +257,9 @@
       };
 
       // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      // 🔹 Expose globally so your other scripts can use them
-      window.db = db;
-      window.doc = doc;
-      window.setDoc = setDoc;
-      window.getDoc = getDoc;
-      window.onSnapshot = onSnapshot;
+      window.firebaseApp = initializeApp(firebaseConfig);
+      window.db = getFirestore(window.firebaseApp);
     </script>
-    <!-- 🔹 Your main app logic -->
-    <script>
-      let currentUser = null;
-      let allTasks = [];
-      let attendanceRecords = {};
-      let availableATAs = [];
 
     <div id="commonDefects" class="hidden">
       <h2>Common Defects</h2>
@@ -382,16 +363,14 @@
     // ---------- Utilities ----------
     // ---------- Firebase Firestore version ----------
 
-    // ---------- Firestore helpers ----------
+    // Save data to Firestore
     async function saveAppData() {
       try {
-        await setDoc(doc(window.db, "appData", "batikAir"), {
-          tasks: allTasks,
-          attendanceRecords: attendanceRecords
-        }, { merge: true });
+        const data = { tasks: allTasks, attendanceRecords };
+        await setDoc(doc(window.db, "appData", "batikAir"), data);
         console.log("✅ Data saved to Firestore");
-      } catch (err) {
-        console.error("❌ Firestore save failed:", err);
+      } catch (e) {
+        console.error("❌ Firestore save failed:", e);
       }
     }
 
@@ -404,18 +383,16 @@
           if (data.tasks) allTasks = data.tasks;
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
-          console.log("✅ Data loaded from Firestore");
-        } else {
-          console.warn("⚠️ No Firestore data found yet");
+          renderTasks();
         }
-      } catch (err) {
-        console.error("❌ Firestore load failed:", err);
+      } catch (e) {
+        console.error("❌ Firestore load failed:", e);
       }
     }
 
     // Live updates (sync across devices)
     function enableRealtimeSync() {
-      onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
+      const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
         if (snap.exists()) {
           const data = snap.data();
           console.log("📲 Live update from Firestore:", data);
@@ -423,22 +400,11 @@
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
           renderTasks();
+        } else {
+          console.log("⚠️ No data found in Firestore (appData/batikAir)");
         }
       });
     }
-  
-
-    function markTaskDoneByLAE(index) {
-      if (allTasks[index].status !== "pending") return;
-  
-      allTasks[index].status = "submitted"; // Mark as submitted
-      allTasks[index].completedBy = currentUser.name;
-      allTasks[index].completedAt = new Date();
-  
-      saveTaskData(); // Save updated task data to Firestore
-      renderTasks(); // Re-render tasks on LAE's view
-    }  
-
 
 
     // Set clock
@@ -501,30 +467,6 @@
         renderTasks();
       }
     }
-    
-    window.onload = function() {
-      populateNames();  // Populate the names when the page loads
-
-      // Other initialization code
-      document.getElementById('signInBtn').addEventListener('click', async () => {
-        const id = document.getElementById('idInput').value.trim();
-        const name = document.getElementById('nameInput').value;
-        const role = document.getElementById('roleInput').value;
-        if (!id || !name || !role) { 
-          alert('Please fill all login fields'); 
-          return; 
-        }
-
-        currentUser = { id, name, role };
-        document.getElementById('loginPage').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-        document.getElementById('userInfo').textContent = `ID: ${id} | Name: ${name} | Role: ${role}`;
-
-        await loadSavedData();
-        renderTasks();
-        enableRealtimeSync();
-      });
-    };
 
 
     // ---------- Login / user ----------
@@ -705,17 +647,9 @@
 
     // ---------- Task upload and rendering ----------
     async function handleTaskFile(file) {
-      if (!file) {
-        alert("No file selected.");
-        return;
-      const fileType = file.type;
-      if (fileType !== "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-        alert("Please upload a valid Excel (.xlsx) file.");
-        return;
-      }
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = async function(e) {
-        try{
         const data = new Uint8Array(e.target.result);
         const wb = XLSX.read(data, { type:'array' });
         const sh = wb.Sheets[wb.SheetNames[0]];
@@ -739,41 +673,6 @@
           verifiedAt: null
         }));
         availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
-      
-        // Save to Firestore (assuming `saveTaskData` is a function to store tasks in Firestore)
-        await saveTaskData();
-
-        // Optional: re-render tasks locally if necessary
-        renderTasks();
-        } catch (err) {
-          console.error("Error reading or processing file:", err);
-          alert("There was an error processing the file.");
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-
-    document.getElementById('fileInput').addEventListener('change', ev => {
-      const f = ev.target.files[0];  // Get the first file uploaded
-      if (f) {
-        handleTaskFile(f);  // Process the file
-      } else {
-        alert("Please select a valid Excel file to upload.");
-      }
-    });
-    
-async function saveTaskData() {
-      try {
-        await setDoc(doc(window.db, "taskData", "batikAir"), {
-          tasks: allTasks,
-          attendanceRecords: attendanceRecords
-        }, { merge: true });
-        console.log("✅ Task data saved to Firestore");
-      } catch (err) {
-        console.error("❌ Error saving task data:", err);
-      }
-    }
 
         // 🔹 Save both tasks + Excel base64 into Firestore
         const base64Excel = btoa(String.fromCharCode(...data));
@@ -805,6 +704,7 @@ async function saveTaskData() {
     function renderTasks() {
       // basic search filter
       const search = document.getElementById('taskSearch')?.value?.toLowerCase?.() || '';
+      // prepare sections
       const sAll = document.getElementById('allTasks');
       const sAssigned = document.getElementById('assignedTasks');
       const sDone = document.getElementById('doneTasks');
@@ -812,46 +712,22 @@ async function saveTaskData() {
 
       const sections = { all: [], assigned: [], done: [] };
       allTasks.forEach((t, i) => {
-        const matchesSearch = !search || 
-          (t.ata && t.ata.toLowerCase().includes(search)) || 
-          (t.card && t.card.toLowerCase().includes(search)) || 
-          (t.description && t.description.toLowerCase().includes(search));
+        const matchesSearch = !search || JSON.stringify(t).toLowerCase().includes(search);
         if (!matchesSearch) return;
-
         if (t.status === "verified") {
-          sections.done.push(t);
-        } else {
-          sections.all.push(t);
-           if (currentUser) {
-             if (currentUser.role === 'LAE' && t.assignedTo === currentUser.name) {
-               sections.assigned.push(t);
-             }
-             if (currentUser.role === 'OFFICER' && t.assignedTo) {
-               sections.assigned.push(t);
+         sections.done.push([t, i]);
+       } else {
+         sections.all.push([t, i]);
+         if (currentUser) {
+           if (currentUser.role === 'LAE' && t.assignedTo === currentUser.name) {
+             sections.assigned.push([t, i]);
+           }
+           if (currentUser.role === 'OFFICER' && t.assignedTo) {
+             sections.assigned.push([t, i]);
            }
          }
-       }
-     });
-
-     // Render tasks into corresponding sections
-     sections.all.forEach(t => sAll.appendChild(createTaskCard(t)));
-     sections.assigned.forEach(t => sAssigned.appendChild(createTaskCard(t)));
-     sections.done.forEach(t => sDone.appendChild(createTaskCard(t)));
-}
-
-   function createTaskCard(task) {
-     const card = document.createElement('div');
-     card.classList.add('task-card');
-     card.innerHTML = `
-       <div class="task-header">ATA ${task.ata}</div>
-       <div class="block">Card: ${task.card}</div>
-       <div class="block">Description: ${task.description}</div>
-       <div class="block">Assigned To: ${task.assignedTo}</div>
-       <div class="block">Status: ${task.status}</div>
-       <button onclick="markTaskDoneByLAE(${task.index})">Mark as Done</button>
-     `;
-     return card;
-}
+       } 
+      });
 
       // show all-done message for LAE
       if (currentUser && currentUser.role === 'LAE') {
@@ -1195,18 +1071,19 @@ async function saveTaskData() {
         o.textContent = `ATA ${a}`;
         sel.appendChild(o);
       });
-       if (atas.includes(current)) {
-         sel.value = current;
-       } else {
-         sel.value = 'ALL';
-       }
-
-       // Handle selection change
-       sel.onchange = () => {
-         selectedATAFilter = sel.value;
-         renderTasks();
-       };
-     }
+      if (atas.includes(current)) sel.value = current;
+      sel.onchange = () => {
+        // filter by ATA selection
+        const chosen = sel.value;
+        if (chosen === 'ALL') {
+          // no change to dataset, but user might expect filtered view
+          // We'll temporarily filter display by adjusting allTasksTemp (simple approach: rebuild UI using filter)
+          // For simplicity, we'll store chosen in a global and filter renderTasks based on it:
+          selectedATAFilter = 'ALL';
+        } else selectedATAFilter = chosen;
+        renderTasks();
+      };
+    }
     let selectedATAFilter = 'ALL';
 
     // Overwriting renderTasks to respect selectedATAFilter
