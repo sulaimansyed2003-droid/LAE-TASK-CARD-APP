@@ -5,13 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Batik Air Task Card App</title>
 
-body, input, select, button, table, .task-card, #clock {
-  font-size: 18px !important;
-}
-header h1 { font-size: 26px !important; }
-.task-header { font-size: 20px !important; }
-.meta-pill { font-size: 15px !important; }
-
 
   <style>
     body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; color:#222; }
@@ -28,8 +21,25 @@ header h1 { font-size: 26px !important; }
     .meta-pill { background:#eee; padding:6px 10px; border-radius:12px; font-size:13px; }
     .task-actions { margin-top:10px; }
     .assigned-bold { font-weight:bold; color:#800000; }
-    nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
-    nav button:hover { background:#a00000; }
+    nav button { 
+      margin:5px; 
+      padding:8px 12px; 
+      border:none;
+      border-radius:5px; 
+      background:#800000; 
+      color:white; 
+      cursor:pointer; 
+    }
+    nav button:hover { background:#a00000; } 
+    nav button.active {
+      background: #007bff !important; /* blue */
+      color: white !important;
+    }
+    .mobile-menu button.active {
+      background: #007bff !important;
+      color: white !important;
+    }
+
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
     #assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
     #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
@@ -88,6 +98,15 @@ header h1 { font-size: 26px !important; }
     .approval-history { margin-top: 10px; font-size: 12px; color: #666; }
     .approval-history div { margin-bottom: 4px; }
 
+    /* 🔹 Make fonts bigger everywhere */
+    body, input, select, button, table, .task-card, #clock {
+      font-size: 18px !important;
+    }
+    header h1 { font-size: 26px !important; }
+    .task-header { font-size: 20px !important; }
+    .meta-pill { font-size: 15px !important; }
+
+
     @media (max-width: 768px) {
       .mobile-menu-btn { display: block; }
       nav { display: none; }
@@ -110,6 +129,7 @@ header h1 { font-size: 26px !important; }
     <button onclick="showSection('doneTasks'); hideMobileMenu()">Done</button>
     <button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
     <button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
+    <button onclick="showSection('commonDefects', this)">Common Defects</button>
     <button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
   </div>
 
@@ -132,13 +152,15 @@ header h1 { font-size: 26px !important; }
     <div id="userInfo"></div>
 
     <nav>
-      <button onclick="showSection('allTasks')">All Tasks</button>
-      <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
-      <button onclick="showSection('doneTasks')">Done</button>
-      <button onclick="showSection('prodDash')">Productivity Dashboard</button>
-      <button onclick="showSection('attendanceSection')">Attendance</button>
+      <button onclick="showSection('allTasks',this)">All Tasks</button>
+      <button onclick="showSection('assignedTasks', this)">Assigned Tasks</button>
+      <button onclick="showSection('doneTasks', this)">Done</button>
+      <button onclick="showSection('prodDash', this)">Productivity Dashboard</button>
+      <button onclick="showSection('attendanceSection', this)">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
-      <button onclick="showSection('approvalSection')">Approval</button>
+      <button onclick="showSection('approvalSection', this)">Approval</button>
+      <button onclick="showSection('commonDefects', this)">Common Defects</button>
+
 
     </nav>
 
@@ -157,14 +179,6 @@ header h1 { font-size: 26px !important; }
         </div>
       </div>
 
-      <div id="productivityDashboard" style="margin-top:12px;">
-        <h4>LAE Productivity Dashboard (Task Completion)</h4>
-        <table style="width:100%; border-collapse:collapse;">
-          <thead><tr><th style="border:1px solid #eee;padding:6px;text-align:left;">LAE</th><th style="border:1px solid #eee;padding:6px;">Assigned</th><th style="border:1px solid #eee;padding:6px;">Done</th><th style="border:1px solid #eee;padding:6px;">%</th></tr></thead>
-          <tbody id="productivityBody"></tbody>
-        </table>
-      </div>
-    </div>
 
     <div style="margin-top:16px;">
       <!-- Enhanced Attendance Section -->
@@ -213,29 +227,8 @@ header h1 { font-size: 26px !important; }
       </div>
 
 
-      <div id="prodDash" class="hidden">
-        <h3>Productivity Dashboard (Roster)</h3>
-        <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
-        <div class="prod-row">
-          <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
-          <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
-          <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
-        </div>
 
-        <div style="margin-top:12px;" class="prod-row">
-          <input id="prodSearch" type="text" placeholder="Search LAE by name..." oninput="filterProdLists()" />
-        </div>
 
-        <div class="prod-row" style="margin-top:12px;">
-          <div class="prod-card">
-            <h4>✅ Working Today</h4>
-            <div id="workingList"></div>
-          </div>
-          <div class="prod-card">
-            <h4>❌ Off Today</h4>
-            <div id="offList"></div>
-          </div>
-        </div>
 
         <div style="margin-top:12px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -255,8 +248,35 @@ header h1 { font-size: 26px !important; }
 
     <div style="margin-top:10px;">
       <input type="text" id="taskSearch" placeholder="Search tasks..." style="padding:8px;width:60%;" />
-      <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
     </div>
+
+    <div id="commonDefects" class="hidden">
+      <h2>Common Defects</h2>
+      <p>Most frequently reported issues across task cards</p>
+      <div id="defectsList"></div>
+    </div>
+
+
+      <div id="productivityDashboard" style="margin-top:12px;">
+        <h4>LAE Productivity Dashboard (Task Completion)</h4>
+        <table style="width:100%; border-collapse:collapse;">
+          <thead><tr><th style="border:1px solid #eee;padding:6px;text-align:left;">LAE</th><th style="border:1px solid #eee;padding:6px;">Assigned</th><th style="border:1px solid #eee;padding:6px;">Done</th><th style="border:1px solid #eee;padding:6px;">%</th></tr></thead>
+          <tbody id="productivityBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="prodDash" class="hidden">
+      <h3>Productivity Dashboard (Roster)</h3>
+      <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
+      <div class="prod-row">
+        <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
+        <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
+        <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
+      </div>
+    </div>
+
+
 
   </div>
 
@@ -379,9 +399,9 @@ header h1 { font-size: 26px !important; }
     }
 
     // ---------- DOM helpers ----------
-    function showSection(id) {
+    function showSection(id, btn) {
       // hide all sections
-      const sections =    ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
+      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
       sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
       document.getElementById("allDoneMsg").classList.add('hidden');
 
@@ -389,11 +409,9 @@ header h1 { font-size: 26px !important; }
       const el = document.getElementById(id);
       if (el) el.classList.remove('hidden');
 
-      // 🔹 highlight active button
-      document.querySelectorAll("nav button").forEach(btn =>    btn.classList.remove("active"));
-      const clicked = Array.from(document.querySelectorAll("nav button"))
-        .find(b => b.getAttribute("onclick")?.includes(id));
-      if (clicked) clicked.classList.add("active");
+      // 🔹 highlight only the clicked button
+      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
 
       // existing logic
       if (id === "attendanceSection") {
@@ -405,10 +423,14 @@ header h1 { font-size: 26px !important; }
         renderProdStats();
       } else if (id === "approvalSection") {
         renderApproval(); 
+      } else if (id === "commonDefects") {
+  renderCommonDefects();
       } else {
         renderTasks();
       }
     }
+
+
 
 
     // ---------- Login / user ----------
@@ -848,6 +870,51 @@ header h1 { font-size: 26px !important; }
         container.appendChild(div);
       });
     }
+
+    function renderCommonDefects() {
+      const container = document.getElementById("defectsList");
+      container.innerHTML = "";
+
+      // collect all descriptions
+      const descriptions = allTasks.map(t => t.description || "");
+
+      // keywords to check
+      const keywords = ["engine", "nose cone", "landing gear", "wing", "fuselage", "rudder", "avionics"];
+
+      const results = [];
+
+      keywords.forEach(kw => {
+        const matches = descriptions.filter(d => d.toLowerCase().includes(kw));
+        if (matches.length > 1) {
+          results.push({ keyword: kw, count: matches.length, details: matches });
+        }
+      });
+
+      // sort high → low
+      results.sort((a, b) => b.count - a.count);
+
+      if (results.length === 0) {
+        container.innerHTML = "<p>No common defects found ✅</p>";
+        return;
+      }
+
+      results.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "task-card";
+
+        // build details list
+        let detailList = "<ul style='margin-top:6px;'>";
+        r.details.forEach(d => {
+          detailList += `<li>${d}</li>`;
+        });
+        detailList += "</ul>";
+
+        div.innerHTML = `<b>${r.keyword}</b> — found in <b>${r.count}</b> task cards ${detailList}`;
+        container.appendChild(div);
+      });
+    }
+
+
 
 
     function approveTask(index) {
