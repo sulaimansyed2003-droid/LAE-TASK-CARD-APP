@@ -166,6 +166,115 @@
     <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done!</div>
   </div>
 
+      <div id="productivityDashboard" style="margin-top:12px;">
+        <h4>LAE Productivity Dashboard (Task Completion)</h4>
+        <table style="width:100%; border-collapse:collapse;">
+          <thead><tr><th style="border:1px solid #eee;padding:6px;text-align:left;">LAE</th><th style="border:1px solid #eee;padding:6px;">Assigned</th><th style="border:1px solid #eee;padding:6px;">Done</th><th style="border:1px solid #eee;padding:6px;">%</th></tr></thead>
+          <tbody id="productivityBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;">
+      <!-- Enhanced Attendance Section -->
+      <div id="attendanceSection" class="hidden">
+        <h3>LAE Attendance</h3>
+        
+        <div class="attendance-controls">
+          <div>
+     
+            <label for="attendanceDate">Select Date: </label>
+            <input type="date" id="attendanceDate" style="padding:6px;">
+          </div>
+          <button class="btn-toggle" onclick="loadAttendanceForDate()">Load Attendance</button>
+          <button class="btn-toggle" onclick="markAllPresent()">Mark All Present</button>
+          <button class="btn-toggle" onclick="saveAttendance()">Save Attendance</button>
+        </div>
+        
+        <div class="attendance-summary">
+          <h4>Attendance Summary</h4>
+          <div id="attendanceStats">Present: 0 | Absent: 0 | Off: 0 | Total: 0</div>
+        </div>
+        
+        <div class="table-wrap">
+          <table class="attendance-table">
+            <thead>
+              <tr>
+                <th>LAE Name</th>
+                <th>Scheduled</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceList">
+              <!-- Will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <div id="approvalSection" class="hidden" style="margin-top:16px;">
+       <h3>Officer Approval Panel</h3>
+       <p class="muted">Here you can approve tasks that are still pending.</p>
+       <div id="approvalList"></div>
+       <button class="btn-toggle" onclick="approveAllPending()">Approve All      Pending</button>
+      </div>
+
+
+      <div id="prodDash" class="hidden">
+        <h3>Productivity Dashboard (Roster)</h3>
+        <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
+        <div class="prod-row">
+          <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
+          <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
+          <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
+        </div>
+
+        <div style="margin-top:12px;" class="prod-row">
+          <input id="prodSearch" type="text" placeholder="Search LAE by name..." oninput="filterProdLists()" />
+        </div>
+
+        <div class="prod-row" style="margin-top:12px;">
+          <div class="prod-card">
+            <h4>✅ Working Today</h4>
+            <div id="workingList"></div>
+          </div>
+          <div class="prod-card">
+            <h4>❌ Off Today</h4>
+            <div id="offList"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h4>Roster Preview</h4>
+            <button class="btn-toggle" onclick="toggleRosterPreview()">Show/Hide</button>
+          </div>
+          <div id="rosterPreview" class="table-wrap hidden"></div>
+        </div>
+      </div>
+
+      <div id="allTasks" style="margin-top:12px;"></div>
+      <div id="assignedTasks" class="hidden" style="margin-top:12px;"></div>
+      <div id="doneTasks" class="hidden" style="margin-top:12px;"></div>
+      <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
+
+    </div>
+
+    <div style="margin-top:10px;">
+      <input type="text" id="taskSearch" placeholder="Search tasks..." style="padding:8px;width:60%;" />
+      <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
+    </div>
+
+  </div>
+
+  <!-- Clock + Dark mode -->
+  <button class="btn-toggle" style="position:fixed; left:12px; top:12px; z-index:1200;" onclick="toggleDarkMode()">🌓</button>
+  <div id="clock" style="position:fixed; right:12px; top:12px; font-weight:bold; font-size:14px; color:#b30000; background:rgba(255,255,255,0.85); padding:6px 10px; border-radius:8px; z-index:1200;"></div>
+
+   
+
   <!-- XLSX lib -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
