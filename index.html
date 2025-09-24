@@ -82,7 +82,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-    // ✅ Correct Firebase project: lae-task-card
     const firebaseConfig = {
       apiKey: "AIzaSyBzNFyDYblJFnLAXhbMiD2HXqtwmNTzqSo",
       authDomain: "lae-task-card-5c839.firebaseapp.com",
@@ -113,7 +112,6 @@
       "LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
 
-    // ---------- Firestore ----------
     async function saveTaskData() {
       await setDoc(doc(window.db, "taskData", "batikAir"), { tasks: allTasks }, { merge: true });
     }
@@ -129,7 +127,6 @@
       });
     }
 
-    // ---------- UI ----------
     function showSection(id, btn) {
       ["allTasks","assignedTasks","doneTasks","approvalSection"].forEach(s => 
         document.getElementById(s).classList.add("hidden")
@@ -170,7 +167,6 @@
       document.getElementById('loginPage').classList.remove('hidden');
     }
 
-    // ---------- Task File Upload ----------
     document.getElementById('fileInput').addEventListener('change', ev=>{
       const f=ev.target.files[0]; if(!f) return;
       const reader=new FileReader();
@@ -191,9 +187,8 @@
       reader.readAsArrayBuffer(f);
     });
 
-    // ---------- Task Actions ----------
     function markTaskDoneByLAE(index){
-      if(allTasks[index].status!=="pending")return;
+      if(allTasks[index].status!=="pending") return;
       allTasks[index].status="submitted";
       allTasks[index].completedBy=currentUser.name;
       allTasks[index].completedAt=new Date();
@@ -201,13 +196,15 @@
     }
 
     function verifyTaskByOfficer(index,approved){
-      if(allTasks[index].status!=="submitted")return;
+      if(allTasks[index].status!=="submitted") return;
       if(approved){
         allTasks[index].status="verified";
         allTasks[index].verifiedBy=currentUser.name;
         allTasks[index].verifiedAt=new Date();
-      }else{
-        allTasks[index].status="pending"; allTasks[index].completedBy=""; allTasks[index].completedAt=null;
+      } else {
+        allTasks[index].status="pending"; 
+        allTasks[index].completedBy=""; 
+        allTasks[index].completedAt=null;
       }
       saveTaskData();
     }
@@ -220,29 +217,30 @@
     function assignTask(index,newName){
       allTasks[index].assignedTo=newName;
       allTasks[index].status="pending";
-      allTasks[index].completedBy=""; allTasks[index].completedAt=null;
-      allTasks[index].verifiedBy=""; allTasks[index].verifiedAt=null;
+      allTasks[index].completedBy=""; 
+      allTasks[index].completedAt=null;
+      allTasks[index].verifiedBy=""; 
+      allTasks[index].verifiedAt=null;
       saveTaskData();
     }
 
-    // ---------- Rendering ----------
     function renderTasks(){
       const sAll=document.getElementById('allTasks');
       const sAssigned=document.getElementById('assignedTasks');
       const sDone=document.getElementById('doneTasks');
       [sAll,sAssigned,sDone].forEach(el=>el.innerHTML="");
+
       allTasks.forEach((t,i)=>{
         const card=document.createElement('div');
         card.className="task-card"+(t.status==="verified"?" done":"");
         card.innerHTML=`<div class="task-header">ATA ${t.ata}</div>
-        <div class="block">Card: ${t.card}</div>
-        <div class="block">Description: ${t.description}</div>
-        <div class="block">Assigned To: <span>${t.assignedTo||'-'}</span></div>
-        <div class="block">Status: ${t.status}</div>`;
+          <div class="block">Card: ${t.card}</div>
+          <div class="block">Description: ${t.description}</div>
+          <div class="block">Assigned To: <span>${t.assignedTo||'-'}</span></div>
+          <div class="block">Status: ${t.status}</div>`;
         const actions=document.createElement('div');
         actions.className="task-actions";
 
-        // Officer can assign
         if(currentUser.role==="OFFICER"){
           const sel=document.createElement('select');
           const def=document.createElement('option');
@@ -258,38 +256,46 @@
           actions.appendChild(sel);
         }
 
-        if(currentUser.role==="LAE"&&t.assignedTo===currentUser.name&&t.status==="pending"){
-          const btn=document.createElement('button'); btn.textContent="Mark Done";
-          btn.onclick=()=>markTaskDoneByLAE(i); actions.appendChild(btn);
+        if(currentUser.role==="LAE" && t.assignedTo===currentUser.name && t.status==="pending"){
+          const btn=document.createElement('button'); 
+          btn.textContent="Mark Done";
+          btn.onclick=()=>markTaskDoneByLAE(i); 
+          actions.appendChild(btn);
         }
-        if(currentUser.role==="OFFICER"&&t.status==="submitted"){
+
+        if(currentUser.role==="OFFICER" && t.status==="submitted"){
           const btn=document.createElement('button'); btn.textContent="Approve";
           btn.onclick=()=>verifyTaskByOfficer(i,true); actions.appendChild(btn);
           const btn2=document.createElement('button'); btn2.textContent="Reject";
           btn2.onclick=()=>verifyTaskByOfficer(i,false); actions.appendChild(btn2);
         }
+
         card.appendChild(actions);
 
         if(t.status==="verified") sDone.appendChild(card);
-        else{
+        else {
           sAll.appendChild(card);
-          if(currentUser.role==="LAE"&&t.assignedTo===currentUser.name) sAssigned.appendChild(card.cloneNode(true));
+          if(currentUser.role==="LAE" && t.assignedTo===currentUser.name){
+            sAssigned.appendChild(card.cloneNode(true));
+          }
         }
       });
     }
 
     function renderApproval(){
       const c=document.getElementById('approvalList'); c.innerHTML="";
-      allTasks.forEach((t,i)=>{ if(t.status==="submitted"){
-        const div=document.createElement('div'); div.className="task-card";
-        div.innerHTML=`<div class="task-header">ATA ${t.ata}</div>
-        <div class="block">Card:${t.card}</div>
-        <div class="block">Description:${t.description}</div>
-        <div class="block">Assigned To:${t.assignedTo}</div>
-        <button>Approve</button>`;
-        div.querySelector("button").onclick=()=>verifyTaskByOfficer(i,true);
-        c.appendChild(div);
-      }});
+      allTasks.forEach((t,i)=>{ 
+        if(t.status==="submitted"){
+          const div=document.createElement('div'); div.className="task-card";
+          div.innerHTML=`<div class="task-header">ATA ${t.ata}</div>
+            <div class="block">Card: ${t.card}</div>
+            <div class="block">Description: ${t.description}</div>
+            <div class="block">Assigned To: ${t.assignedTo}</div>
+            <button>Approve</button>`;
+          div.querySelector("button").onclick=()=>verifyTaskByOfficer(i,true);
+          c.appendChild(div);
+        }
+      });
     }
   </script>
 </body>
