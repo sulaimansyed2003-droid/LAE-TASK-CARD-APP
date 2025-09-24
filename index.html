@@ -21,11 +21,25 @@
     .meta-pill { background:#eee; padding:6px 10px; border-radius:12px; font-size:13px; }
     .task-actions { margin-top:10px; }
     .assigned-bold { font-weight:bold; color:#800000; }
-    nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
-    nav button:hover { background:#a00000; } nav button.active {
-  background: #007bff !important; /* blue */
-  color: white !important;
-}
+    nav button { 
+      margin:5px; 
+      padding:8px 12px; 
+      border:none;
+      border-radius:5px; 
+      background:#800000; 
+      color:white; 
+      cursor:pointer; 
+    }
+    nav button:hover { background:#a00000; } 
+    nav button.active {
+      background: #007bff !important; /* blue */
+      color: white !important;
+    }
+    .mobile-menu button.active {
+      background: #007bff !important;
+      color: white !important;
+    }
+
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
     #assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
     #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
@@ -115,6 +129,7 @@
     <button onclick="showSection('doneTasks'); hideMobileMenu()">Done</button>
     <button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
     <button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
+    <button onclick="showSection('commonDefects', this)">Common Defects</button>
     <button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
   </div>
 
@@ -137,14 +152,15 @@
     <div id="userInfo"></div>
 
     <nav>
-      <button onclick="showSection('allTasks')">All Tasks</button>
-      <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
-      <button onclick="showSection('doneTasks')">Done</button>
-      <button onclick="showSection('prodDash')">Productivity Dashboard</button>
-      <button onclick="showSection('attendanceSection')">Attendance</button>
+      <button onclick="showSection('allTasks',this)">All Tasks</button>
+      <button onclick="showSection('assignedTasks', this)">Assigned Tasks</button>
+      <button onclick="showSection('doneTasks', this)">Done</button>
+      <button onclick="showSection('prodDash', this)">Productivity Dashboard</button>
+      <button onclick="showSection('attendanceSection', this)">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
-      <button onclick="showSection('approvalSection')">Approval</button>
-      <button onclick="showSection('commonDefects')">Common Defects</button>
+      <button onclick="showSection('approvalSection', this)">Approval</button>
+      <button onclick="showSection('commonDefects', this)">Common Defects</button>
+
 
     </nav>
 
@@ -257,19 +273,19 @@
       <div id="doneTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
 
-    <div id="commonDefects" class="hidden">
-      <h2>Common Defects</h2>
-      <p>Most frequently reported issues across task cards</p>
-      <div id="defectsList"></div>
-    </div>
-
-
     </div>
 
     <div style="margin-top:10px;">
       <input type="text" id="taskSearch" placeholder="Search tasks..." style="padding:8px;width:60%;" />
       <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
     </div>
+
+    <div id="commonDefects" class="hidden">
+      <h2>Common Defects</h2>
+      <p>Most frequently reported issues across task cards</p>
+      <div id="defectsList"></div>
+    </div>
+
 
   </div>
 
@@ -392,37 +408,36 @@
     }
 
     // ---------- DOM helpers ----------
-      
-      function showSection(id, btn) {
-        // hide all sections
-        const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection","commonDefects"];
-        sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
-        document.getElementById("allDoneMsg").classList.add('hidden');
+    function showSection(id, btn) {
+      // hide all sections
+      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
+      sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
+      document.getElementById("allDoneMsg").classList.add('hidden');
 
-        // show requested section
-        const el = document.getElementById(id);
-        if (el) el.classList.remove('hidden');
+      // show requested section
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
 
-        // highlight nav buttons
-        document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-        if (btn) btn.classList.add("active");
+      // 🔹 highlight only the clicked button
+      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
 
-       // section-specific logic
-       if (id === "attendanceSection") {
-         document.getElementById('attendanceDate').value = currentAttendanceDate;
-         loadAttendanceForDate();
-       } else if (id === "prodDash") {
-         updateProdDatePill();
-         renderProdLists();
-         renderProdStats();
-       } else if (id === "approvalSection") {
-         renderApproval();
-       } else if (id === "commonDefects") {
-         renderCommonDefects();
-       } else {
-         renderTasks();
-       }
-     }
+      // existing logic
+      if (id === "attendanceSection") {
+        document.getElementById('attendanceDate').value = currentAttendanceDate;
+        loadAttendanceForDate();
+      } else if (id === "prodDash") {
+        updateProdDatePill();
+        renderProdLists();
+        renderProdStats();
+      } else if (id === "approvalSection") {
+        renderApproval(); 
+      } else if (id === "commonDefects") {
+  renderCommonDefects();
+      } else {
+        renderTasks();
+      }
+    }
 
 
 
@@ -605,52 +620,6 @@
       saveAppData();
       alert('Attendance records saved successfully!');
     }
-
-
-
-    function renderCommonDefects() {
-      const container = document.getElementById('defectsList');
-      container.innerHTML = '';
-
-      if (allTasks.length === 0) {
-        container.innerHTML = "<p>No defects reported yet.</p>";
-        return;
-      }
-
-      // Group defects by ATA
-      const defectsByATA = {};
-
-      allTasks.forEach(t => {
-        if (t.remarks) {
-          const ata = t.ata || "Unspecified ATA";
-          if (!defectsByATA[ata]) defectsByATA[ata] = {};
-
-          // Split remarks into smaller pieces
-          const parts = t.remarks.split(/[\n;*]+/).map(s => s.trim()).filter(Boolean);
-
-          parts.forEach(p => {
-            defectsByATA[ata][p] = (defectsByATA[ata][p] || 0) + 1;
-          });
-        }
-      });
-
-     // Build grouped list
-     for (const [ata, remarks] of Object.entries(defectsByATA)) {
-       const section = document.createElement('div');
-       section.innerHTML = `<h4>ATA ${ata}</h4>`;
-       const ul = document.createElement('ul');
-
-     for (const [remark, count] of Object.entries(remarks)) {
-       const li = document.createElement('li');
-       li.textContent = `${remark} (${count})`;
-       ul.appendChild(li);
-     }
-
-     section.appendChild(ul);
-     container.appendChild(section);
-   }
- }
-
 
     // ---------- Task upload and rendering ----------
     async function handleTaskFile(file) {
@@ -910,6 +879,40 @@
         container.appendChild(div);
       });
     }
+
+    function renderCommonDefects() {
+      const container = document.getElementById("defectsList");
+      container.innerHTML = "";
+
+      // collect all descriptions
+      const descriptions = allTasks.map(t => t.description?.toLowerCase() || "");
+
+      // keywords we care about (expand as needed)
+      const keywords = ["engine", "nose cone", "landing gear", "wing", "fuselage", "rudder", "avionics"];
+
+      const counts = {};
+      keywords.forEach(kw => {
+        counts[kw] = descriptions.filter(d => d.includes(kw)).length;
+      });
+
+      // filter only common ones
+      const common = Object.entries(counts)
+        .filter(([_, v]) => v > 1)
+        .sort((a,b) => b[1] - a[1]); // sort high → low
+
+      if (common.length === 0) {
+        container.innerHTML = "<p>No common defects found ✅</p>";
+        return;
+      }
+
+      common.forEach(([kw, count]) => {
+        const div = document.createElement("div");
+        div.className = "task-card";
+        div.innerHTML = `<b>${kw}</b> — found in <b>${count}</b> task cards`;
+        container.appendChild(div);
+      });
+    }
+
 
 
     function approveTask(index) {
