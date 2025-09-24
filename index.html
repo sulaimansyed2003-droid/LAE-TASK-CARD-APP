@@ -241,23 +241,24 @@
 
 
     <!-- 🔹 Firebase SDKs (MUST be before your code) -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+      import { getFirestore, doc, setDoc, getDoc, onSnapshot }
+        from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-    <script>
       const firebaseConfig = {
-        apiKey: "AIzaSyBJUABbLzFwgIs1bVquqS6J1rH8bglPT0A",
-        authDomain: "lae-task-card.firebaseapp.com",
-        projectId: "lae-task-card",
-        storageBucket: "lae-task-card.firebasestorage.app",
-        messagingSenderId: "240040374142",
-        appId: "1:240040374142:web:9afffe133bd1a594394d2f",
-        measurementId: "G-YF70MKH6BG"
+        apiKey: "AIzaSyBzNFyDYblJFnLAXhbMiD2HXqtwmNTzqSo",
+        authDomain: "lae-task-card-5c839.firebaseapp.com",
+        projectId: "lae-task-card-5c839",
+        storageBucket: "lae-task-card-5c839.appspot.app",
+        messagingSenderId: "405634574463",
+        appId: "1:405634574463:web:794553dbf6cd56cef9374a",
+        measurementId: "G-9EC3H6T6K4"
       };
 
       // Initialize Firebase
-      const app = firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
+      window.firebaseApp = initializeApp(firebaseConfig);
+      window.db = getFirestore(window.firebaseApp);
     </script>
 
     <div id="commonDefects" class="hidden">
@@ -394,10 +395,13 @@
       const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
         if (snap.exists()) {
           const data = snap.data();
+          console.log("📲 Live update from Firestore:", data);
           if (data.tasks) allTasks = data.tasks;
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
           renderTasks();
+        } else {
+          console.log("⚠️ No data found in Firestore (appData/batikAir)");
         }
       });
     }
@@ -486,19 +490,18 @@
       const id = document.getElementById('idInput').value.trim();
       const name = document.getElementById('nameInput').value;
       const role = document.getElementById('roleInput').value;
-      if (!id || !name || !role) { alert('Please fill all login fields'); return; }
+      if (!id || !name || !role) { 
+        alert('Please fill all login fields'); 
+        return; 
+      }
 
       currentUser = { id, name, role };
 
-  // Hide login, show app
       document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
+      document.getElementById('userInfo').textContent = 
+        `ID: ${id} | Name: ${name} | Role: ${role}`;
 
-  // Show logged-in user info
-      document.getElementById('userInfo').textContent =
-        `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
-
-  // Officer-specific UI
       if (role === 'OFFICER') {
         document.getElementById('officerSection').classList.remove('hidden');
         document.getElementById('assignedOverview').classList.remove('hidden');
@@ -506,12 +509,10 @@
         document.getElementById('officerSection').classList.add('hidden');
       }
 
-      updateLoginTime();
-
-  // 🔹 Load tasks from Firestore first before rendering
       await loadSavedData();
       renderTasks();
-      updateProdDatePill();
+      enableRealtimeSync();
+      updateLoginTime();  
     });
 
 
@@ -679,10 +680,16 @@
           tasks: allTasks,
     	  attendanceRecords,
       	  excelBase64: base64Excel
-        });
+        },
+        { merge: true }
+      );
 
-        console.log("✅ Excel + tasks saved to Firestore");
-        renderTasks();
+      console.log("✅ Excel + tasks saved to Firestore");
+      await saveAppData();
+
+      // Re-render tasks locally
+      renderTasks();
+       
       };
       reader.readAsArrayBuffer(file);
     }
