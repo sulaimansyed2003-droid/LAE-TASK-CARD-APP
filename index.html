@@ -144,7 +144,6 @@
       <button onclick="showSection('attendanceSection')">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
       <button onclick="showSection('approvalSection')">Approval</button>
-
     </nav>
 
     <!-- Officer controls -->
@@ -301,36 +300,9 @@
     let currentUser = null;
     let allTasks = [];
 
-    // ---------- App state ----------
     const staffNames = [
-      "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
-      "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
+      "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN","DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
-
-    // Example roster (days of week) for quick testing if user doesn't upload roster
-    const laeRoster = {
-      "ABDUL FATAH BIN IBRAHIM": ["Mon","Tue","Wed","Thu","Fri"],
-      "MOHD HAFIZ SAZWAN BIN ZAM ZAM": ["Mon","Tue","Thu","Fri"],
-      "MOHAMMAD ZULKIFLEE BIN HUSSIN": ["Tue","Wed","Thu"],
-      "DING JU SHENG": ["Mon","Wed","Fri"],
-      "LEE YOONG JUN": ["Tue","Thu","Fri"],
-      "MUHAMMAD NAZIF BIN ABDUL MALEK": ["Mon","Tue","Wed","Thu","Fri"]
-    };
-
-    let allTasks = []; // task objects: {ata, card, description, tools, consumables, remarks, manhour, due, assignedTo, status, completedBy, completedAt, verifiedBy, verifiedAt}
-    let currentUser = null;
-    let availableATAs = [];
-    let attendance = {}; // name -> present boolean
-    let attendanceRecords = {}; // Format: { "YYYY-MM-DD": { "LAE Name": "present"/"absent", ... } }
-    let currentAttendanceDate = new Date().toISOString().split('T')[0];
-
-    // Roster matrix for uploading real roster
-    let rosterMatrix = [];
-    let rosterHeaderRow = -1;
-    let rosterNameCol = 0;
-    let workingToday = [];
-    let offToday = [];
-    let rosterPreviewVisible = false;
 
     // ---------- Utilities ----------
     // ---------- Firebase Firestore version ----------
