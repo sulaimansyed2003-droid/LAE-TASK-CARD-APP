@@ -964,10 +964,10 @@
 
     function markTaskDoneByLAE(index) {
       const task = allTasks[index];
-      if (allTasks[index].status !== "pending") return;
+      if (allTasks[index].status !== "pending"){
         allTasks[index].status = "submitted";
         allTasks[index].completedBy = currentUser.name;
-        allTasks[index].completedAt = new Date();
+        allTasks[index].completedAt = new Date();.toISOString();
         saveAppData();
         renderTasks();
       }
