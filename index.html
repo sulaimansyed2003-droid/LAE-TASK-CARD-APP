@@ -885,33 +885,44 @@
       container.innerHTML = "";
 
       // collect all descriptions
-      const descriptions = allTasks.map(t => t.description?.toLowerCase() || "");
+      const descriptions = allTasks.map(t => t.description || "");
 
-      // keywords we care about (expand as needed)
+      // keywords to check
       const keywords = ["engine", "nose cone", "landing gear", "wing", "fuselage", "rudder", "avionics"];
 
-      const counts = {};
+      const results = [];
+
       keywords.forEach(kw => {
-        counts[kw] = descriptions.filter(d => d.includes(kw)).length;
+        const matches = descriptions.filter(d => d.toLowerCase().includes(kw));
+        if (matches.length > 1) {
+          results.push({ keyword: kw, count: matches.length, details: matches });
+        }
       });
 
-      // filter only common ones
-      const common = Object.entries(counts)
-        .filter(([_, v]) => v > 1)
-        .sort((a,b) => b[1] - a[1]); // sort high → low
+      // sort high → low
+      results.sort((a, b) => b.count - a.count);
 
-      if (common.length === 0) {
+      if (results.length === 0) {
         container.innerHTML = "<p>No common defects found ✅</p>";
         return;
       }
 
-      common.forEach(([kw, count]) => {
+      results.forEach(r => {
         const div = document.createElement("div");
         div.className = "task-card";
-        div.innerHTML = `<b>${kw}</b> — found in <b>${count}</b> task cards`;
+
+        // build details list
+        let detailList = "<ul style='margin-top:6px;'>";
+        r.details.forEach(d => {
+          detailList += `<li>${d}</li>`;
+        });
+        detailList += "</ul>";
+
+        div.innerHTML = `<b>${r.keyword}</b> — found in <b>${r.count}</b> task cards ${detailList}`;
         container.appendChild(div);
       });
     }
+
 
 
 
