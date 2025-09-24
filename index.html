@@ -227,7 +227,38 @@
       </div>
 
 
+      <!-- XLSX lib -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+      <!-- Firebase SDK -->
+      <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+        // ✅ Correct Firebase project: lae-task-card
+        const firebaseConfig = {
+          apiKey: "AIzaSyBzNFyDYblJFnLAXhbMiD2HXqtwmNTzqSo",
+          authDomain: "lae-task-card-5c839.firebaseapp.com",
+          projectId: "lae-task-card-5c839",
+          storageBucket: "lae-task-card-5c839.firebasestorage.app",
+          messagingSenderId: "405634574463",
+          appId: "1:405634574463:web:794553dbf6cd56cef9374a",
+          measurementId: "G-9EC3H6T6K4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+        window.onSnapshot = onSnapshot;
+      </script>
+
+      <script>
+        let currentUser = null;
+        let allTasks = [];
 
 
         <div style="margin-top:12px;">
