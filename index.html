@@ -179,14 +179,6 @@
         </div>
       </div>
 
-      <div id="productivityDashboard" style="margin-top:12px;">
-        <h4>LAE Productivity Dashboard (Task Completion)</h4>
-        <table style="width:100%; border-collapse:collapse;">
-          <thead><tr><th style="border:1px solid #eee;padding:6px;text-align:left;">LAE</th><th style="border:1px solid #eee;padding:6px;">Assigned</th><th style="border:1px solid #eee;padding:6px;">Done</th><th style="border:1px solid #eee;padding:6px;">%</th></tr></thead>
-          <tbody id="productivityBody"></tbody>
-        </table>
-      </div>
-    </div>
 
     <div style="margin-top:16px;">
       <!-- Enhanced Attendance Section -->
@@ -235,29 +227,8 @@
       </div>
 
 
-      <div id="prodDash" class="hidden">
-        <h3>Productivity Dashboard (Roster)</h3>
-        <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
-        <div class="prod-row">
-          <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
-          <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
-          <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
-        </div>
 
-        <div style="margin-top:12px;" class="prod-row">
-          <input id="prodSearch" type="text" placeholder="Search LAE by name..." oninput="filterProdLists()" />
-        </div>
 
-        <div class="prod-row" style="margin-top:12px;">
-          <div class="prod-card">
-            <h4>✅ Working Today</h4>
-            <div id="workingList"></div>
-          </div>
-          <div class="prod-card">
-            <h4>❌ Off Today</h4>
-            <div id="offList"></div>
-          </div>
-        </div>
 
         <div style="margin-top:12px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -285,6 +256,27 @@
       <p>Most frequently reported issues across task cards</p>
       <div id="defectsList"></div>
     </div>
+
+
+      <div id="productivityDashboard" style="margin-top:12px;">
+        <h4>LAE Productivity Dashboard (Task Completion)</h4>
+        <table style="width:100%; border-collapse:collapse;">
+          <thead><tr><th style="border:1px solid #eee;padding:6px;text-align:left;">LAE</th><th style="border:1px solid #eee;padding:6px;">Assigned</th><th style="border:1px solid #eee;padding:6px;">Done</th><th style="border:1px solid #eee;padding:6px;">%</th></tr></thead>
+          <tbody id="productivityBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="prodDash" class="hidden">
+      <h3>Productivity Dashboard (Roster)</h3>
+      <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
+      <div class="prod-row">
+        <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
+        <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
+        <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
+      </div>
+    </div>
+
 
 
   </div>
