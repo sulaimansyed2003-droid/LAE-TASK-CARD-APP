@@ -963,14 +963,14 @@
     }
 
     function markTaskDoneByLAE(index) {
-      const task = allTasks[index];
-      if (allTasks[index].status !== "pending"){
-        allTasks[index].status = "submitted";
-        allTasks[index].completedBy = currentUser.name;
-        allTasks[index].completedAt = new Date();.toISOString();
-        saveAppData();
-        renderTasks();
-      }
+      if (allTasks[index].status !== "pending") return;
+      
+      allTasks[index].status = "submitted";
+      allTasks[index].completedBy = currentUser.name;
+      allTasks[index].completedAt = new Date();
+      
+      saveAppData();
+      renderTasks();
     }
 
     function verifyTaskByOfficer(index, approved) {
