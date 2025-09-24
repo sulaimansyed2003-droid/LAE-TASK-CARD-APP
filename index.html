@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Batik Air Task Card App</title>
+
+
   <style>
     body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; color:#222; }
     header { background:#800000; color:white; padding:14px; text-align:center; position:relative; }
@@ -18,10 +20,86 @@
     .row { display:flex; flex-wrap:wrap; gap:10px; margin:8px 0; align-items:center; }
     .meta-pill { background:#eee; padding:6px 10px; border-radius:12px; font-size:13px; }
     .task-actions { margin-top:10px; }
+    .assigned-bold { font-weight:bold; color:#800000; }
     nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
-    nav button.active { background:#007bff !important; }
+    nav button:hover { background:#a00000; } nav button.active {
+  background: #007bff !important; /* blue */
+  color: white !important;
+}
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
+    #assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
     #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
+    .btn-toggle { margin:5px 0; padding:6px 10px; background:#800000; color:white; border:none; border-radius:5px; cursor:pointer; }
+    .btn-toggle:hover { background:#a00000; }
+    #prodDash { background:#ffffff; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.06); padding:16px; margin-top:8px; }
+    .prod-row { display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+    .prod-card { flex:1; min-width:240px; background:#fafafa; border-left:4px solid rgba(128,0,0,0.14); border-radius:8px; padding:12px; }
+    .name-item { padding:6px 8px; background:#fff; border:1px solid #eee; border-radius:8px; margin:6px 0; }
+    .table-wrap { max-height:320px; overflow:auto; border:1px solid #eee; border-radius:8px; background:#fff; padding:8px; }
+    table.preview { width:100%; border-collapse:collapse; }
+    table.preview th, table.preview td { border:1px solid #eee; padding:6px; font-size:12px; }
+    .muted { color:#666; font-size:12px; }
+
+    /* Attendance table styles */
+    .attendance-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .attendance-table th, .attendance-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    .attendance-table th { background-color: #800000; color: white; }
+    .attendance-table tr:nth-child(even) { background-color: #f9f9f9; }
+    .attendance-table tr:hover { background-color: #f1f1f1; }
+    .status-present { color: green; font-weight: bold; }
+    .status-absent { color: red; font-weight: bold; }
+    .status-off { color: #666; font-style: italic; }
+    .attendance-controls { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; }
+    .attendance-summary { background: #fff3f3; padding: 10px; border-radius: 8px; margin: 15px 0; }
+
+    /* Mobile menu */
+    .mobile-menu-btn { position: absolute; right: 10px; top: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; display:none; }
+    .mobile-menu { position: fixed; top: 60px; right: 10px; background: white; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1000; display: none; flex-direction: column; min-width: 200px; }
+    .mobile-menu.show { display:flex; }
+    .mobile-menu button { padding: 10px 15px; border: none; background: none; text-align: left; cursor: pointer; }
+    .mobile-menu .sign-out { border-top: 1px solid #eee; color: #800000; font-weight: bold; }
+
+    /* Dark mode */
+    body.dark-mode { background:#121212; color:#f5f5f5; }
+    body.dark-mode .task-card { background:#1e1e1e; border-left:4px solid #ff4444; }
+    body.dark-mode .task-card.done { background:#2e7d32; }
+    body.dark-mode header { background:#222; color:#fff; }
+    body.dark-mode nav button, body.dark-mode .btn-toggle { background:#333; color:#fff; }
+    body.dark-mode .btn-toggle:hover { background:#555; }
+    body.dark-mode #assignedOverview, body.dark-mode #userInfo, body.dark-mode #productivityDashboard, body.dark-mode #prodDash { background:#1a1a1a; color:#fff; }
+    body.dark-mode table, body.dark-mode th, body.dark-mode td { border-color:#555; color:#fff; }
+    body.dark-mode .attendance-table th { background-color: #600000; }
+    body.dark-mode .attendance-table tr:nth-child(even) { background-color: #2a2a2a; }
+    body.dark-mode .attendance-table tr:hover { background-color: #333; }
+    body.dark-mode .attendance-summary { background: #2a1a1a; }
+
+    /* NEW STYLES FOR OFFICER APPROVAL SYSTEM */
+    .approval-section { margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 6px; border-left: 4px solid #3498db; }
+    .approval-status { font-weight: bold; margin-bottom: 8px; }
+    .status-pending { color: #e74c3c; }
+    .status-submitted { color: #f39c12; }
+    .status-verified { color: #2ecc71; }
+    .btn-approve { background: #2ecc71; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 8px; }
+    .btn-reject { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    .approval-history { margin-top: 10px; font-size: 12px; color: #666; }
+    .approval-history div { margin-bottom: 4px; }
+
+    /* 🔹 Make fonts bigger everywhere */
+    body, input, select, button, table, .task-card, #clock {
+      font-size: 18px !important;
+    }
+    header h1 { font-size: 26px !important; }
+    .task-header { font-size: 20px !important; }
+    .meta-pill { font-size: 15px !important; }
+
+
+    @media (max-width: 768px) {
+      .mobile-menu-btn { display: block; }
+      nav { display: none; }
+      .attendance-table { font-size: 14px; }
+      .attendance-table th, .attendance-table td { padding: 6px; }
+      .approval-section { padding: 8px; }
+    }
   </style>
 </head>
 <body>
@@ -43,16 +121,30 @@
     <div id="loginTime"></div>
   </div>
 
+
+  <!-- Mobile menu -->
+  <div id="mobileMenu" class="mobile-menu">
+    <button onclick="showSection('allTasks'); hideMobileMenu()">All Tasks</button>
+    <button onclick="showSection('assignedTasks'); hideMobileMenu()">Assigned Tasks</button>
+    <button onclick="showSection('doneTasks'); hideMobileMenu()">Done</button>
+    <button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
+    <button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
+    <button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
+  </div>
+
+
   <!-- MAIN APP -->
   <div id="app" class="hidden container">
     <div id="userInfo"></div>
 
     <nav>
-      <button onclick="showSection('allTasks',this)">All Tasks</button>
-      <button onclick="showSection('assignedTasks', this)">Assigned</button>
-      <button onclick="showSection('doneTasks', this)">Done</button>
-      <button onclick="showSection('approvalSection', this)">Approval</button>
+      <button onclick="showSection('allTasks')">All Tasks</button>
+      <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
+      <button onclick="showSection('doneTasks')">Done</button>
+      <button onclick="showSection('prodDash')">Productivity Dashboard</button>
+      <button onclick="showSection('attendanceSection')">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
+      <button onclick="showSection('approvalSection')">Approval</button>
     </nav>
 
     <!-- Officer controls -->
@@ -82,6 +174,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
+    // ✅ Correct Firebase project: lae-task-card
     const firebaseConfig = {
       apiKey: "AIzaSyBzNFyDYblJFnLAXhbMiD2HXqtwmNTzqSo",
       authDomain: "lae-task-card-5c839.firebaseapp.com",
@@ -112,6 +205,7 @@
       "LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
 
+    // ---------- Firestore ----------
     async function saveTaskData() {
       await setDoc(doc(window.db, "taskData", "batikAir"), { tasks: allTasks }, { merge: true });
     }
@@ -127,6 +221,7 @@
       });
     }
 
+    // ---------- UI ----------
     function showSection(id, btn) {
       ["allTasks","assignedTasks","doneTasks","approvalSection"].forEach(s => 
         document.getElementById(s).classList.add("hidden")
@@ -167,6 +262,7 @@
       document.getElementById('loginPage').classList.remove('hidden');
     }
 
+    // ---------- Task File Upload ----------
     document.getElementById('fileInput').addEventListener('change', ev=>{
       const f=ev.target.files[0]; if(!f) return;
       const reader=new FileReader();
@@ -187,8 +283,9 @@
       reader.readAsArrayBuffer(f);
     });
 
+    // ---------- Task Actions ----------
     function markTaskDoneByLAE(index){
-      if(allTasks[index].status!=="pending") return;
+      if(allTasks[index].status!=="pending")return;
       allTasks[index].status="submitted";
       allTasks[index].completedBy=currentUser.name;
       allTasks[index].completedAt=new Date();
@@ -196,15 +293,13 @@
     }
 
     function verifyTaskByOfficer(index,approved){
-      if(allTasks[index].status!=="submitted") return;
+      if(allTasks[index].status!=="submitted")return;
       if(approved){
         allTasks[index].status="verified";
         allTasks[index].verifiedBy=currentUser.name;
         allTasks[index].verifiedAt=new Date();
-      } else {
-        allTasks[index].status="pending"; 
-        allTasks[index].completedBy=""; 
-        allTasks[index].completedAt=null;
+      }else{
+        allTasks[index].status="pending"; allTasks[index].completedBy=""; allTasks[index].completedAt=null;
       }
       saveTaskData();
     }
@@ -217,30 +312,29 @@
     function assignTask(index,newName){
       allTasks[index].assignedTo=newName;
       allTasks[index].status="pending";
-      allTasks[index].completedBy=""; 
-      allTasks[index].completedAt=null;
-      allTasks[index].verifiedBy=""; 
-      allTasks[index].verifiedAt=null;
+      allTasks[index].completedBy=""; allTasks[index].completedAt=null;
+      allTasks[index].verifiedBy=""; allTasks[index].verifiedAt=null;
       saveTaskData();
     }
 
+    // ---------- Rendering ----------
     function renderTasks(){
       const sAll=document.getElementById('allTasks');
       const sAssigned=document.getElementById('assignedTasks');
       const sDone=document.getElementById('doneTasks');
       [sAll,sAssigned,sDone].forEach(el=>el.innerHTML="");
-
       allTasks.forEach((t,i)=>{
         const card=document.createElement('div');
         card.className="task-card"+(t.status==="verified"?" done":"");
         card.innerHTML=`<div class="task-header">ATA ${t.ata}</div>
-          <div class="block">Card: ${t.card}</div>
-          <div class="block">Description: ${t.description}</div>
-          <div class="block">Assigned To: <span>${t.assignedTo||'-'}</span></div>
-          <div class="block">Status: ${t.status}</div>`;
+        <div class="block">Card: ${t.card}</div>
+        <div class="block">Description: ${t.description}</div>
+        <div class="block">Assigned To: <span>${t.assignedTo||'-'}</span></div>
+        <div class="block">Status: ${t.status}</div>`;
         const actions=document.createElement('div');
         actions.className="task-actions";
 
+        // Officer can assign
         if(currentUser.role==="OFFICER"){
           const sel=document.createElement('select');
           const def=document.createElement('option');
@@ -256,46 +350,38 @@
           actions.appendChild(sel);
         }
 
-        if(currentUser.role==="LAE" && t.assignedTo===currentUser.name && t.status==="pending"){
-          const btn=document.createElement('button'); 
-          btn.textContent="Mark Done";
-          btn.onclick=()=>markTaskDoneByLAE(i); 
-          actions.appendChild(btn);
+        if(currentUser.role==="LAE"&&t.assignedTo===currentUser.name&&t.status==="pending"){
+          const btn=document.createElement('button'); btn.textContent="Mark Done";
+          btn.onclick=()=>markTaskDoneByLAE(i); actions.appendChild(btn);
         }
-
-        if(currentUser.role==="OFFICER" && t.status==="submitted"){
+        if(currentUser.role==="OFFICER"&&t.status==="submitted"){
           const btn=document.createElement('button'); btn.textContent="Approve";
           btn.onclick=()=>verifyTaskByOfficer(i,true); actions.appendChild(btn);
           const btn2=document.createElement('button'); btn2.textContent="Reject";
           btn2.onclick=()=>verifyTaskByOfficer(i,false); actions.appendChild(btn2);
         }
-
         card.appendChild(actions);
 
         if(t.status==="verified") sDone.appendChild(card);
-        else {
+        else{
           sAll.appendChild(card);
-          if(currentUser.role==="LAE" && t.assignedTo===currentUser.name){
-            sAssigned.appendChild(card.cloneNode(true));
-          }
+          if(currentUser.role==="LAE"&&t.assignedTo===currentUser.name) sAssigned.appendChild(card.cloneNode(true));
         }
       });
     }
 
     function renderApproval(){
       const c=document.getElementById('approvalList'); c.innerHTML="";
-      allTasks.forEach((t,i)=>{ 
-        if(t.status==="submitted"){
-          const div=document.createElement('div'); div.className="task-card";
-          div.innerHTML=`<div class="task-header">ATA ${t.ata}</div>
-            <div class="block">Card: ${t.card}</div>
-            <div class="block">Description: ${t.description}</div>
-            <div class="block">Assigned To: ${t.assignedTo}</div>
-            <button>Approve</button>`;
-          div.querySelector("button").onclick=()=>verifyTaskByOfficer(i,true);
-          c.appendChild(div);
-        }
-      });
+      allTasks.forEach((t,i)=>{ if(t.status==="submitted"){
+        const div=document.createElement('div'); div.className="task-card";
+        div.innerHTML=`<div class="task-header">ATA ${t.ata}</div>
+        <div class="block">Card:${t.card}</div>
+        <div class="block">Description:${t.description}</div>
+        <div class="block">Assigned To:${t.assignedTo}</div>
+        <button>Approve</button>`;
+        div.querySelector("button").onclick=()=>verifyTaskByOfficer(i,true);
+        c.appendChild(div);
+      }});
     }
   </script>
 </body>
