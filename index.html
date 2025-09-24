@@ -18,7 +18,6 @@
     .row { display:flex; flex-wrap:wrap; gap:10px; margin:8px 0; align-items:center; }
     .meta-pill { background:#eee; padding:6px 10px; border-radius:12px; font-size:13px; }
     .task-actions { margin-top:10px; }
-    .assigned-bold { font-weight:bold; color:#800000; }
     nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
     nav button.active { background:#007bff !important; }
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
@@ -83,21 +82,19 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-    // ✅ Use only ONE Firebase project
+    // ✅ Correct Firebase project: lae-task-card
     const firebaseConfig = {
-      apiKey: "AIzaSyCii_mcKN6cL7Ep8VYdfNnKHFgi2AYAMpI",
-      authDomain:"batik-air-taskcard.firebaseapp.com",
-      projectId: "batik-air-taskcard",
-      storageBucket: "batik-air-taskcard.appspot.com",
-      messagingSenderId:  "396150494337",
-      appId:  "1:396150494337:web:a882db879da9eac5ade980"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "lae-task-card.firebaseapp.com",
+      projectId: "lae-task-card",
+      storageBucket: "lae-task-card.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
-    // Initialize
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Make globals
     window.db = db;
     window.doc = doc;
     window.setDoc = setDoc;
@@ -219,6 +216,14 @@
       renderApproval(); renderTasks();
     }
 
+    function assignTask(index,newName){
+      allTasks[index].assignedTo=newName;
+      allTasks[index].status="pending";
+      allTasks[index].completedBy=""; allTasks[index].completedAt=null;
+      allTasks[index].verifiedBy=""; allTasks[index].verifiedAt=null;
+      saveTaskData();
+    }
+
     // ---------- Rendering ----------
     function renderTasks(){
       const sAll=document.getElementById('allTasks');
@@ -231,10 +236,27 @@
         card.innerHTML=`<div class="task-header">ATA ${t.ata}</div>
         <div class="block">Card: ${t.card}</div>
         <div class="block">Description: ${t.description}</div>
-        <div class="block">Assigned To: ${t.assignedTo}</div>
+        <div class="block">Assigned To: <span>${t.assignedTo||'-'}</span></div>
         <div class="block">Status: ${t.status}</div>`;
         const actions=document.createElement('div');
         actions.className="task-actions";
+
+        // Officer can assign
+        if(currentUser.role==="OFFICER"){
+          const sel=document.createElement('select');
+          const def=document.createElement('option');
+          def.value=""; def.textContent="-- Assign LAE --";
+          sel.appendChild(def);
+          staffNames.forEach(n=>{
+            const o=document.createElement('option');
+            o.value=n; o.textContent=n;
+            if(n===t.assignedTo) o.selected=true;
+            sel.appendChild(o);
+          });
+          sel.onchange=()=>assignTask(i,sel.value);
+          actions.appendChild(sel);
+        }
+
         if(currentUser.role==="LAE"&&t.assignedTo===currentUser.name&&t.status==="pending"){
           const btn=document.createElement('button'); btn.textContent="Mark Done";
           btn.onclick=()=>markTaskDoneByLAE(i); actions.appendChild(btn);
@@ -246,6 +268,7 @@
           btn2.onclick=()=>verifyTaskByOfficer(i,false); actions.appendChild(btn2);
         }
         card.appendChild(actions);
+
         if(t.status==="verified") sDone.appendChild(card);
         else{
           sAll.appendChild(card);
