@@ -681,9 +681,17 @@
 
     // ---------- Task upload and rendering ----------
     async function handleTaskFile(file) {
-      if (!file) return;
+      if (!file) {
+        alert("No file selected.");
+        return;
+      const fileType = file.type;
+      if (fileType !== "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+        alert("Please upload a valid Excel (.xlsx) file.");
+        return;
+      }
       const reader = new FileReader();
       reader.onload = async function(e) {
+        try{
         const data = new Uint8Array(e.target.result);
         const wb = XLSX.read(data, { type:'array' });
         const sh = wb.Sheets[wb.SheetNames[0]];
@@ -713,11 +721,25 @@
 
         // Optional: re-render tasks locally if necessary
         renderTasks();
+        } catch (err) {
+          console.error("Error reading or processing file:", err);
+          alert("There was an error processing the file.");
+        }
       };
       reader.readAsArrayBuffer(file);
     }
 
-    async function saveTaskData() {
+
+    document.getElementById('fileInput').addEventListener('change', ev => {
+      const f = ev.target.files[0];  // Get the first file uploaded
+      if (f) {
+        handleTaskFile(f);  // Process the file
+      } else {
+        alert("Please select a valid Excel file to upload.");
+      }
+    });
+    
+async function saveTaskData() {
       try {
         await setDoc(doc(window.db, "taskData", "batikAir"), {
           tasks: allTasks,
@@ -758,6 +780,7 @@
 
     function renderTasks() {
       // basic search filter
+      const search = document.getElementById('taskSearch')?.value?.toLowerCase?.() || '';
       const sAll = document.getElementById('allTasks');
       const sAssigned = document.getElementById('assignedTasks');
       const sDone = document.getElementById('doneTasks');
