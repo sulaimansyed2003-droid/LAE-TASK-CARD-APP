@@ -113,6 +113,19 @@
       "LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
 
+    // Set clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Format date for display
+    function formatDate(date) {
+      if (!date) return 'N/A';
+      return new Date(date).toLocaleString();
+    }
     // ---------- Firestore ----------
     // Save data to Firestore
     async function saveAppData() {
@@ -154,19 +167,7 @@
       });
     }
 
-    // Set clock
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').textContent = now.toLocaleString();
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
 
-    // Format date for display
-    function formatDate(date) {
-      if (!date) return 'N/A';
-      return new Date(date).toLocaleString();
-    }
 
     // ---------- UI ----------
     function showSection(id, btn) {
