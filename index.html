@@ -276,31 +276,41 @@
   <button class="btn-toggle" style="position:fixed; left:12px; top:12px; z-index:1200;" onclick="toggleDarkMode()">🌓</button>
   <div id="clock" style="position:fixed; right:12px; top:12px; font-weight:bold; font-size:14px; color:#b30000; background:rgba(255,255,255,0.85); padding:6px 10px; border-radius:8px; z-index:1200;"></div>
 
-<!-- XLSX lib -->
+  <!-- XLSX lib -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- Firebase SDK (must be before your app script) -->
+<!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-  // 🔹 Paste your Firebase config here (from console)
+  // ✅ Correct Firebase project: lae-task-card
   const firebaseConfig = {
-    apiKey: "AIzaSyCii_mcKN6cL7Ep8VYdfNnKHFgi2AYAMpI",
-    authDomain:"batik-air-taskcard.firebaseapp.com",
-    projectId: "batik-air-taskcard",
-    storageBucket: "batik-air-taskcardappspot.com",
-    messagingSenderId:  "396150494337",
-    appId:  "1:396150494337:web:a882db879da9eac5ade980"
+    apiKey: "AIzaSyBzNFyDYblJFnLAXhbMiD2HXqtwmNTzqSo",
+    authDomain: "lae-task-card-5c839.firebaseapp.com",
+    projectId: "lae-task-card-5c839",
+    storageBucket: "lae-task-card-5c839.firebasestorage.app",
+    messagingSenderId: "405634574463",
+    appId: "1:405634574463:web:794553dbf6cd56cef9374a",
+    measurementId: "G-9EC3H6T6K4"
   };
 
-  // Initialize Firebase and Firestore, expose to window
-  window.firebaseApp = initializeApp(firebaseConfig);
-  window.db = getFirestore(window.firebaseApp);
-</script>
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
+  window.db = db;
+  window.doc = doc;
+  window.setDoc = setDoc;
+  window.getDoc = getDoc;
+  window.onSnapshot = onSnapshot;
+  </script>
 
   <script>
+    let currentUser = null;
+    let allTasks = [];
+
+
+
     // ---------- App state ----------
     const staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
