@@ -339,7 +339,7 @@
     async function saveAppData() {
       try {
         const data = { tasks: allTasks, attendanceRecords };
-        await setDoc(doc(window.db, "appData", "batikAir"), data);
+        await setDoc(doc(db, "appData", "batikAir"), data);
         console.log("✅ Data saved to Firestore");
       } catch (e) {
         console.error("❌ Firestore save failed:", e);
@@ -349,7 +349,7 @@
     // Load data from Firestore (once)
     async function loadSavedData() {
       try {
-        const snap = await getDoc(doc(window.db, "appData", "batikAir"));
+        const snap = await getDoc(doc(db, "appData", "batikAir"));
         if (snap.exists()) {
           const data = snap.data();
           if (data.tasks) allTasks = data.tasks;
@@ -364,7 +364,7 @@
 
     // Live updates (sync across devices)
     function enableRealtimeSync() {
-      const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
+      const unsub = onSnapshot(doc(db, "appData", "batikAir"), (snap) => {
         if (snap.exists()) {
           const data = snap.data();
           if (data.tasks) allTasks = data.tasks;
@@ -636,7 +636,7 @@
 
         // 🔹 Save both tasks + Excel base64 into Firestore
         const base64Excel = btoa(String.fromCharCode(...data));
-        await setDoc(doc(window.db, "appData", "batikAir"), {
+        await setDoc(doc(db, "appData", "batikAir"), {
           tasks: allTasks,
     	  attendanceRecords,
       	  excelBase64: base64Excel
