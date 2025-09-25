@@ -191,8 +191,11 @@
     function populateNames() {
       const sel = document.getElementById('nameInput');
       sel.innerHTML = '<option value="">Select your name</option>';
-      staffNames.forEach(n => { 
-        const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o);
+      staffNames.forEach(n => {
+        const o = document.createElement('option');
+        o.value = n;
+        o.textContent = n;
+        sel.appendChild(o);
       });
     }
 
