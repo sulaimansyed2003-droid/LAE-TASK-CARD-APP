@@ -144,6 +144,7 @@
       <button onclick="showSection('attendanceSection')">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
       <button onclick="showSection('approvalSection')">Approval</button>
+
     </nav>
 
     <!-- Officer controls -->
@@ -255,26 +256,13 @@
       <div id="doneTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
 
-    </div>
-
-    <div style="margin-top:10px;">
-      <input type="text" id="taskSearch" placeholder="Search tasks..." style="padding:8px;width:60%;" />
-      <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
-    </div>
-
-  </div>
-
-  <!-- Clock + Dark mode -->
-  <button class="btn-toggle" style="position:fixed; left:12px; top:12px; z-index:1200;" onclick="toggleDarkMode()">🌓</button>
-  <div id="clock" style="position:fixed; right:12px; top:12px; font-weight:bold; font-size:14px; color:#b30000; background:rgba(255,255,255,0.85); padding:6px 10px; border-radius:8px; z-index:1200;"></div>
-
   <!-- XLSX lib -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";;
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
     // ✅ Correct Firebase project: lae-task-card
     const firebaseConfig = {
@@ -286,6 +274,7 @@
       appId: "1:405634574463:web:794553dbf6cd56cef9374a",
       measurementId: "G-9EC3H6T6K4"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -300,30 +289,68 @@
     let currentUser = null;
     let allTasks = [];
 
+    <div style="margin-top:10px;">
+      <input type="text" id="taskSearch" placeholder="Search tasks..." style="padding:8px;width:60%;" />
+      <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
+    </div>
+
+  </div>
+
+  <!-- Clock + Dark mode -->
+  <button class="btn-toggle" style="position:fixed; left:12px; top:12px; z-index:1200;" onclick="toggleDarkMode()">🌓</button>
+  <div id="clock" style="position:fixed; right:12px; top:12px; font-weight:bold; font-size:14px; color:#b30000; background:rgba(255,255,255,0.85); padding:6px 10px; border-radius:8px; z-index:1200;"></div>
+
+
+    // ---------- App state ----------
     const staffNames = [
-      "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN","DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
+      "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
+      "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
+
+
 
     // ---------- Utilities ----------
     // ---------- Firebase Firestore version ----------
 
     // Save data to Firestore
     async function saveAppData() {
-      await setDoc(doc(window.db, "taskData", "batikAir"), { tasks: allTasks }, { merge: true });
+      try {
+        const data = { tasks: allTasks, attendanceRecords };
+        await setDoc(doc(window.db, "appData", "batikAir"), data);
+        console.log("✅ Data saved to Firestore");
+      } catch (e) {
+        console.error("❌ Firestore save failed:", e);
+      }
     }
 
     // Load data from Firestore (once)
     async function loadSavedData() {
-      const snap = await getDoc(doc(window.db, "taskData", "batikAir"));
-      if (snap.exists()) { allTasks = snap.data().tasks || []; }
+      try {
+        const snap = await getDoc(doc(window.db, "appData", "batikAir"));
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.tasks) allTasks = data.tasks;
+          if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
+          availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+          renderTasks();
+        }
+      } catch (e) {
+        console.error("❌ Firestore load failed:", e);
+      }
     }
 
+    // Live updates (sync across devices)
     function enableRealtimeSync() {
-      onSnapshot(doc(window.db, "taskData", "batikAir"), (snap) => {
-        if (snap.exists()) { allTasks = snap.data().tasks || []; renderTasks(); }
+      const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.tasks) allTasks = data.tasks;
+          if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
+          availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+          renderTasks();
+        }
       });
     }
-
 
 
     // Set clock
@@ -341,15 +368,38 @@
     }
 
     // ---------- DOM helpers ----------
-    function showSection(id, btn) {
-      ["allTasks","assignedTasks","doneTasks","approvalSection"].forEach(s => 
-        document.getElementById(s).classList.add("hidden")
-      );
-      document.getElementById(id).classList.remove("hidden");
-      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-      if (btn) btn.classList.add("active");
-      if (id === "approvalSection") renderApproval(); else renderTasks();
+    function showSection(id) {
+      // hide all sections
+      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
+      sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
+      document.getElementById("allDoneMsg").classList.add('hidden');
+
+      // show requested section
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
+
+  // 🔹 highlight active button
+      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
+      const clicked = Array.from(document.querySelectorAll("nav button"))
+    .find(b => b.getAttribute("onclick")?.includes(id));
+      if (clicked) clicked.classList.add("active");
+
+  // existing logic
+      if (id === "attendanceSection") {
+        document.getElementById('attendanceDate').value = currentAttendanceDate;
+        loadAttendanceForDate();
+      } else if (id === "prodDash") {
+        updateProdDatePill();
+        renderProdLists();
+        renderProdStats();
+      } else if (id === "approvalSection") {
+        renderApproval(); 
+      } else {
+        renderTasks();
+      }
     }
+
+
 
     // ---------- Login / user ----------
     function populateNames() {
@@ -531,45 +581,46 @@
     }
 
     // ---------- Task upload and rendering ----------
-    document.getElementById('fileInput').addEventListener('change', ev=>{
-      const f=ev.target.files[0]; if(!f) return;
-      const reader=new FileReader();
-      reader.onload=async e=>{
-        const data=new Uint8Array(e.target.result);
-        const wb=XLSX.read(data,{type:'array'});
-        const sh=wb.Sheets[wb.SheetNames[0]];
-        const json=XLSX.utils.sheet_to_json(sh,{defval:''});
-        allTasks=json.map(row=>({
-          ata:row['ATA']||'',
-          card:row['TASK CARD NUM/ AMM REF']||'',
-          description:row['TASK DESCRIPTION']||'',
-          assignedTo:row['Assigned To']||'',
-          status:'pending', completedBy:'', completedAt:null, verifiedBy:'', verifiedAt:null
+    async function handleTaskFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type:'array' });
+        const sh = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sh, { defval: '' });
+
+        // Map known columns to internal fields
+        allTasks = json.map(row => ({
+          ata: row['ATA'] || row['ATA REF'] || row['ATA REF.'] || '',
+          card: row['TASK CARD NUM/ AMM REF'] || row['Task Card Number'] || row['No'] || '',
+          description: row['TASK DESCRIPTION'] || row['Description'] || '',
+          tools: row['TOOLS / TESTSET'] || row['Tools'] || '',
+          consumables: row['CONSUMABLES / MSL'] || row['Consumables'] || '',
+          remarks: row['REMARKS'] || '',
+          manhour: row['DURATION MANHOUR'] || row['Man Hour'] || '',
+          due: row['DUE'] || '',
+          assignedTo: row['Assigned To'] || '',
+          status: 'pending',
+          completedBy: '',
+          completedAt: null,
+          verifiedBy: '',
+          verifiedAt: null
         }));
-        await saveTaskData(); renderTasks();
+        availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+
+        // 🔹 Save both tasks + Excel base64 into Firestore
+        const base64Excel = btoa(String.fromCharCode(...data));
+        await setDoc(doc(window.db, "appData", "batikAir"), {
+          tasks: allTasks,
+    	  attendanceRecords,
+      	  excelBase64: base64Excel
+        });
+
+        console.log("✅ Excel + tasks saved to Firestore");
+        renderTasks();
       };
-      reader.readAsArrayBuffer(f);
-    });
-
-    // ---------- Task Actions ----------
-    function markTaskDoneByLAE(index){
-      if(allTasks[index].status!=="pending")return;
-      allTasks[index].status="submitted";
-      allTasks[index].completedBy=currentUser.name;
-      allTasks[index].completedAt=new Date();
-      saveTaskData();
-    }
-
-    function verifyTaskByOfficer(index,approved){
-      if(allTasks[index].status!=="submitted")return;
-      if(approved){
-        allTasks[index].status="verified";
-        allTasks[index].verifiedBy=currentUser.name;
-        allTasks[index].verifiedAt=new Date();
-      }else{
-        allTasks[index].status="pending"; allTasks[index].completedBy=""; allTasks[index].completedAt=null;
-      }
-      saveTaskData();
+      reader.readAsArrayBuffer(file);
     }
 
 
@@ -579,57 +630,33 @@
       handleTaskFile(f);
     });
 
-    function renderTasks(){
-      const sAll=document.getElementById('allTasks');
-      const sAssigned=document.getElementById('assignedTasks');
-      const sDone=document.getElementById('doneTasks');
-      [sAll,sAssigned,sDone].forEach(el=>el.innerHTML="");
-      allTasks.forEach((t,i)=>{
-        const card=document.createElement('div');
-        card.className="task-card"+(t.status==="verified"?" done":"");
-        card.innerHTML=`<div class="task-header">ATA ${t.ata}</div>
-        <div class="block">Card: ${t.card}</div>
-        <div class="block">Description: ${t.description}</div>
-        <div class="block">Assigned To: <span>${t.assignedTo||'-'}</span></div>
-        <div class="block">Status: ${t.status}</div>`;
-        const actions=document.createElement('div');
-        actions.className="task-actions";
+    function renderTasks() {
+      // basic search filter
+      const search = document.getElementById('taskSearch')?.value?.toLowerCase?.() || '';
+      // prepare sections
+      const sAll = document.getElementById('allTasks');
+      const sAssigned = document.getElementById('assignedTasks');
+      const sDone = document.getElementById('doneTasks');
+      [sAll, sAssigned, sDone].forEach(el => el.innerHTML = '');
 
-        // Officer can assign
-        if(currentUser.role==="OFFICER"){
-          const sel=document.createElement('select');
-          const def=document.createElement('option');
-          def.value=""; def.textContent="-- Assign LAE --";
-          sel.appendChild(def);
-          staffNames.forEach(n=>{
-            const o=document.createElement('option');
-            o.value=n; o.textContent=n;
-            if(n===t.assignedTo) o.selected=true;
-            sel.appendChild(o);
-          });
-          sel.onchange=()=>assignTask(i,sel.value);
-          actions.appendChild(sel);
-        }
-
-        if(currentUser.role==="LAE"&&t.assignedTo===currentUser.name&&t.status==="pending"){
-          const btn=document.createElement('button'); btn.textContent="Mark Done";
-          btn.onclick=()=>markTaskDoneByLAE(i); actions.appendChild(btn);
-        }
-        if(currentUser.role==="OFFICER"&&t.status==="submitted"){
-          const btn=document.createElement('button'); btn.textContent="Approve";
-          btn.onclick=()=>verifyTaskByOfficer(i,true); actions.appendChild(btn);
-          const btn2=document.createElement('button'); btn2.textContent="Reject";
-          btn2.onclick=()=>verifyTaskByOfficer(i,false); actions.appendChild(btn2);
-        }
-        card.appendChild(actions);
-
-        if(t.status==="verified") sDone.appendChild(card);
-        else{
-          sAll.appendChild(card);
-          if(currentUser.role==="LAE"&&t.assignedTo===currentUser.name) sAssigned.appendChild(card.cloneNode(true));
-        }
+      const sections = { all: [], assigned: [], done: [] };
+      allTasks.forEach((t, i) => {
+        const matchesSearch = !search || JSON.stringify(t).toLowerCase().includes(search);
+        if (!matchesSearch) return;
+        if (t.status === "verified") {
+         sections.done.push([t, i]);
+       } else {
+         sections.all.push([t, i]);
+         if (currentUser) {
+           if (currentUser.role === 'LAE' && t.assignedTo === currentUser.name) {
+             sections.assigned.push([t, i]);
+           }
+           if (currentUser.role === 'OFFICER' && t.assignedTo) {
+             sections.assigned.push([t, i]);
+           }
+         }
+       } 
       });
-    }
 
       // show all-done message for LAE
       if (currentUser && currentUser.role === 'LAE') {
@@ -782,18 +809,34 @@
       populateATAFilter();
     } // renderTasks
 
-    function renderApproval(){
-      const c=document.getElementById('approvalList'); c.innerHTML="";
-      allTasks.forEach((t,i)=>{ if(t.status==="submitted"){
-        const div=document.createElement('div'); div.className="task-card";
-        div.innerHTML=`<div class="task-header">ATA ${t.ata}</div>
-        <div class="block">Card:${t.card}</div>
-        <div class="block">Description:${t.description}</div>
-        <div class="block">Assigned To:${t.assignedTo}</div>
-        <button>Approve</button>`;
-        div.querySelector("button").onclick=()=>verifyTaskByOfficer(i,true);
-        c.appendChild(div);
-      }});
+    function renderApproval() {
+      const container = document.getElementById('approvalList');
+      container.innerHTML = '';
+
+      const submittedTasks = allTasks.map((t, i) => ({...t, index: i})).filter(t => t.status === "submitted");
+      if (submittedTasks.length === 0) {
+        container.innerHTML = "<p>No tasks waiting for approval 🎉</p>";
+        return;
+      }
+
+      submittedTasks.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'task-card';
+        div.innerHTML = `
+          <div class="task-header">ATA ${t.ata || '—'}</div>
+          <div class="block"><b>Task Card:</b> ${escapeHtml(t.card || '—')}</div>
+          <div class="block"><b>Description:</b> ${escapeHtml(t.description || '—')}</div>
+          <div class="block"><b>Assigned To:</b> ${escapeHtml(t.assignedTo || 'None')}</div>
+          <div class="block"><b>Status:</b> ${t.status}</div>
+          <button class="btn-approve">Approve</button>
+        `;
+        div.querySelector(".btn-approve").onclick = () => {
+          verifyTaskByOfficer(t.index, true);
+          renderApproval();
+          renderTasks(); // refresh so task moves into Done
+        };
+        container.appendChild(div);
+      });
     }
 
 
