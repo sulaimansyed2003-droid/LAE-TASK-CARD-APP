@@ -120,6 +120,28 @@
 
 
 
+   // ---------- Login event ----------
+   document.getElementById('signInBtn').addEventListener('click', async () => {
+     const id = document.getElementById('idInput').value.trim();
+     const name = document.getElementById('nameInput').value;
+     const role = document.getElementById('roleInput').value;
+     if (!id || !name || !role) { alert('Please fill all login fields'); return; }
+
+     currentUser = { id, name, role };
+
+     // Hide login, show app
+     document.getElementById('loginPage').classList.add('hidden');
+     document.getElementById('app').classList.remove('hidden');
+     document.getElementById('userInfo').textContent =
+       `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
+
+     if (role === 'OFFICER') {
+       document.getElementById('officerSection').classList.remove('hidden');
+       document.getElementById('assignedOverview').classList.remove('hidden');
+     } else {
+       document.getElementById('officerSection').classList.add('hidden');
+     }
+
    // ---------- Save to Firestore safely (merge to avoid overwriting) ----------
    async function saveAppData(partialData) {
      try {
@@ -159,39 +181,19 @@
      });
    }
 
-   // ---------- Login event ----------
-   document.getElementById('signInBtn').addEventListener('click', async () => {
-     const id = document.getElementById('idInput').value.trim();
-     const name = document.getElementById('nameInput').value;
-     const role = document.getElementById('roleInput').value;
-     if (!id || !name || !role) { alert('Please fill all login fields'); return; }
-
-     currentUser = { id, name, role };
-
-     // Hide login, show app
-     document.getElementById('loginPage').classList.add('hidden');
-     document.getElementById('app').classList.remove('hidden');
-     document.getElementById('userInfo').textContent =
-       `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
-
-     if (role === 'OFFICER') {
-       document.getElementById('officerSection').classList.remove('hidden');
-       document.getElementById('assignedOverview').classList.remove('hidden');
-     } else {
-       document.getElementById('officerSection').classList.add('hidden');
-     }
-
      updateLoginTime();
 
+
+
      // 1️⃣ Load data first
-     await loadSavedData();
+     await loadSavedSata();
 
      // 2️⃣ Enable live updates AFTER data is loaded
-     enableRealtimeSync();
+     enableRealTimeSync();
 
      // 3️⃣ Render tasks & dashboard
      renderTasks();
-     updateProdDatePill();
+    updateProdDatePill();
   });
 
 
