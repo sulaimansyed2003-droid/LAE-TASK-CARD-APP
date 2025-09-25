@@ -125,14 +125,32 @@
       }
     }
 
+    // Load data from Firestore (once)
     async function loadSavedData() {
-      const snap = await getDoc(doc(window.db, "taskData", "batikAir"));
-      if (snap.exists()) { allTasks = snap.data().tasks || []; }
+      try {
+        const snap = await getDoc(doc(window.db, "appData", "batikAir"));
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.tasks) allTasks = data.tasks;
+          if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
+          availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+          renderTasks();
+        }
+      } catch (e) {
+        console.error("❌ Firestore load failed:", e);
+      }
     }
 
+    // Live updates (sync across devices)
     function enableRealtimeSync() {
-      onSnapshot(doc(window.db, "taskData", "batikAir"), (snap) => {
-        if (snap.exists()) { allTasks = snap.data().tasks || []; renderTasks(); }
+      const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.tasks) allTasks = data.tasks;
+          if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
+          availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+          renderTasks();
+        }
       });
     }
 
