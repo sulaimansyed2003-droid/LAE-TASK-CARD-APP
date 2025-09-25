@@ -194,6 +194,10 @@
      // 3️⃣ Render tasks & dashboard
      renderTasks();
     updateProdDatePill();
+
+    // --- Debug logs ---
+    console.log('All tasks loaded:', allTasks);
+    console.log('Current user:', currentUser);
   });
 
 
@@ -497,9 +501,7 @@
     let laeRoster = {};
     let availableATAs = [];
 
-    // --- Debug logs ---
-    console.log('All tasks loaded:', allTasks);
-    console.log('Current user:', currentUser);
+
 
     function renderAttendanceTable(date) {
       const tbody = document.getElementById('attendanceList');
