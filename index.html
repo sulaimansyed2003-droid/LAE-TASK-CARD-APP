@@ -155,28 +155,37 @@
     }
 
 
-    // Set clock
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').textContent = now.toLocaleString();
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
 
-    // Format date for display
-    function formatDate(date) {
-      if (!date) return 'N/A';
-      return new Date(date).toLocaleString();
-    }
     // ---------- UI ----------
-    function showSection(id, btn) {
-      ["allTasks","assignedTasks","doneTasks","approvalSection"].forEach(s => 
-        document.getElementById(s).classList.add("hidden")
-      );
-      document.getElementById(id).classList.remove("hidden");
-      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-      if (btn) btn.classList.add("active");
-      if (id === "approvalSection") renderApproval(); else renderTasks();
+    function showSection(id) {
+      // hide all sections
+      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
+      sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
+      document.getElementById("allDoneMsg").classList.add('hidden');
+
+      // show requested section
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
+
+  // 🔹 highlight active button
+      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
+      const clicked = Array.from(document.querySelectorAll("nav button"))
+    .find(b => b.getAttribute("onclick")?.includes(id));
+      if (clicked) clicked.classList.add("active");
+
+  // existing logic
+      if (id === "attendanceSection") {
+        document.getElementById('attendanceDate').value = currentAttendanceDate;
+        loadAttendanceForDate();
+      } else if (id === "prodDash") {
+        updateProdDatePill();
+        renderProdLists();
+        renderProdStats();
+      } else if (id === "approvalSection") {
+        renderApproval(); 
+      } else {
+        renderTasks();
+      }
     }
 
     function populateNames() {
