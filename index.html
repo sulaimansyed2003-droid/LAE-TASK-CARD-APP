@@ -289,7 +289,7 @@
     apiKey: "AIzaSyBzNFyDYblJFnLAXhbMiD2HXqtwmNTzqSo",
     authDomain: "lae-task-card-5c839.firebaseapp.com",
     projectId: "lae-task-card-5c839",
-    storageBucket: "lae-task-card-5c839.firebasestorage.app",
+    storageBucket: "lae-task-card-5c839.appspot.com",
     messagingSenderId: "405634574463",
     appId: "1:405634574463:web:794553dbf6cd56cef9374a",
     measurementId: "G-9EC3H6T6K4"
@@ -297,18 +297,8 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-
-  window.db = db;
-  window.doc = doc;
-  window.setDoc = setDoc;
-  window.getDoc = getDoc;
-  window.onSnapshot = onSnapshot;
-  </script>
-
-  <script>
-    let currentUser = null;
-    let allTasks = [];
-
+  let currentUser = null;
+  let allTasks = [];
 
 
     // ---------- App state ----------
