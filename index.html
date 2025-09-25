@@ -113,19 +113,6 @@
       "LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
 
-    // Set clock
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').textContent = now.toLocaleString();
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // Format date for display
-    function formatDate(date) {
-      if (!date) return 'N/A';
-      return new Date(date).toLocaleString();
-    }
     // ---------- Firestore ----------
     // Save data to Firestore
     async function saveAppData() {
@@ -167,47 +154,108 @@
       });
     }
 
+    // Set clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-
-    // ---------- UI ----------
-    function showSection(id, btn) {
-      ["allTasks","assignedTasks","doneTasks","approvalSection"].forEach(s => 
-        document.getElementById(s).classList.add("hidden")
-      );
-      document.getElementById(id).classList.remove("hidden");
-      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-      if (btn) btn.classList.add("active");
-      if (id === "approvalSection") renderApproval(); else renderTasks();
+    // Format date for display
+    function formatDate(date) {
+      if (!date) return 'N/A';
+      return new Date(date).toLocaleString();
     }
 
+    // ---------- UI ----------
+    function showSection(id) {
+      // hide all sections
+      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection"];
+      sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
+      document.getElementById("allDoneMsg").classList.add('hidden');
+
+      // show requested section
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
+
+  // 🔹 highlight active button
+      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
+      const clicked = Array.from(document.querySelectorAll("nav button"))
+    .find(b => b.getAttribute("onclick")?.includes(id));
+      if (clicked) clicked.classList.add("active");
+
+  // existing logic
+      if (id === "attendanceSection") {
+        document.getElementById('attendanceDate').value = currentAttendanceDate;
+        loadAttendanceForDate();
+      } else if (id === "prodDash") {
+        updateProdDatePill();
+        renderProdLists();
+        renderProdStats();
+      } else if (id === "approvalSection") {
+        renderApproval(); 
+      } else {
+        renderTasks();
+      }
+    }
+
+    // ---------- Login / user ----------
     function populateNames() {
       const sel = document.getElementById('nameInput');
       sel.innerHTML = '<option value="">Select your name</option>';
-      staffNames.forEach(n => { 
-        const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o);
+      staffNames.forEach(n => {
+        const o = document.createElement('option');
+        o.value = n;
+        o.textContent = n;
+        sel.appendChild(o);
       });
     }
 
-    window.onload = function() {
-      populateNames();
-      document.getElementById('signInBtn').addEventListener('click', async () => {
-        const id=document.getElementById('idInput').value.trim();
-        const name=document.getElementById('nameInput').value;
-        const role=document.getElementById('roleInput').value;
-        if(!id||!name||!role){ alert('Fill all fields'); return; }
-        currentUser={id,name,role};
-        document.getElementById('loginPage').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-        document.getElementById('userInfo').textContent=`ID:${id} | Name:${name} | Role:${role}`;
-        if(role==="OFFICER") document.getElementById('officerSection').classList.remove('hidden');
-        await loadSavedData(); renderTasks(); enableRealtimeSync();
-      });
-    };
+    function updateLoginTime() {
+      const now = new Date();
+      document.getElementById('loginTime').innerText = "Login Time: " + now.toLocaleString();
+    }
 
-    function signOut(){
-      currentUser=null;
+    document.getElementById('signInBtn').addEventListener('click', async () => {
+      const id = document.getElementById('idInput').value.trim();
+      const name = document.getElementById('nameInput').value;
+      const role = document.getElementById('roleInput').value;
+      if (!id || !name || !role) { alert('Please fill all login fields'); return; }
+
+      currentUser = { id, name, role };
+
+  // Hide login, show app
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+
+  // Show logged-in user info
+      document.getElementById('userInfo').textContent =
+        `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
+
+  // Officer-specific UI
+      if (role === 'OFFICER') {
+        document.getElementById('officerSection').classList.remove('hidden');
+        document.getElementById('assignedOverview').classList.remove('hidden');
+      } else {
+        document.getElementById('officerSection').classList.add('hidden');
+      }
+
+      updateLoginTime();
+
+  // 🔹 Load tasks from Firestore first before rendering
+      await loadSavedData();
+      renderTasks();
+      updateProdDatePill();
+    });
+
+
+    function signOut() {
+      currentUser = null;
       document.getElementById('app').classList.add('hidden');
       document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('userInfo').textContent = '';
+      hideMobileMenu();
     }
 
     // ---------- Task File Upload ----------
