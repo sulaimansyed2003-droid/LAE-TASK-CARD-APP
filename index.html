@@ -144,6 +144,7 @@
       <button onclick="showSection('attendanceSection')">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
       <button onclick="showSection('approvalSection')">Approval</button>
+      <button onclick="showSection('commonDefects', this)">Common Defects</button>
 
     </nav>
 
@@ -255,6 +256,12 @@
       <div id="assignedTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="doneTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
+      <div id="commonDefects" class="hidden">
+        <h2>Common Defects</h2>
+        <p>Most frequently reported issues across task cards</p>
+       <div id="defectsList"></div>
+     </div>
+
 
     </div>
 
@@ -269,47 +276,61 @@
   <button class="btn-toggle" style="position:fixed; left:12px; top:12px; z-index:1200;" onclick="toggleDarkMode()">🌓</button>
   <div id="clock" style="position:fixed; right:12px; top:12px; font-weight:bold; font-size:14px; color:#b30000; background:rgba(255,255,255,0.85); padding:6px 10px; border-radius:8px; z-index:1200;"></div>
 
-  <!-- XLSX lib -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- XLSX lib -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+<!-- Firebase SDK (must be before your app script) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-    // ✅ Correct Firebase project: lae-task-card
-    const firebaseConfig = {
-      apiKey: "AIzaSyBzNFyDYblJFnLAXhbMiD2HXqtwmNTzqSo",
-      authDomain: "lae-task-card-5c839.firebaseapp.com",
-      projectId: "lae-task-card-5c839",
-      storageBucket: "lae-task-card-5c839.firebasestorage.app",
-      messagingSenderId: "405634574463",
-      appId: "1:405634574463:web:794553dbf6cd56cef9374a",
-      measurementId: "G-9EC3H6T6K4"
-    };
+  // 🔹 Paste your Firebase config here (from console)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCii_mcKN6cL7Ep8VYdfNnKHFgi2AYAMpI",
+    authDomain:"batik-air-taskcard.firebaseapp.com",
+    projectId: "batik-air-taskcard",
+    storageBucket: "batik-air-taskcardappspot.com",
+    messagingSenderId:  "396150494337",
+    appId:  "1:396150494337:web:a882db879da9eac5ade980"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  // Initialize Firebase and Firestore, expose to window
+  window.firebaseApp = initializeApp(firebaseConfig);
+  window.db = getFirestore(window.firebaseApp);
+</script>
 
-    window.db = db;
-    window.doc = doc;
-    window.setDoc = setDoc;
-    window.getDoc = getDoc;
-    window.onSnapshot = onSnapshot;
-  </script>
 
   <script>
-    let currentUser = null;
-    let allTasks = [];
-
-
     // ---------- App state ----------
     const staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
       "DING JU SHENG","LEE YOONG JUN","MUHAMMAD NAZIF BIN ABDUL MALEK"
     ];
 
+    // Example roster (days of week) for quick testing if user doesn't upload roster
+    const laeRoster = {
+      "ABDUL FATAH BIN IBRAHIM": ["Mon","Tue","Wed","Thu","Fri"],
+      "MOHD HAFIZ SAZWAN BIN ZAM ZAM": ["Mon","Tue","Thu","Fri"],
+      "MOHAMMAD ZULKIFLEE BIN HUSSIN": ["Tue","Wed","Thu"],
+      "DING JU SHENG": ["Mon","Wed","Fri"],
+      "LEE YOONG JUN": ["Tue","Thu","Fri"],
+      "MUHAMMAD NAZIF BIN ABDUL MALEK": ["Mon","Tue","Wed","Thu","Fri"]
+    };
 
+    let allTasks = []; // task objects: {ata, card, description, tools, consumables, remarks, manhour, due, assignedTo, status, completedBy, completedAt, verifiedBy, verifiedAt}
+    let currentUser = null;
+    let availableATAs = [];
+    let attendance = {}; // name -> present boolean
+    let attendanceRecords = {}; // Format: { "YYYY-MM-DD": { "LAE Name": "present"/"absent", ... } }
+    let currentAttendanceDate = new Date().toISOString().split('T')[0];
+
+    // Roster matrix for uploading real roster
+    let rosterMatrix = [];
+    let rosterHeaderRow = -1;
+    let rosterNameCol = 0;
+    let workingToday = [];
+    let offToday = [];
+    let rosterPreviewVisible = false;
 
     // ---------- Utilities ----------
     // ---------- Firebase Firestore version ----------
@@ -396,10 +417,12 @@
         renderProdStats();
       } else if (id === "approvalSection") {
         renderApproval(); 
+      } else if (id === "commonDefects") {
+        renderCommonDefects();
       } else {
         renderTasks();
       }
-    }
+    
 
 
 
@@ -837,6 +860,49 @@
           renderApproval();
           renderTasks(); // refresh so task moves into Done
         };
+        container.appendChild(div);
+      });
+    }
+    function renderCommonDefects() {
+      const container = document.getElementById("defectsList");
+      container.innerHTML = "";
+
+      // collect all descriptions from allTasks
+      const descriptions = allTasks.map(t => t.description || "");
+
+      // keywords to check (expand this list if needed)
+      const keywords = ["engine", "nose cone", "landing gear", "wing", "fuselage", "rudder", "avionics"];
+
+      const results = [];
+
+      keywords.forEach(kw => {
+        // find all task descriptions containing this keyword
+        const matches = descriptions.filter(d => d.toLowerCase().includes(kw));
+        if (matches.length > 1) {
+          results.push({ keyword: kw, count: matches.length, details: matches });
+        }
+      });
+
+      // sort high → low
+      results.sort((a, b) => b.count - a.count);
+
+      if (results.length === 0) {
+        container.innerHTML = "<p>No common defects found ✅</p>";
+        return;
+      }
+
+      results.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "task-card";
+
+        // build details list
+        let detailList = "<ul style='margin-top:6px;'>";
+        r.details.forEach(d => {
+          detailList += `<li>${d}</li>`;
+        });
+        detailList += "</ul>";
+
+        div.innerHTML = `<b>${r.keyword}</b> — found in <b>${r.count}</b> task cards ${detailList}`;
         container.appendChild(div);
       });
     }
