@@ -307,7 +307,7 @@
     window.app = initializeApp(firebaseConfig);
     window.db = getFirestore(window.app);
     
-    window.db = db;
+    
     window.doc = doc;
     window.setDoc = setDoc;
     window.getDoc = getDoc;
@@ -473,7 +473,33 @@
       document.getElementById('loginTime').innerText = "Login Time: " + now.toLocaleString();
     }
 
+    document.getElementById('signInBtn').addEventListener('click', async () => {
+      const id = document.getElementById('idInput').value.trim();
+      const name = document.getElementById('nameInput').value;
+      const role = document.getElementById('roleInput').value;
+      if (!id || !name || !role) { 
+        alert('Please fill all login fields'); 
+        return; 
+      }
 
+      currentUser = { id, name, role };
+
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      document.getElementById('userInfo').textContent = 
+        `ID: ${id} | Name: ${name} | Role: ${role}`;
+
+      if (role === 'OFFICER') {
+        document.getElementById('officerSection').classList.remove('hidden');
+        document.getElementById('assignedOverview').classList.remove('hidden');
+      } else {
+        document.getElementById('officerSection').classList.add('hidden');
+      }
+
+      await loadSavedData();
+      enableRealtimeSync();
+        
+    });
 
 
     function signOut() {
@@ -670,11 +696,6 @@
       const sDone = document.getElementById('doneTasks');
       [sAll, sAssigned, sDone].forEach(el => el.innerHTML = '');
 
-      if (allTasks.length === 0) {
-        sAll.innerHTML = "<p style='color:red;'>⚠️ No tasks loaded from Firestore</p>";
-        return;
-      }
-
       const sections = { all: [], assigned: [], done: [] };
       allTasks.forEach((t, i) => {
         const matchesSearch = !search || JSON.stringify(t).toLowerCase().includes(search);
@@ -741,36 +762,6 @@
           tbody.appendChild(tr);
         });
       }
-    }
-
-
-    document.getElementById('signInBtn').addEventListener('click', async () => {
-      const id = document.getElementById('idInput').value.trim();
-      const name = document.getElementById('nameInput').value;
-      const role = document.getElementById('roleInput').value;
-      if (!id || !name || !role) { 
-        alert('Please fill all login fields'); 
-        return; 
-      }
-
-      currentUser = { id, name, role };
-
-      document.getElementById('loginPage').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
-      document.getElementById('userInfo').textContent = 
-        `ID: ${id} | Name: ${name} | Role: ${role}`;
-
-      if (role === 'OFFICER') {
-        document.getElementById('officerSection').classList.remove('hidden');
-        document.getElementById('assignedOverview').classList.remove('hidden');
-      } else {
-        document.getElementById('officerSection').classList.add('hidden');
-      }
-
-      await loadSavedData();
-      enableRealtimeSync();
-        
-    });
 
       // create cards
       function createCard(t, i) {
