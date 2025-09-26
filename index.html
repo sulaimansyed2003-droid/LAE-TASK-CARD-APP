@@ -304,8 +304,8 @@
     };
 
     // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    window.firebaseApp = initializeApp(firebaseConfig);
+    window.db = getFirestore(window.firebaseApp);
     
     
     window.doc = doc;
