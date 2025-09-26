@@ -21,11 +21,25 @@
     .meta-pill { background:#eee; padding:6px 10px; border-radius:12px; font-size:13px; }
     .task-actions { margin-top:10px; }
     .assigned-bold { font-weight:bold; color:#800000; }
-    nav button { margin:5px; padding:8px 12px; border:none; border-radius:5px; background:#800000; color:white; cursor:pointer; }
-    nav button:hover { background:#a00000; } nav button.active {
-  background: #007bff !important; /* blue */
-  color: white !important;
-}
+    nav button { 
+      margin:5px; 
+      padding:8px 12px; 
+      border:none;
+      border-radius:5px; 
+      background:#800000; 
+      color:white; 
+      cursor:pointer; 
+    }
+    nav button:hover { background:#a00000; } 
+    nav button.active {
+      background: #007bff !important; /* blue */
+      color: white !important;
+    }
+    .mobile-menu button.active {
+      background: #007bff !important;
+      color: white !important;
+    }
+
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
     #assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
     #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
@@ -115,6 +129,7 @@
     <button onclick="showSection('doneTasks'); hideMobileMenu()">Done</button>
     <button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
     <button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
+    <button onclick="showSection('commonDefects', this)">Common Defects</button>
     <button class="sign-out" onclick="signOut(); hideMobileMenu()">Sign Out</button>
   </div>
 
@@ -137,14 +152,15 @@
     <div id="userInfo"></div>
 
     <nav>
-      <button onclick="showSection('allTasks')">All Tasks</button>
-      <button onclick="showSection('assignedTasks')">Assigned Tasks</button>
-      <button onclick="showSection('doneTasks')">Done</button>
-      <button onclick="showSection('prodDash')">Productivity Dashboard</button>
-      <button onclick="showSection('attendanceSection')">Attendance</button>
+      <button onclick="showSection('allTasks',this)">All Tasks</button>
+      <button onclick="showSection('assignedTasks', this)">Assigned Tasks</button>
+      <button onclick="showSection('doneTasks', this)">Done</button>
+      <button onclick="showSection('prodDash', this)">Productivity Dashboard</button>
+      <button onclick="showSection('attendanceSection', this)">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
-      <button onclick="showSection('approvalSection')">Approval</button>
+      <button onclick="showSection('approvalSection', this)">Approval</button>
       <button onclick="showSection('commonDefects', this)">Common Defects</button>
+
 
     </nav>
 
@@ -162,15 +178,8 @@
           <div id="overviewList" class="hidden" style="margin-top:8px;"></div>
         </div>
       </div>
+ 
 
-      <div id="productivityDashboard" style="margin-top:12px;">
-        <h4>LAE Productivity Dashboard (Task Completion)</h4>
-        <table style="width:100%; border-collapse:collapse;">
-          <thead><tr><th style="border:1px solid #eee;padding:6px;text-align:left;">LAE</th><th style="border:1px solid #eee;padding:6px;">Assigned</th><th style="border:1px solid #eee;padding:6px;">Done</th><th style="border:1px solid #eee;padding:6px;">%</th></tr></thead>
-          <tbody id="productivityBody"></tbody>
-        </table>
-      </div>
-    </div>
 
     <div style="margin-top:16px;">
       <!-- Enhanced Attendance Section -->
@@ -218,50 +227,10 @@
        <button class="btn-toggle" onclick="approveAllPending()">Approve All      Pending</button>
       </div>
 
-
-      <div id="prodDash" class="hidden">
-        <h3>Productivity Dashboard (Roster)</h3>
-        <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
-        <div class="prod-row">
-          <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
-          <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
-          <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
-        </div>
-
-        <div style="margin-top:12px;" class="prod-row">
-          <input id="prodSearch" type="text" placeholder="Search LAE by name..." oninput="filterProdLists()" />
-        </div>
-
-        <div class="prod-row" style="margin-top:12px;">
-          <div class="prod-card">
-            <h4>✅ Working Today</h4>
-            <div id="workingList"></div>
-          </div>
-          <div class="prod-card">
-            <h4>❌ Off Today</h4>
-            <div id="offList"></div>
-          </div>
-        </div>
-
-        <div style="margin-top:12px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <h4>Roster Preview</h4>
-            <button class="btn-toggle" onclick="toggleRosterPreview()">Show/Hide</button>
-          </div>
-          <div id="rosterPreview" class="table-wrap hidden"></div>
-        </div>
-      </div>
-
       <div id="allTasks" style="margin-top:12px;"></div>
       <div id="assignedTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="doneTasks" class="hidden" style="margin-top:12px;"></div>
       <div id="allDoneMsg" class="hidden">🎉 All assigned tasks are done for now!</div>
-      <div id="commonDefects" class="hidden">
-        <h2>Common Defects</h2>
-        <p>Most frequently reported issues across task cards</p>
-       <div id="defectsList"></div>
-     </div>
-
 
     </div>
 
@@ -270,47 +239,96 @@
       <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
     </div>
 
+
+    <!-- 🔹 Firebase SDKs (MUST be before your code) -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+      import { getFirestore, doc, setDoc, getDoc, onSnapshot }
+        from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyBzNFyDYblJFnLAXhbMiD2HXqtwmNTzqSo",
+        authDomain: "lae-task-card-5c839.firebaseapp.com",
+        projectId: "lae-task-card-5c839",
+        storageBucket: "lae-task-card-5c839.firebasestorage.app",
+        messagingSenderId: "405634574463",
+        appId: "1:405634574463:web:794553dbf6cd56cef9374a",
+        measurementId: "G-9EC3H6T6K4"
+      };
+
+      // Initialize Firebase
+      window.firebaseApp = initializeApp(firebaseConfig);
+      window.db = getFirestore(window.firebaseApp);
+    </script>
+
+    <div id="commonDefects" class="hidden">
+      <h2>Common Defects</h2>
+      <p>Most frequently reported issues across task cards</p>
+      <div id="defectsList"></div>
+    </div>
+
+
+      <div id="productivityDashboard" style="margin-top:12px;">
+        <h4>LAE Productivity Dashboard (Task Completion)</h4>
+        <table style="width:100%; border-collapse:collapse;">
+          <thead><tr><th style="border:1px solid #eee;padding:6px;text-align:left;">LAE</th><th style="border:1px solid #eee;padding:6px;">Assigned</th><th style="border:1px solid #eee;padding:6px;">Done</th><th style="border:1px solid #eee;padding:6px;">%</th></tr></thead>
+          <tbody id="productivityBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="prodDash" class="hidden">
+      <h3>Productivity Dashboard (Roster)</h3>
+      <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
+      <div class="prod-row">
+        <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
+        <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
+        <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
+      </div>
+    </div>
+
+ <div style="margin-top:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h4>Roster Preview</h4>
+            <button class="btn-toggle" onclick="toggleRosterPreview()">Show/Hide</button>
+          </div>
+          <div id="rosterPreview" class="table-wrap hidden"></div>
+        </div>
+      </div>
+
+
+
   </div>
 
   <!-- Clock + Dark mode -->
   <button class="btn-toggle" style="position:fixed; left:12px; top:12px; z-index:1200;" onclick="toggleDarkMode()">🌓</button>
   <div id="clock" style="position:fixed; right:12px; top:12px; font-weight:bold; font-size:14px; color:#b30000; background:rgba(255,255,255,0.85); padding:6px 10px; border-radius:8px; z-index:1200;"></div>
 
-  <!-- XLSX lib -->
+<!-- XLSX lib -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- Firebase SDK -->
+<!-- Firebase SDK (must be before your app script) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-  // ✅ Correct Firebase project: lae-task-card
+  // 🔹 Paste your Firebase config here (from console)
   const firebaseConfig = {
-    apiKey: "AIzaSyBzNFyDYblJFnLAXhbMiD2HXqtwmNTzqSo",
-    authDomain: "lae-task-card-5c839.firebaseapp.com",
-    projectId: "lae-task-card-5c839",
-    storageBucket: "lae-task-card-5c839.firebasestorage.app",
-    messagingSenderId: "405634574463",
-    appId: "1:405634574463:web:794553dbf6cd56cef9374a",
-    measurementId: "G-9EC3H6T6K4"
+    apiKey: "AIzaSyCii_mcKN6cL7Ep8VYdfNnKHFgi2AYAMpI",
+    authDomain:"batik-air-taskcard.firebaseapp.com",
+    projectId: "batik-air-taskcard",
+    storageBucket: "batik-air-taskcardappspot.com",
+    messagingSenderId:  "396150494337",
+    appId:  "1:396150494337:web:a882db879da9eac5ade980"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  // Initialize Firebase and Firestore, expose to window
+  window.firebaseApp = initializeApp(firebaseConfig);
+  window.db = getFirestore(window.firebaseApp);
+</script>
 
-  window.db = db;
-  window.doc = doc;
-  window.setDoc = setDoc;
-  window.getDoc = getDoc;
-  window.onSnapshot = onSnapshot;
-  </script>
 
   <script>
-    let currentUser = null;
-    let allTasks = [];
-
-
-
     // ---------- App state ----------
     const staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
@@ -377,10 +395,13 @@
       const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
         if (snap.exists()) {
           const data = snap.data();
+          console.log("📲 Live update from Firestore:", data);
           if (data.tasks) allTasks = data.tasks;
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
           renderTasks();
+        } else {
+          console.log("⚠️ No data found in Firestore (appData/batikAir)");
         }
       });
     }
@@ -401,23 +422,35 @@
     }
 
     // ---------- DOM helpers ----------
-    function showSection(id) {
-      // hide all sections
-      const sections = ["attendanceSection","prodDash","allTasks","assignedTasks","doneTasks","approvalSection","commonDefects"];
+    function showSection(id, btn) {
+      // hide all main sections
+      const sections = [
+        "attendanceSection",
+        "prodDash",
+        "allTasks",
+        "assignedTasks",
+        "doneTasks",
+        "approvalSection",
+        "commonDefects"
+      ];
       sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
+
+      // always hide "All Done" message
       document.getElementById("allDoneMsg").classList.add('hidden');
+
+      // always hide roster preview when switching sections
+      const roster = document.getElementById("rosterPreview");
+      if (roster) roster.classList.add("hidden");
 
       // show requested section
       const el = document.getElementById(id);
       if (el) el.classList.remove('hidden');
 
-  // 🔹 highlight active button
-      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
-      const clicked = Array.from(document.querySelectorAll("nav button"))
-    .find(b => b.getAttribute("onclick")?.includes(id));
-      if (clicked) clicked.classList.add("active");
+      // highlight only the clicked button
+      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
 
-  // existing logic
+      // section-specific logic
       if (id === "attendanceSection") {
         document.getElementById('attendanceDate').value = currentAttendanceDate;
         loadAttendanceForDate();
@@ -425,15 +458,15 @@
         updateProdDatePill();
         renderProdLists();
         renderProdStats();
+        // rosterPreview will stay hidden until Show/Hide button is clicked
       } else if (id === "approvalSection") {
-        renderApproval(); 
+        renderApproval();
       } else if (id === "commonDefects") {
         renderCommonDefects();
       } else {
         renderTasks();
       }
     }
-
 
 
     // ---------- Login / user ----------
@@ -457,19 +490,18 @@
       const id = document.getElementById('idInput').value.trim();
       const name = document.getElementById('nameInput').value;
       const role = document.getElementById('roleInput').value;
-      if (!id || !name || !role) { alert('Please fill all login fields'); return; }
+      if (!id || !name || !role) { 
+        alert('Please fill all login fields'); 
+        return; 
+      }
 
       currentUser = { id, name, role };
 
-  // Hide login, show app
       document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
+      document.getElementById('userInfo').textContent = 
+        `ID: ${id} | Name: ${name} | Role: ${role}`;
 
-  // Show logged-in user info
-      document.getElementById('userInfo').textContent =
-        `ID: ${currentUser.id} | Name: ${currentUser.name} | Role: ${currentUser.role}`;
-
-  // Officer-specific UI
       if (role === 'OFFICER') {
         document.getElementById('officerSection').classList.remove('hidden');
         document.getElementById('assignedOverview').classList.remove('hidden');
@@ -477,12 +509,10 @@
         document.getElementById('officerSection').classList.add('hidden');
       }
 
-      updateLoginTime();
-
-  // 🔹 Load tasks from Firestore first before rendering
       await loadSavedData();
       renderTasks();
-      updateProdDatePill();
+      enableRealtimeSync();
+      updateLoginTime();  
     });
 
 
@@ -650,10 +680,16 @@
           tasks: allTasks,
     	  attendanceRecords,
       	  excelBase64: base64Excel
-        });
+        },
+        { merge: true }
+      );
 
-        console.log("✅ Excel + tasks saved to Firestore");
-        renderTasks();
+      console.log("✅ Excel + tasks saved to Firestore");
+      await saveAppData();
+
+      // Re-render tasks locally
+      renderTasks();
+       
       };
       reader.readAsArrayBuffer(file);
     }
@@ -873,20 +909,20 @@
         container.appendChild(div);
       });
     }
+
     function renderCommonDefects() {
       const container = document.getElementById("defectsList");
       container.innerHTML = "";
 
-      // collect all descriptions from allTasks
+      // collect all descriptions
       const descriptions = allTasks.map(t => t.description || "");
 
-      // keywords to check (expand this list if needed)
+      // keywords to check
       const keywords = ["engine", "nose cone", "landing gear", "wing", "fuselage", "rudder", "avionics"];
 
       const results = [];
 
       keywords.forEach(kw => {
-        // find all task descriptions containing this keyword
         const matches = descriptions.filter(d => d.toLowerCase().includes(kw));
         if (matches.length > 1) {
           results.push({ keyword: kw, count: matches.length, details: matches });
@@ -916,6 +952,8 @@
         container.appendChild(div);
       });
     }
+
+
 
 
     function approveTask(index) {
