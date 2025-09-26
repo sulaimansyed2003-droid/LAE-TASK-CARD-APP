@@ -289,7 +289,7 @@
     apiKey: "AIzaSyBzNFyDYblJFnLAXhbMiD2HXqtwmNTzqSo",
     authDomain: "lae-task-card-5c839.firebaseapp.com",
     projectId: "lae-task-card-5c839",
-    storageBucket: "lae-task-card-5c839.appspot.com",
+    storageBucket: "lae-task-card-5c839.firebasestorage.app",
     messagingSenderId: "405634574463",
     appId: "1:405634574463:web:794553dbf6cd56cef9374a",
     measurementId: "G-9EC3H6T6K4"
@@ -297,8 +297,18 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  let currentUser = null;
-  let allTasks = [];
+
+  window.db = db;
+  window.doc = doc;
+  window.setDoc = setDoc;
+  window.getDoc = getDoc;
+  window.onSnapshot = onSnapshot;
+  </script>
+
+  <script>
+    let currentUser = null;
+    let allTasks = [];
+
 
 
     // ---------- App state ----------
@@ -339,7 +349,7 @@
     async function saveAppData() {
       try {
         const data = { tasks: allTasks, attendanceRecords };
-        await setDoc(doc(db, "appData", "batikAir"), data);
+        await setDoc(doc(window.db, "appData", "batikAir"), data);
         console.log("✅ Data saved to Firestore");
       } catch (e) {
         console.error("❌ Firestore save failed:", e);
@@ -349,7 +359,7 @@
     // Load data from Firestore (once)
     async function loadSavedData() {
       try {
-        const snap = await getDoc(doc(db, "appData", "batikAir"));
+        const snap = await getDoc(doc(window.db, "appData", "batikAir"));
         if (snap.exists()) {
           const data = snap.data();
           if (data.tasks) allTasks = data.tasks;
@@ -364,7 +374,7 @@
 
     // Live updates (sync across devices)
     function enableRealtimeSync() {
-      const unsub = onSnapshot(doc(db, "appData", "batikAir"), (snap) => {
+      const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
         if (snap.exists()) {
           const data = snap.data();
           if (data.tasks) allTasks = data.tasks;
@@ -636,7 +646,7 @@
 
         // 🔹 Save both tasks + Excel base64 into Firestore
         const base64Excel = btoa(String.fromCharCode(...data));
-        await setDoc(doc(db, "appData", "batikAir"), {
+        await setDoc(doc(window.db, "appData", "batikAir"), {
           tasks: allTasks,
     	  attendanceRecords,
       	  excelBase64: base64Excel
