@@ -497,9 +497,8 @@
       }
 
       await loadSavedData();
-      renderTasks();
       enableRealtimeSync();
-      updateLoginTime();  
+        
     });
 
 
@@ -696,6 +695,11 @@
       const sAssigned = document.getElementById('assignedTasks');
       const sDone = document.getElementById('doneTasks');
       [sAll, sAssigned, sDone].forEach(el => el.innerHTML = '');
+
+      if (allTasks.length === 0) {
+        sAll.innerHTML = "<p style='color:red;'>⚠️ No tasks loaded from Firestore</p>";
+        return;
+      }
 
       const sections = { all: [], assigned: [], done: [] };
       allTasks.forEach((t, i) => {
