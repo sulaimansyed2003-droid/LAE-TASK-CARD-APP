@@ -700,11 +700,15 @@
       allTasks.forEach((t, i) => {
         const matchesSearch = !search || JSON.stringify(t).toLowerCase().includes(search);
         if (!matchesSearch) return;
+
         if (t.status === "verified") {
          sections.done.push([t, i]);
        } else {
          sections.all.push([t, i]);
          if (currentUser) {
+           const taskName = (t.assignedTo || "").trim().toUpperCase();
+           const userName = (currentUser.name || "").trim().toUpperCase();
+            
            if (currentUser.role === 'LAE' && t.assignedTo === currentUser.name) {
              sections.assigned.push([t, i]);
            }
