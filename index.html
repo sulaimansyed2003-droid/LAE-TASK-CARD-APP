@@ -313,7 +313,23 @@
     window.getDoc = getDoc;
     window.onSnapshot = onSnapshot;
   </script>
+<script>
 
+
+    let allTasks = []; 
+    let currentUser = null;
+    let availableATAs = [];
+    let attendance = {}; // name -> present boolean
+    let attendanceRecords = {}; // Format: { "YYYY-MM-DD": { "LAE Name": "present"/"absent", ... } }
+    let currentAttendanceDate = new Date().toISOString().split('T')[0];
+
+    // Roster matrix for uploading real roster
+    let rosterMatrix = [];
+    let rosterHeaderRow = -1;
+    let rosterNameCol = 0;
+    let workingToday = [];
+    let offToday = [];
+    let rosterPreviewVisible = false;
     // ---------- App state ----------
     const staffNames = [
       "ABDUL FATAH BIN IBRAHIM","MOHD HAFIZ SAZWAN BIN ZAM ZAM","MOHAMMAD ZULKIFLEE BIN HUSSIN",
@@ -330,20 +346,7 @@
       "MUHAMMAD NAZIF BIN ABDUL MALEK": ["Mon","Tue","Wed","Thu","Fri"]
     };
 
-    let allTasks = []; // task objects: {ata, card, description, tools, consumables, remarks, manhour, due, assignedTo, status, completedBy, completedAt, verifiedBy, verifiedAt}
-    let currentUser = null;
-    let availableATAs = [];
-    let attendance = {}; // name -> present boolean
-    let attendanceRecords = {}; // Format: { "YYYY-MM-DD": { "LAE Name": "present"/"absent", ... } }
-    let currentAttendanceDate = new Date().toISOString().split('T')[0];
 
-    // Roster matrix for uploading real roster
-    let rosterMatrix = [];
-    let rosterHeaderRow = -1;
-    let rosterNameCol = 0;
-    let workingToday = [];
-    let offToday = [];
-    let rosterPreviewVisible = false;
 
     // ---------- Utilities ----------
     // ---------- Firebase Firestore version ----------
