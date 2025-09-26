@@ -304,8 +304,8 @@
     };
 
     // Initialize Firebase
-    window app = initializeApp(firebaseConfig);
-    window db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
     
     window.db = db;
     window.doc = doc;
@@ -365,34 +365,38 @@
     // Load data from Firestore (once)
     async function loadSavedData() {
       try {
-        const snap = await getDoc(doc(window.db, "appData", "batikAir"));
+        console.log("🔄 Trying to load Firestore data...");
+        const ref = window.doc(window.db, "appData", "batikAir");
+        console.log("📂 Doc ref:", ref);
+
+        const snap = await window.getDoc(ref);
         if (snap.exists()) {
+          console.log("✅ Firestore document found:", snap.data());
           const data = snap.data();
           if (data.tasks) allTasks = data.tasks;
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
-          availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
           renderTasks();
+        } else {
+          console.log("⚠️ Firestore document does NOT exist.");
         }
-      } catch (e) {
-        console.error("❌ Firestore load failed:", e);
+      } catch (err) {
+        console.error("❌ Firestore load failed:", err);
       }
     }
 
     // Live updates (sync across devices)
     function enableRealtimeSync() {
-      const unsub = onSnapshot(doc(window.db, "appData", "batikAir"), (snap) => {
+      console.log("🔄 Subscribing to live updates...");
+      const ref = window.doc(window.db, "appData", "batikAir");
+      window.onSnapshot(ref, (snap) => {
         if (snap.exists()) {
-          const data = snap.data();
-          console.log("📲 Live update from Firestore:", data);
-          if (data.tasks) allTasks = data.tasks;
-          if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
-          availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
-          renderTasks();
-        } else {
-          console.log("⚠️ No data found in Firestore (appData/batikAir)");
-        }
-      });
-    }
+        console.log("📡 Live update:", snap.data());
+        const data = snap.data();
+        if (data.tasks) allTasks = data.tasks;
+        renderTasks();
+      }
+    });
+  }
 
 
     // Set clock
