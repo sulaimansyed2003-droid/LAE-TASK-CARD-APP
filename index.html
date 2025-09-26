@@ -1043,9 +1043,17 @@
         d.style.margin = '10px 0';
         d.innerHTML = `<label for="ataSelect">Filter by ATA:</label>
           <select id="ataSelect"><option value="ALL">All ATA</option></select>`;
-        document.querySelector('.container').insertBefore(d, document.getElementById('allTasks'));
+       
+        const target = document.getElementById('allTasks');
+        if (target && target.parentNode) {
+          target.parentNode.insertBefore(d, target);
+        } else {
+          // fallback, just append to container
+         document.querySelector('.container').appendChild(d);
+        }
         container = d;
       }
+
       const sel = document.getElementById('ataSelect');
       if (!sel) return;
       const current = sel.value || 'ALL';
@@ -1059,14 +1067,7 @@
       });
       if (atas.includes(current)) sel.value = current;
       sel.onchange = () => {
-        // filter by ATA selection
-        const chosen = sel.value;
-        if (chosen === 'ALL') {
-          // no change to dataset, but user might expect filtered view
-          // We'll temporarily filter display by adjusting allTasksTemp (simple approach: rebuild UI using filter)
-          // For simplicity, we'll store chosen in a global and filter renderTasks based on it:
-          selectedATAFilter = 'ALL';
-        } else selectedATAFilter = chosen;
+        selectedATAFilter = sel.value;
         renderTasks();
       };
     }
