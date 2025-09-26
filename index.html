@@ -304,11 +304,15 @@
     };
 
     // Initialize Firebase
-    window.firebaseApp = initializeApp(firebaseConfig);
-    window.db = getFirestore(window.firebaseApp);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.db = db;
+    window.doc = doc;
+    window.setDoc = setDoc;
+    window.getDoc = getDoc;
+    window.onSnapshot = onSnapshot;
   </script>
-
-
 <script>
     // ---------- App state ----------
     const staffNames = [
