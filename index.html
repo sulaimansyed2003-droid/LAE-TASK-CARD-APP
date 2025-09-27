@@ -776,6 +776,7 @@
 
       function renderOverviewDashboard() {
   	const container = document.getElementById('overviewDashboard');
+        if (!container) return; // safety check if the div doesn't exist
   	container.innerHTML = ''; // reset before rendering
 
   	const total = allTasks.length;
