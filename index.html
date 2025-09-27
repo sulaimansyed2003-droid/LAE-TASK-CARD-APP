@@ -97,6 +97,22 @@
     .btn-reject { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
     .approval-history { margin-top: 10px; font-size: 12px; color: #666; }
     .approval-history div { margin-bottom: 4px; }
+   
+    /* Officer Dashboard Cards */
+    .dashboard-card {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    }
+    .dashboard-card.total { background: #6c63ff; }
+    .dashboard-card.pending { background: #f39c12; }
+    .dashboard-card.submitted { background: #3498db; }
+    .dashboard-card.approved { background: #27ae60; }
+    .dashboard-card.rejected { background: #e74c3c; }
 
     /* 🔹 Make fonts bigger everywhere */
     body, input, select, button, table, .task-card, #clock {
@@ -374,11 +390,11 @@
   	const rejected = allTasks.filter(t => t.status === 'rejected').length;
 
   	container.innerHTML = `
-    	  <div class="dashboard-card">📋 Total: ${total}</div>
-    	  <div class="dashboard-card">⏳ Pending: ${pending}</div>
-    	  <div class="dashboard-card">📮 Submitted: ${submitted}</div>
-    	  <div class="dashboard-card">✅ Approved: ${approved}</div>
-    	  <div class="dashboard-card">❌ Rejected: ${rejected}</div>
+    	  <div class="dashboard-card total">📋 Total<br/>${total}</div>
+ 	  <div class="dashboard-card pending">⏳ Pending<br/>${pending}</div>
+ 	  <div class="dashboard-card submitted">📮 Submitted<br/>${submitted}</div>
+ 	  <div class="dashboard-card approved">✅ Approved<br/>${approved}</div>
+  	  <div class="dashboard-card rejected">❌ Rejected<br/>${rejected}</div>
         `;
       }
 
