@@ -492,13 +492,12 @@
       if (role === 'OFFICER') {
         document.getElementById('officerSection').classList.remove('hidden');
         document.getElementById('assignedOverview').classList.remove('hidden');
-      } else {
-        document.getElementById('officerSection').classList.add('hidden');
-      }
 
       } else if (role === 'LAE') {
+          document.getElementById('laeSection').classList.remove('hidden'); 
+      } else {
           document.getElementById('officerSection').classList.add('hidden');
-          document.getElementById('laeSection').classList.remove('hidden'); // make sure this exists
+          document.getElementById('laeSection').classList.add('hidden');
       }
 
       await loadSavedData();
