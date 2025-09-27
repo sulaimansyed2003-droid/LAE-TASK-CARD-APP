@@ -30,6 +30,20 @@
       color:white; 
       cursor:pointer; 
     }
+
+    .btn-reject {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    .btn-reject:hover {
+     background: #c0392b;
+    }
+
     nav button:hover { background:#a00000; } 
     nav button.active {
       background: #007bff !important; /* blue */
@@ -962,6 +976,14 @@
       populateATAFilter();
     } // renderTasks
 
+
+    function rejectTask(i) {
+      allTasks[i].status = "pending";   // back to All Tasks
+      saveData();                       // update Firestore
+      renderTasks();                    // refresh UI
+      renderApproval();                 // refresh approval list
+    }
+
     function renderApproval() {
       const container = document.getElementById('approvalList');
       container.innerHTML = '';
@@ -988,6 +1010,15 @@
           renderApproval();
           renderTasks(); // refresh so task moves into Done
         };
+
+        // Reject action
+        div.querySelector(".btn-reject").onclick = () => {
+          allTasks[t.index].status = "pending"; // send back to All Tasks
+          saveData();
+          renderApproval();
+          renderTasks();
+        };
+
         container.appendChild(div);
       });
     }
