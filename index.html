@@ -169,6 +169,8 @@
       <h3>Officer Panel</h3>
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
         <div>
+      <!-- Dashboard goes here -->
+      <div id="overviewDashboard" style="display:flex; gap:12px; margin:12px 0;"></div>
           <label>Upload Task Excel (.xlsx)</label><br/>
           <input type="file" id="fileInput" accept=".xlsx" />
         </div>
@@ -371,6 +373,7 @@
           if (data.tasks) allTasks = data.tasks;
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           renderTasks();
+          renderOverviewDashboard();
         } else {
           console.log("⚠️ No Firestore document found!");
         }
@@ -770,6 +773,26 @@
           tbody.appendChild(tr);
         });
       }
+
+      function renderOverviewDashboard() {
+  	const container = document.getElementById('overviewDashboard');
+  	container.innerHTML = ''; // reset before rendering
+
+  	const total = allTasks.length;
+  	const pending = allTasks.filter(t => t.status === 'pending').length;
+  	const submitted = allTasks.filter(t => t.status === 'submitted').length;
+  	const approved = allTasks.filter(t => t.status === 'approved').length;
+  	const rejected = allTasks.filter(t => t.status === 'rejected').length;
+
+  	container.innerHTML = `
+    	  <div class="dashboard-card">📋 Total: ${total}</div>
+    	  <div class="dashboard-card">⏳ Pending: ${pending}</div>
+    	  <div class="dashboard-card">📮 Submitted: ${submitted}</div>
+    	  <div class="dashboard-card">✅ Approved: ${approved}</div>
+    	  <div class="dashboard-card">❌ Rejected: ${rejected}</div>
+        `;
+      }
+
 
       // create cards
       function createCard(t, i) {
