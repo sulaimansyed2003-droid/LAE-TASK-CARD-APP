@@ -252,8 +252,23 @@
 
     </div>
 
-    <div style="margin-top:10px;">
-      <input type="text" id="taskSearch" placeholder="Search tasks..." style="padding:8px;width:60%;" />
+    <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+      <input type="text" id="taskSearch" placeholder="Search tasks..." style="padding:8px; flex:1;" />
+
+      <select id="statusFilter" style="padding:8px;">
+        <option value="ALL">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="submitted">Submitted</option>
+        <option value="verified">Verified</option>
+      </select>
+
+      <select id="sortTasks" style="padding:8px;">
+        <option value="default">Sort: Default</option>
+        <option value="due">Sort by Due Date</option>
+        <option value="ata">Sort by ATA</option>
+        <option value="assigned">Sort by Assigned To</option>
+      </select>
+
       <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
     </div>
 
@@ -741,27 +756,48 @@
       [sAll, sAssigned, sDone].forEach(el => el.innerHTML = '');
 
       const sections = { all: [], assigned: [], done: [] };
-      allTasks.forEach((t, i) => {
-        const matchesSearch = !search || JSON.stringify(t).toLowerCase().includes(search);
-        if (!matchesSearch) return;
+      // ✅ Prepare a filtered + sorted copy first
+      let tasksToRender = [...allTasks];
 
-        if (t.status === "verified") {
-         sections.done.push([t, i]);
-       } else {
-         sections.all.push([t, i]);
-         if (currentUser) {
-           const taskName = (t.assignedTo || "").trim().toUpperCase();
-           const userName = (currentUser.name || "").trim().toUpperCase();
-            
-           if (currentUser.role === 'LAE' && t.assignedTo === currentUser.name) {
+      // 🔹 Search filter
+      tasksToRender = tasksToRender.filter(t =>
+        !search || JSON.stringify(t).toLowerCase().includes(search)
+      );
+
+      // 🔹 Status filter
+      if (selectedStatusFilter !== 'ALL') {
+        tasksToRender = tasksToRender.filter(t => t.status === selectedStatusFilter);
+       }
+
+       // 🔹 Sorting
+       if (selectedSort === 'due') {
+         tasksToRender.sort((a, b) => (a.due || '').localeCompare(b.due || ''));
+       } else if (selectedSort === 'ata') {
+         tasksToRender.sort((a, b) => (a.ata || '').localeCompare(b.ata || ''));
+       } else if (selectedSort === 'assigned') {
+         tasksToRender.sort((a, b) => (a.assignedTo || '').localeCompare(b.assignedTo || ''));
+       }
+
+       // ✅ Now just loop over tasksToRender (already filtered & sorted)
+       tasksToRender.forEach((t, i) => {
+         if (t.status === "verified") {
+           sections.done.push([t, i]);
+         } else {
+           sections.all.push([t, i]);
+           if (currentUser) {
+             const taskName = (t.assignedTo || "").trim().toUpperCase();
+             const userName = (currentUser.name || "").trim().toUpperCase();
+
+             if (currentUser.role === 'LAE' && t.assignedTo === currentUser.name) {
              sections.assigned.push([t, i]);
-           }
-           if (currentUser.role === 'OFFICER' && t.assignedTo) {
-             sections.assigned.push([t, i]);
-           }
          }
-       } 
-      });
+         if (currentUser.role === 'OFFICER' && t.assignedTo) {
+           sections.assigned.push([t, i]);
+         }
+       }
+     }
+   });
+ 
 
       // show all-done message for LAE
       if (currentUser && currentUser.role === 'LAE') {
@@ -1121,6 +1157,18 @@
       };
     }
     let selectedATAFilter = 'ALL';
+    let selectedSort = 'default';
+
+    // Hook up listeners
+    document.getElementById('statusFilter').addEventListener('change', e => {
+      selectedStatusFilter = e.target.value;
+      renderTasks();
+    });
+
+    document.getElementById('sortTasks').addEventListener('change', e => {
+      selectedSort = e.target.value;
+      renderTasks();
+    });
 
     // Overwriting renderTasks to respect selectedATAFilter
     const origRenderTasks = renderTasks;
