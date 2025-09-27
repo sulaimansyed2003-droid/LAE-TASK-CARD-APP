@@ -496,6 +496,11 @@
         document.getElementById('officerSection').classList.add('hidden');
       }
 
+      } else if (role === 'LAE') {
+          document.getElementById('officerSection').classList.add('hidden');
+          document.getElementById('laeSection').classList.remove('hidden'); // make sure this exists
+      }
+
       await loadSavedData();
       enableRealtimeSync();
         
