@@ -1016,8 +1016,7 @@
 
         // Reject action
         div.querySelector(".btn-reject").onclick = () => {
-          allTasks[t.index].status = "pending"; // send back to All Tasks
-          saveData();
+          verifyTaskByOfficer(t.index, false);
           renderApproval();
           renderTasks();
         };
@@ -1128,7 +1127,21 @@
     }
 
     function verifyTaskByOfficer(index, approved) {
-      if (allTasks[index].status !== "submitted") return;
+      if (approved) {
+         allTasks[index].status = "verified"; // approved
+       } else {
+         allTasks[index].status = "pending"; // rejected, goes back to All Tasks
+       }
+
+       window.setDoc(window.doc(window.db, "appData", "batikAir"), {
+         tasks: allTasks,
+         attendanceRecords: attendanceRecords
+       }).then(() => {
+         console.log("✅ Task status updated:", allTasks[index]);
+       }).catch(err => {
+         console.error("❌ Firestore update failed:", err);
+       });
+     }
       
       if (approved) {
         allTasks[index].status = "verified";
