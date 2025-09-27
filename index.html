@@ -363,21 +363,53 @@
     // Load data from Firestore (once)
     async function loadSavedData() {
       console.log("🔄 Loading Firestore data...");
+      const container = document.getElementById('taskContainer');
+      document.getElementById('taskContainer').innerHTML = "<p>Loading tasks...</p>";
+
+      let tasks = [];
+
+      const cached = JSON.parse(localStorage.getItem('cachedTasks') || "[]");
+      if(cached.length) {
+        tasks = cached;
+        batchIndex = 0; 
+        renderTasksBatch(tasks); // show first batch immediately
+      }
+
       try {
         const snap = await window.getDoc(window.doc(window.db, "appData", "batikAir"));
         if (snap.exists()) {
           console.log("✅ Got data:", snap.data());
           const data = snap.data();
-          if (data.tasks) allTasks = data.tasks;
+          if (data.tasks) {
+            allTasks = data.tasks;
+            tasks=allTasks;
+          }
+
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           renderTasks();
+          localStorage.setItem('cachedTasks', JSON.stringify(tasks));
+          batchIndex=0;
+          renderTasksBatch(tasks);  
+        
         } else {
           console.log("⚠️ No Firestore document found!");
         }
+
       } catch (e) {
         console.error("❌ Firestore load error:", e);
       }
+
+
+      container.addEventListener('scroll', () => {
+        if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+          renderTasksBatch(tasks);
+        }
+      });
+
+      // Remove loading message
+      container.querySelector('p')?.remove();
     }
+    
 
     // Live updates (sync across devices)
     function enableRealtimeSync() {
@@ -387,7 +419,13 @@
           console.log("📡 Live update received:", snap.data());
           const data = snap.data();
           if (data.tasks) allTasks = data.tasks;
+
+
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
+           localStorage.setItem('cachedTasks', JSON.stringify(tasks));
+
+      // 4️⃣ Reset batch index & render first batch from Firestore
+      batchIndex = 0;
           renderTasks();
         }
       });
@@ -499,11 +537,34 @@
           document.getElementById('officerSection').classList.add('hidden');
           document.getElementById('laeSection').classList.add('hidden');
       }
+      document.getElementById('taskContainer').innerHTML = "<p>Loading tasks...</p>";
 
       await loadSavedData();
       enableRealtimeSync();
         
     });
+    let batchSize = 20;   // number of tasks per scroll batch
+    let batchIndex = 0;   // keeps track of which batch we are on
+
+    function renderTasksBatch(tasksArray) {
+      const container = document.getElementById('taskContainer');
+
+      const start = batchIndex * batchSize;
+      const end = start + batchSize;
+      const batch = tasksArray.slice(start, end);
+
+      batch.forEach(task => {
+        const div = document.createElement('div');
+        div.classList.add('task-card');
+        div.textContent = task.title; // replace with your task fields if needed
+        container.appendChild(div);
+      });
+
+      batchIndex++;
+
+      // Return true if there are more tasks left
+      return batchIndex * batchSize < tasksArray.length;
+    }
 
 
     function signOut() {
