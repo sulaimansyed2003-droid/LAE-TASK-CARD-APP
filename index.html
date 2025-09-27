@@ -1182,6 +1182,12 @@
       renderTasks();
     });
 
+    document.getElementById('ataFilter')?.addEventListener('change', e => {
+      selectedATAFilter = e.target.value;
+      renderTasks();
+    });
+
+
     // Overwriting renderTasks to respect selectedATAFilter
     const origRenderTasks = renderTasks;
     renderTasks = function() {
