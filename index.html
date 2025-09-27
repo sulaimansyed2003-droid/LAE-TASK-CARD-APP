@@ -1129,8 +1129,12 @@
     function verifyTaskByOfficer(index, approved) {
       if (approved) {
          allTasks[index].status = "verified"; // approved
+         allTasks[index].verifiedBy = currentUser.name;
+         allTasks[index].verifiedAt = new Date();
        } else {
          allTasks[index].status = "pending"; // rejected, goes back to All Tasks
+         allTasks[index].completedBy = "";
+         allTasks[index].completedAt = null;
        }
 
        window.setDoc(window.doc(window.db, "appData", "batikAir"), {
@@ -1138,26 +1142,18 @@
          attendanceRecords: attendanceRecords
        }).then(() => {
          console.log("✅ Task status updated:", allTasks[index]);
-       }).catch(err => {
+         renderTasks();
+         checkAllTasksVerified();
+
+       })
+       .catch(err => {
          console.error("❌ Firestore update failed:", err);
        });
      }
       
-      if (approved) {
-        allTasks[index].status = "verified";
-        allTasks[index].verifiedBy = currentUser.name;
-        allTasks[index].verifiedAt = new Date();
-      } else {
-        allTasks[index].status = "pending";
-        allTasks[index].completedBy = "";
-        allTasks[index].completedAt = null;
-      }
-      
-      saveAppData();
-      renderTasks();
-      checkAllTasksVerified();
-    }
 
+
+    
     function checkAllTasksVerified() {
       if (!currentUser) return;
       
