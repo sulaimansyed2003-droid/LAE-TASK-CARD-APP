@@ -1003,7 +1003,10 @@
           <div class="block"><b>Description:</b> ${escapeHtml(t.description || '—')}</div>
           <div class="block"><b>Assigned To:</b> ${escapeHtml(t.assignedTo || 'None')}</div>
           <div class="block"><b>Status:</b> ${t.status}</div>
-          <button class="btn-approve">Approve</button>
+          <div class="task-actions">
+            <button class="btn-approve">Approve</button>
+            <button class="btn-reject">Reject</button>
+          </div>
         `;
         div.querySelector(".btn-approve").onclick = () => {
           verifyTaskByOfficer(t.index, true);
