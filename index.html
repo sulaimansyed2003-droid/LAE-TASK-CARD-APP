@@ -362,6 +362,26 @@
       }
     }
 
+      function renderOverviewDashboard() {
+  	const container = document.getElementById('overviewDashboard');
+        if (!container) return; // safety check if the div doesn't exist
+  	container.innerHTML = ''; // reset before rendering
+
+  	const total = allTasks.length;
+  	const pending = allTasks.filter(t => t.status === 'pending').length;
+  	const submitted = allTasks.filter(t => t.status === 'submitted').length;
+  	const approved = allTasks.filter(t => t.status === 'approved').length;
+  	const rejected = allTasks.filter(t => t.status === 'rejected').length;
+
+  	container.innerHTML = `
+    	  <div class="dashboard-card">📋 Total: ${total}</div>
+    	  <div class="dashboard-card">⏳ Pending: ${pending}</div>
+    	  <div class="dashboard-card">📮 Submitted: ${submitted}</div>
+    	  <div class="dashboard-card">✅ Approved: ${approved}</div>
+    	  <div class="dashboard-card">❌ Rejected: ${rejected}</div>
+        `;
+      }
+
     // Load data from Firestore (once)
     async function loadSavedData() {
       console.log("🔄 Loading Firestore data...");
@@ -374,6 +394,7 @@
           if (data.attendanceRecords) attendanceRecords = data.attendanceRecords;
           renderTasks();
           renderOverviewDashboard();
+
         } else {
           console.log("⚠️ No Firestore document found!");
         }
@@ -772,26 +793,6 @@
           tr.innerHTML = `<td style="border:1px solid #eee;padding:6px;">${name}</td><td style="border:1px solid #eee;padding:6px;text-align:center">${assigned}</td><td style="border:1px solid #eee;padding:6px;text-align:center">${done}</td><td style="border:1px solid #eee;padding:6px;text-align:center">${percent}%</td>`;
           tbody.appendChild(tr);
         });
-      }
-
-      function renderOverviewDashboard() {
-  	const container = document.getElementById('overviewDashboard');
-        if (!container) return; // safety check if the div doesn't exist
-  	container.innerHTML = ''; // reset before rendering
-
-  	const total = allTasks.length;
-  	const pending = allTasks.filter(t => t.status === 'pending').length;
-  	const submitted = allTasks.filter(t => t.status === 'submitted').length;
-  	const approved = allTasks.filter(t => t.status === 'approved').length;
-  	const rejected = allTasks.filter(t => t.status === 'rejected').length;
-
-  	container.innerHTML = `
-    	  <div class="dashboard-card">📋 Total: ${total}</div>
-    	  <div class="dashboard-card">⏳ Pending: ${pending}</div>
-    	  <div class="dashboard-card">📮 Submitted: ${submitted}</div>
-    	  <div class="dashboard-card">✅ Approved: ${approved}</div>
-    	  <div class="dashboard-card">❌ Rejected: ${rejected}</div>
-        `;
       }
 
 
