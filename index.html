@@ -54,6 +54,19 @@
       color: white !important;
     }
 
+
+    .task-card.overdue {
+      border-left: 4px solid #e74c3c; /* red border */
+      background: #ffecec;           /* light red background */
+    }
+
+    .task-card .due-warning {
+      color: #e74c3c;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
     #assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
     #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
@@ -877,7 +890,18 @@
       function createCard(t, i) {
         const card = document.createElement('div');
         card.className = 'task-card' + (t.status === "verified" ? ' done' : '');
-        const assignedSpan = t.assignedTo ? `<span class="assigned-bold">${t.assignedTo}</span>` : 'None';
+       
+        const dueDate = new Date(t.due);
+        const now = new Date();
+        let overdueText = '';
+        if (t.due && dueDate < now && t.status !== "verified") {
+          card.classList.add('overdue');
+          overdueText = `<span class="due-warning">⚠️ Overdue</span>`;
+        }
+      
+
+ const assignedSpan = t.assignedTo ? `<span class="assigned-bold">${t.assignedTo}</span>` : 'None';
+
         card.innerHTML = `
           <div class="task-header">ATA ${t.ata || '—'}</div>
           <div class="block"><b>Task Card / Ref:</b> ${escapeHtml(t.card || '—')}</div>
@@ -893,6 +917,8 @@
           </div>
           <div class="task-actions"></div>
         `;
+        return card;
+      }
         
         // Add completion/verification info if available
         const infoRow = document.createElement('div');
