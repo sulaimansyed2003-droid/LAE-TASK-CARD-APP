@@ -152,6 +152,18 @@
     <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
   </header>
 
+   <!-- 🔔 Notification container -->
+   <div id="notificationBox" style="
+     display:none;
+     background:#fffae6;
+     border-left:5px solid #f1c40f;
+     padding:10px;
+     margin:10px;
+     border-radius:6px;
+     font-weight:bold;
+     color:#333;
+   "></div>
+
   <!-- Mobile menu -->
   <div id="mobileMenu" class="mobile-menu">
     <button onclick="showSection('allTasks'); hideMobileMenu()">All Tasks</button>
@@ -1113,7 +1125,13 @@
       allTasks[i].verifiedAt = null;
       saveAppData();
       renderTasks();
+
+      // 🔔 Notification: Only show if the current logged-in user is the one assigned
+      if (currentUser && currentUser.role === 'LAE' && currentUser.name === name) {
+        showNotification(`📌 New task assigned to you: ${allTasks[i].card || 'No Ref'}`);
+      }
     }
+    
 
     function markTaskDoneByLAE(index) {
       if (allTasks[index].status !== "pending") return;
@@ -1443,6 +1461,17 @@
       const nice = nowMY.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric', timeZone:'Asia/Kuala_Lumpur' });
       document.getElementById('prodDatePill').textContent = `Date: ${nice} (MYT)`;
     }
+
+    function showNotification(msg) {
+      const box = document.getElementById('notificationArea');
+      if (!box) return;
+      box.textContent = msg;
+      box.style.display = 'block';
+      setTimeout(() => {
+        box.style.display = 'none';
+      }, 4000); // hide after 4s
+    }
+
 
     // ---------- Initialization ----------
     (function init() {
