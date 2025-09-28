@@ -54,7 +54,6 @@
       color: white !important;
     }
 
-
     .task-card.overdue {
       border-left: 4px solid #e74c3c; /* red border */
       background: #ffecec;           /* light red background */
@@ -891,13 +890,26 @@
         const card = document.createElement('div');
         card.className = 'task-card' + (t.status === "verified" ? ' done' : '');
        
-        const dueDate = new Date(t.due);
+        let dueDate = null;
+        if (t.due) {
+          // Try parsing YYYY-MM-DD (default Firestore export style)
+          if (/^\d{4}-\d{2}-\d{2}/.test(t.due)) {
+            dueDate = new Date(t.due);
+          }
+         // Try parsing DD/MM/YYYY
+         else if (/^\d{2}\/\d{2}\/\d{4}$/.test(t.due)) {
+           const [d, m, y] = t.due.split('/');
+           dueDate = new Date(`${y}-${m}-${d}`);
+          }
+        }
+
         const now = new Date();
         let overdueText = '';
-        if (t.due && dueDate < now && t.status !== "verified") {
+        if (dueDate && dueDate < now && t.status !== "verified") {
           card.classList.add('overdue');
           overdueText = `<span class="due-warning">⚠️ Overdue</span>`;
-        }
+         }
+
       
 
         const assignedSpan = t.assignedTo ? `<span class="assigned-bold">${t.assignedTo}</span>` : 'None';
