@@ -54,18 +54,6 @@
       color: white !important;
     }
 
-    .task-card.overdue {
-      border-left: 4px solid #e74c3c; /* red border */
-      background: #ffecec;           /* light red background */
-    }
-
-    .task-card .due-warning {
-      color: #e74c3c;
-      font-weight: bold;
-      margin-left: 8px;
-    }
-
-
     #allDoneMsg { text-align:center; font-size:18px; font-weight:bold; color:green; margin:20px 0; }
     #assignedOverview { background:#fff3f3; padding:10px; border-radius:8px; margin:15px 0; }
     #userInfo { background:#fff3f3; padding:10px; border-radius:8px; margin:10px 0; font-weight:bold; color:#800000; }
@@ -889,31 +877,7 @@
       function createCard(t, i) {
         const card = document.createElement('div');
         card.className = 'task-card' + (t.status === "verified" ? ' done' : '');
-       
-        let dueDate = null;
-        if (t.due) {
-          // Try parsing YYYY-MM-DD (default Firestore export style)
-          if (/^\d{4}-\d{2}-\d{2}/.test(t.due)) {
-            dueDate = new Date(t.due);
-          }
-         // Try parsing DD/MM/YYYY
-         else if (/^\d{2}\/\d{2}\/\d{4}$/.test(t.due)) {
-           const [d, m, y] = t.due.split('/');
-           dueDate = new Date(`${y}-${m}-${d}`);
-          }
-        }
-
-        const now = new Date();
-        let overdueText = '';
-        if (dueDate && dueDate < now && t.status !== "verified") {
-          card.classList.add('overdue');
-          overdueText = `<span class="due-warning">⚠️ Overdue</span>`;
-         }
-
-      
-
         const assignedSpan = t.assignedTo ? `<span class="assigned-bold">${t.assignedTo}</span>` : 'None';
-
         card.innerHTML = `
           <div class="task-header">ATA ${t.ata || '—'}</div>
           <div class="block"><b>Task Card / Ref:</b> ${escapeHtml(t.card || '—')}</div>
@@ -923,15 +887,12 @@
           <div class="block"><b>Remarks:</b> ${escapeHtml(t.remarks || '—')}</div>
           <div class="row">
             <div class="meta-pill">Manhour: ${escapeHtml(t.manhour || 'N/A')}</div>
-            <div class="meta-pill">Due: ${escapeHtml(t.due || 'N/A')} ${overdueText}</div>
-
+            <div class="meta-pill">Due: ${escapeHtml(t.due || 'N/A')}</div>
             <div class="meta-pill">Assigned To: ${assignedSpan}</div>
             <div class="meta-pill status-${t.status}">Status: ${t.status.toUpperCase()}</div>
           </div>
           <div class="task-actions"></div>
         `;
-        return card;
-      }
         
         // Add completion/verification info if available
         const infoRow = document.createElement('div');
