@@ -911,7 +911,8 @@
           <div class="block"><b>Remarks:</b> ${escapeHtml(t.remarks || '—')}</div>
           <div class="row">
             <div class="meta-pill">Manhour: ${escapeHtml(t.manhour || 'N/A')}</div>
-            <div class="meta-pill">Due: ${escapeHtml(t.due || 'N/A')}</div>
+            <div class="meta-pill">Due: ${escapeHtml(t.due || 'N/A')} ${overdueText}</div>
+
             <div class="meta-pill">Assigned To: ${assignedSpan}</div>
             <div class="meta-pill status-${t.status}">Status: ${t.status.toUpperCase()}</div>
           </div>
