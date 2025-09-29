@@ -152,6 +152,13 @@
     <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
   </header>
 
+   <!-- 🔔 Notification Button -->
+   <div style="margin-top:10px;">
+     <button id="notifyBtn" class="btn-toggle">Check Notifications 🔔</button>
+     <audio id="notifSound" src="ding.mp3" preload="auto"></audio>
+   </div>
+ </header>
+
    <!-- 🔔 Notification container -->
    <div id="notificationBox" style="
      display:none;
@@ -244,7 +251,7 @@
         </select>
         <button id="exportBtn" class="btn-toggle">Export Tasks (JSON)</button>
       </div>
-
+          <!-- Upload Task Excel -->
           <label>Upload Task Excel (.xlsx)</label><br/>
           <input type="file" id="fileInput" accept=".xlsx" />
         </div>
@@ -1475,10 +1482,25 @@
       if (!box) return;
       box.textContent = msg;
       box.style.display = 'block';
+
       setTimeout(() => {
         box.style.display = 'none';
       }, 4000); // hide after 4s
     }
+
+    function playNotificationSound() {
+      const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+      audio.play();
+    }
+
+    document.getElementById('fileInput').addEventListener('change', ev => {
+      const f = ev.target.files[0];
+      if (f) {
+        handleTaskFile(f); // your existing function that processes Excel
+        showNotification(`✅ Task Excel uploaded: ${f.name}`);
+        playNotificationSound();
+      }
+    });
 
 
     // ---------- Initialization ----------
