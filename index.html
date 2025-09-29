@@ -855,6 +855,23 @@
        }
      }
    });
+
+   // 🔔 Notification logic for LAE (place here, before officer overview)
+   if (currentUser && currentUser.role === 'LAE') {
+     const myTasks = allTasks.filter(t => t.assignedTo === currentUser.name);
+
+     // Keep memory of previous tasks
+     const prevAssigned = window.lastAssignedTasks || [];
+
+     // Detect new ones
+     const newOnes = myTasks.filter(t => !prevAssigned.includes(t.card));
+     newOnes.forEach(t => {
+       showNotification(`📌 New task assigned: ${t.card || 'No Ref'}`);
+     });
+
+     // Save for next render
+     window.lastAssignedTasks = myTasks.map(t => t.card);
+   }
  
 
       // show all-done message for LAE
