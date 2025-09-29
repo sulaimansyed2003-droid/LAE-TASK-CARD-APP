@@ -825,16 +825,6 @@
          tasksToRender.sort((a, b) => (a.assignedTo || '').localeCompare(b.assignedTo || ''));
        }
 
-       if (currentUser && currentUser.role === 'LAE') {
-         const myTasks = allTasks.filter(t => t.assignedTo === currentUser.name);
-         const prevAssigned = window.lastAssignedTasks || [];
-         const newOnes = myTasks.filter(t => !prevAssigned.includes(t.card));
-         newOnes.forEach(t => {
-           showNotification(`📌 New task assigned: ${t.card || 'No Ref'}`);
-         });
-         window.lastAssignedTasks = myTasks.map(t => t.card);
-       }
-
        // ✅ Now just loop over tasksToRender (already filtered & sorted)
        tasksToRender.forEach((t, i) => {
          if (t.status === "verified") {
@@ -921,6 +911,18 @@
           tbody.appendChild(tr);
         });
       }
+
+      // 🔔 Notification check for LAE
+      if (currentUser && currentUser.role === 'LAE') {
+        const myTasks = allTasks.filter(t => t.assignedTo === currentUser.name);
+        const prevAssigned = window.lastAssignedTasks || [];
+        const newOnes = myTasks.filter(t => !prevAssigned.includes(t.card));
+        newOnes.forEach(t => {
+          showNotification(`📌 New task assigned: ${t.card || 'No Ref'}`);
+        });
+        window.lastAssignedTasks = myTasks.map(t => t.card);
+      }
+  }
 
 
       // create cards
