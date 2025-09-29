@@ -795,7 +795,10 @@
 
     document.getElementById('fileInput').addEventListener('change', ev => {
       const f = ev.target.files[0];
-      handleTaskFile(f);
+      if (f) {
+        handleTaskFile(f);
+        showNotification(`✅ Task Excel uploaded: ${f.name}`);
+        playNotificationSound();
     });
 
     function renderTasks() {
@@ -1493,14 +1496,6 @@
       audio.play();
     }
 
-    document.getElementById('fileInput').addEventListener('change', ev => {
-      const f = ev.target.files[0];
-      if (f) {
-        handleTaskFile(f); // your existing function that processes Excel
-        showNotification(`✅ Task Excel uploaded: ${f.name}`);
-        playNotificationSound();
-      }
-    });
 
 
     // ---------- Initialization ----------
