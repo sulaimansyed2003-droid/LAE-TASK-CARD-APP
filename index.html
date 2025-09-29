@@ -245,6 +245,10 @@
           <label>Upload Task Excel (.xlsx)</label><br/>
           <input type="file" id="fileInput" accept=".xlsx" />
           <button onclick="playNotificationSound()">🔔 Test Sound</button>
+          <button onclick="showNotification('🔔 Test notification works!'); playNotificationSound();">
+  🔔 Test Notification
+          </button>
+
           <!-- 🔔 Notification box -->
           <div id="notificationBox" style="
 	    display:none;
@@ -1150,6 +1154,7 @@
       // 🔔 Notification: Only show if the current logged-in user is the one assigned
       if (currentUser && currentUser.role === 'LAE' && currentUser.name === name) {
         showNotification(`📌 New task assigned to you: ${allTasks[i].card || 'No Ref'}`);
+        playNotificationSound(); // 🔔 trigger sound at same time
       }
     }
     
