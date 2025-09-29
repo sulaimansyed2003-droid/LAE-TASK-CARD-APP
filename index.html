@@ -245,7 +245,7 @@
           <label>Upload Task Excel (.xlsx)</label><br/>
           <input type="file" id="fileInput" accept=".xlsx" />
           <button onclick="playNotificationSound()">🔔 Test Sound</button>
-          <button onclick="showNotification('🔔 Test notification works!'); playNotificationSound();">
+          <button onclick="showNotification('🔔 Test Notification!'); playNotificationSound();">
   🔔 Test Notification
           </button>
 
@@ -1171,7 +1171,7 @@
 
       // 🔔 notify officer
       if (currentUser.role === 'LAE') {
-        showNotification("📮 Task submitted for officer approval");
+        showNotification(`📮 ${currentUser.name} submitted task: ${allTasks[index].card || "No Ref"}`);
         playNotificationSound();
       }
     }
@@ -1182,19 +1182,11 @@
          allTasks[index].verifiedBy = currentUser.name;
          allTasks[index].verifiedAt = new Date();
 
-         // 🔔 notify
-         showNotification("✅ Task approved!");
-         playNotificationSound();
-
        } else {
          allTasks[index].status = "pending"; // rejected, goes back to All Tasks
          allTasks[index].completedBy = "";
          allTasks[index].completedAt = null;
        }
-
-         // 🔔 notify
-         showNotification("❌ Task rejected, back to pending");
-         playNotificationSound();
 
        setDoc(doc(window.db, "appData", "batikAir"), {
          tasks: allTasks,
@@ -1204,7 +1196,14 @@
          renderTasks();
          checkAllTasksVerified();
 
+         // 🔔 Notify LAE
+         if (currentUser && currentUser.role === "OFFICER") {
+           const action = approved ? "approved ✅" : "rejected ❌";
+           showNotification(`📢 Officer ${currentUser.name} ${action} task: ${allTasks[index].card || "No Ref"}`);
+           playNotificationSound();
+         }
        })
+        
        .catch(err => {
          console.error("❌ Firestore update failed:", err);
        });
