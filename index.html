@@ -1160,7 +1160,7 @@
     
 
     function markTaskDoneByLAE(index) {
-      if (allTasks[index].status !== "pending") return;
+      if (allTasks[index].status !== "rejected") return;
       
       allTasks[index].status = "submitted";
       allTasks[index].completedBy = currentUser.name;
