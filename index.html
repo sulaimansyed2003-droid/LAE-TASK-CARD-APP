@@ -459,7 +459,7 @@
   	const total = allTasks.length;
   	const pending = allTasks.filter(t => t.status === 'pending').length;
   	const submitted = allTasks.filter(t => t.status === 'submitted').length;
-  	const approved = allTasks.filter(t => t.status === 'approved').length;
+  	const verified = allTasks.filter(t => t.status === 'verified').length;
   	const rejected = allTasks.filter(t => t.status === 'rejected').length;
 
   	container.innerHTML = `
