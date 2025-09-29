@@ -1168,6 +1168,12 @@
       
       saveAppData();
       renderTasks();
+
+      // 🔔 notify officer
+      if (currentUser.role === 'LAE') {
+        showNotification("📮 Task submitted for officer approval");
+        playNotificationSound();
+      }
     }
 
     function verifyTaskByOfficer(index, approved) {
@@ -1175,13 +1181,22 @@
          allTasks[index].status = "verified"; // approved
          allTasks[index].verifiedBy = currentUser.name;
          allTasks[index].verifiedAt = new Date();
+
+         // 🔔 notify
+         showNotification("✅ Task approved!");
+         playNotificationSound();
+
        } else {
          allTasks[index].status = "pending"; // rejected, goes back to All Tasks
          allTasks[index].completedBy = "";
          allTasks[index].completedAt = null;
        }
 
-       window.setDoc(window.doc(window.db, "appData", "batikAir"), {
+         // 🔔 notify
+         showNotification("❌ Task rejected, back to pending");
+         playNotificationSound();
+
+       setDoc(doc(window.db, "appData", "batikAir"), {
          tasks: allTasks,
          attendanceRecords: attendanceRecords
        }).then(() => {
