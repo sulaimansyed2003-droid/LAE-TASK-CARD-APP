@@ -1168,6 +1168,7 @@
       
       saveAppData();
       renderTasks();
+      renderOverviewDashboard(); // <--- add this
 
       // 🔔 notify officer
       if (currentUser.role === 'LAE') {
@@ -1194,6 +1195,7 @@
        }).then(() => {
          console.log("✅ Task status updated:", allTasks[index]);
          renderTasks();
+         renderOverviewDashboard(); // 🔄 refresh counters
          checkAllTasksVerified();
 
          // 🔔 Notify LAE
