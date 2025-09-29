@@ -152,16 +152,18 @@
     <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
   </header>
 
-   <!-- 🔔 Notification container -->
    <div id="notificationBox" style="
-     display:none;
-     background:#fffae6;
-     border-left:5px solid #f1c40f;
-     padding:10px;
-     margin:10px;
-     border-radius:6px;
-     font-weight:bold;
-     color:#333;
+     position: fixed;
+     top: 60px;
+     right: 10px;
+     background: #333;
+     color: white;
+     padding: 10px 16px;
+     border-radius: 8px;
+     display: none;
+     z-index: 2000;
+     font-size: 14px;
+     box-shadow: 0 3px 6px rgba(0,0,0,0.3);
    "></div>
 
   <!-- Mobile menu -->
@@ -798,6 +800,7 @@
       const sAll = document.getElementById('allTasks');
       const sAssigned = document.getElementById('assignedTasks');
       const sDone = document.getElementById('doneTasks');
+      
       [sAll, sAssigned, sDone].forEach(el => el.innerHTML = '');
 
       const sections = { all: [], assigned: [], done: [] };
@@ -821,6 +824,16 @@
          tasksToRender.sort((a, b) => (a.ata || '').localeCompare(b.ata || ''));
        } else if (selectedSort === 'assigned') {
          tasksToRender.sort((a, b) => (a.assignedTo || '').localeCompare(b.assignedTo || ''));
+       }
+
+       if (currentUser && currentUser.role === 'LAE') {
+         const myTasks = allTasks.filter(t => t.assignedTo === currentUser.name);
+         const prevAssigned = window.lastAssignedTasks || [];
+         const newOnes = myTasks.filter(t => !prevAssigned.includes(t.card));
+         newOnes.forEach(t => {
+           showNotification(`📌 New task assigned: ${t.card || 'No Ref'}`);
+         });
+         window.lastAssignedTasks = myTasks.map(t => t.card);
        }
 
        // ✅ Now just loop over tasksToRender (already filtered & sorted)
@@ -879,6 +892,7 @@
           container.appendChild(ul);
           overviewDiv.appendChild(container);
         }
+
 
         const tbody = document.getElementById('productivityBody');
         tbody.innerHTML = '';
@@ -1471,7 +1485,7 @@
     }
 
     function showNotification(msg) {
-      const box = document.getElementById('notificationArea');
+      const box = document.getElementById('notificationBox');
       if (!box) return;
       box.textContent = msg;
       box.style.display = 'block';
