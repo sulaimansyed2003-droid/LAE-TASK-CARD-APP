@@ -11,6 +11,10 @@
     header { background:#800000; color:white; padding:14px; text-align:center; position:relative; }
     .login-box { display:flex; flex-direction:column; align-items:center; justify-content:center; height:70vh; gap:8px; }
     .login-box input, .login-box select, .login-box button { margin:5px; padding:8px; font-size:16px; min-width:220px; }
+    .login-box img {
+      max-width: 200px;
+      margin-bottom: 20px;
+    }
     .hidden { display:none !important; }
     .container { padding:20px; max-width:1200px; margin:0 auto; }
     .task-card { background:white; margin:10px 0; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.08); }
@@ -182,6 +186,10 @@
 
   <!-- LOGIN -->
   <div id="loginPage" class="login-box">
+     <img src="images/batikair-logo.png" 
+          alt="Batik Air Logo" 
+          style="max-width:180px; margin-bottom:20px;" />
+
     <h2>Sign In</h2>
     <input type="text" id="idInput" placeholder="Enter your ID (e.g., 12345)" />
     <select id="nameInput"><option value="">Loading names...</option></select>
