@@ -169,7 +169,7 @@
   <div id="mobileMenu" class="mobile-menu">
     <button onclick="showSection('allTasks'); hideMobileMenu()">Open Tasks</button>
     <button onclick="showSection('assignedTasks'); hideMobileMenu()">Assigned Tasks</button>
-    <button onclick="showSection('doneTasks'); hideMobileMenu()">Close Tasks</button>
+    <button onclick="showSection('doneTasks'); hideMobileMenu()">Closed Tasks</button>
     <button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
     <button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
     <button onclick="showSection('approvalSection'); hideMobileMenu()">Approvals</button>
@@ -186,7 +186,7 @@
 
   <!-- LOGIN -->
   <div id="loginPage" class="login-box">
-    <img src="images/batikair-logo.png" alt="Batik Air Logo" >
+    <img src="batikair-logo.png" alt="Batik Air Logo" >
     <h2>Sign In</h2>
     <input type="text" id="idInput" placeholder="Enter your ID (e.g., 12345)" />
     <select id="nameInput"><option value="">Loading names...</option></select>
@@ -206,7 +206,7 @@
     <nav>
       <button onclick="showSection('allTasks',this)">Open Tasks</button>
       <button onclick="showSection('assignedTasks', this)">Assigned Tasks</button>
-      <button onclick="showSection('doneTasks', this)">Close Tasks</button>
+      <button onclick="showSection('doneTasks', this)">Closed Tasks</button>
       <button onclick="showSection('prodDash', this)">Productivity Dashboard</button>
       <button onclick="showSection('attendanceSection', this)">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
