@@ -115,6 +115,18 @@
     .btn-reject { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
     .approval-history { margin-top: 10px; font-size: 12px; color: #666; }
     .approval-history div { margin-bottom: 4px; }
+
+    .comment-section {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 6px;
+    }
+    .comment-item {
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
    
     /* Officer Dashboard Cards */
     .dashboard-card {
@@ -131,6 +143,7 @@
     .dashboard-card.submitted { background: #3498db; }
     .dashboard-card.approved { background: #27ae60; }
     .dashboard-card.rejected { background: #e74c3c; }
+    
 
     /* 🔹 Make fonts bigger everywhere */
     body, input, select, button, table, .task-card, #clock {
@@ -785,6 +798,7 @@
           completedAt: null,
           verifiedBy: '',
           verifiedAt: null
+          comments: []   // 🔹 new field
         }));
         availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
 
@@ -1016,6 +1030,17 @@
           actions.appendChild(approvalSection);
         }
 
+        // 🔹 Comment section here
+        const commentSection = document.createElement('div');
+        commentSection.className = 'comment-section';
+        commentSection.innerHTML = `
+          <h4>💬 Comments</h4>
+          <div id="comments-${i}" class="comments-list"></div>
+          <textarea id="commentInput-${i}" placeholder="Write a comment..." style="width:100%;padding:6px;margin-top:6px;"></textarea>
+          <button onclick="addComment(${i})" class="btn-toggle" style="margin-top:6px;">Add Comment</button>
+        `;
+        card.appendChild(commentSection);
+        renderComments(i);
         return card;
       }
 
@@ -1033,6 +1058,42 @@
       saveData();                       // update Firestore
       renderTasks();                    // refresh UI
       renderApproval();                 // refresh approval list
+    }
+    
+    function addComment(index) {
+      const input = document.getElementById(`commentInput-${index}`);
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const newComment = {
+        user: currentUser ? currentUser.name : "Unknown",
+        role: currentUser ? currentUser.role : "User",
+        text,
+        time: new Date().toLocaleString()
+      };
+
+      allTasks[index].comments = allTasks[index].comments || [];
+      allTasks[index].comments.push(newComment);
+
+      saveAppData();  
+      renderComments(index);
+
+      input.value = ""; // clear input
+    }
+
+    function renderComments(index) {
+      const list = document.getElementById(`comments-${index}`);
+      if (!list) return;
+
+      list.innerHTML = "";
+      (allTasks[index].comments || []).forEach(c => {
+        const div = document.createElement("div");
+        div.className = "comment-item";
+        div.style = "border-bottom:1px solid #ddd;padding:4px 0;";
+        div.innerHTML = `<b>${c.user} (${c.role})</b> [${c.time}]<br/>${c.text}`;
+        list.appendChild(div);
+      });
     }
 
     function renderApproval() {
