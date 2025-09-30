@@ -170,7 +170,6 @@
     <button onclick="showSection('allTasks'); hideMobileMenu()">Open Tasks</button>
     <button onclick="showSection('assignedTasks'); hideMobileMenu()">Assigned Tasks</button>
     <button onclick="showSection('doneTasks'); hideMobileMenu()">Closed Tasks</button>
-    <button onclick="showSection('rejectedTasks'); hideMobileMenu()">Rejected Tasks</button>
     <button onclick="showSection('prodDash'); hideMobileMenu()">Productivity Dashboard</button>
     <button onclick="showSection('attendanceSection'); hideMobileMenu()">Attendance</button>
     <button onclick="showSection('approvalSection'); hideMobileMenu()">Approvals</button>
@@ -208,7 +207,6 @@
       <button onclick="showSection('allTasks',this)">Open Tasks</button>
       <button onclick="showSection('assignedTasks', this)">Assigned Tasks</button>
       <button onclick="showSection('doneTasks', this)">Closed Tasks</button>
-      <button onclick="showSection('rejectedTasks'); hideMobileMenu()">Rejected Tasks</button>
       <button onclick="showSection('prodDash', this)">Productivity Dashboard</button>
       <button onclick="showSection('attendanceSection', this)">Attendance</button>
       <button onclick="signOut()">Sign Out</button>
@@ -824,7 +822,7 @@
       const sDone = document.getElementById('doneTasks');
       [sAll, sAssigned, sDone].forEach(el => el.innerHTML = '');
 
-      const sections = { all: [], assigned: [], done: [], rejected: [] };
+      const sections = { all: [], assigned: [], done: [] };
       // ✅ Prepare a filtered + sorted copy first
       let tasksToRender = [...allTasks];
 
@@ -851,8 +849,6 @@
        tasksToRender.forEach((t, i) => {
          if (t.status === "verified") {
            sections.done.push([t, i]);
-         } else if (t.status === "rejected") {
-           sections.rejected.push([t, i]);
          } else {
            sections.all.push([t, i]);
            if (currentUser) {
@@ -1018,7 +1014,6 @@
       sections.all.forEach(([t, i]) => sAll.appendChild(createCard(t, i)));
       sections.assigned.forEach(([t, i]) => sAssigned.appendChild(createCard(t, i)));
       sections.done.forEach(([t, i]) => sDone.appendChild(createCard(t, i)));
-      sections.rejected.forEach(([t, i]) => document.getElementById('rejectedTasks').appendChild(createCard(t, i)));
 
       populateATAFilter();
     } // renderTasks
