@@ -868,20 +868,26 @@
        tasksToRender.forEach((t, i) => {
          if (t.status === "verified") {
            sections.done.push([t, i]);
+
          } else if (t.status === "rejected") {
            sections.rejected.push([t, i]);
+
          } else {
            sections.all.push([t, i]);
+
            if (currentUser) {
+             const taskName = (t.assignedTo || "").trim().toUpperCase();
+             const userName = (currentUser.name || "").trim().toUpperCase();
+
              if (currentUser.role === 'LAE' && t.assignedTo === currentUser.name) {
              sections.assigned.push([t, i]);
          }
-         if (currentUser.role === 'OFFICER' && t.assignedTo) {
-           sections.assigned.push([t, i]);
+             if (currentUser.role === 'OFFICER' && t.assignedTo) {
+               sections.assigned.push([t, i]);
+             }
+           }
          }
-       }
-     }
-   });
+       });
  
 
       // show all-done message for LAE
