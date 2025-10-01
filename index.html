@@ -1050,14 +1050,25 @@
           <button onclick="addComment(${i})" class="btn-toggle" style="margin-top:6px;">Add Comment</button>
         `;
         card.appendChild(commentSection);
-        renderComments(i);
+        
+        const list = commentSection.querySelector(`#comments-${i}`);
+        const comments = t.comments || [];
+        comments.forEach(c => {
+          const div = document.createElement("div");
+          div.className = "comment";
+          div.style.border = "1px solid #ddd";
+          div.style.padding = "4px";
+  	  div.style.marginTop = "4px";
+ 	  div.style.borderRadius = "4px";
+ 	  div.innerHTML = `
+ 	    <b>${c.author}</b>: ${c.text} <br/>
+   	    <small>${new Date(c.time).toLocaleString()}</small>
+          `;
+ 	  list.appendChild(div);
+	});
         return card;
-      }
-
-      sections.all.forEach(([t, i]) => sAll.appendChild(createCard(t, i)));
-      sections.assigned.forEach(([t, i]) => sAssigned.appendChild(createCard(t, i)));
-      sections.done.forEach(([t, i]) => sDone.appendChild(createCard(t, i)));
-      sections.rejected.forEach(([t, i]) => document.getElementById('rejectedTasks').appendChild(createCard(t, i)));
+        }
+        
 
       populateATAFilter();
     } // renderTasks
