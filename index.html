@@ -166,9 +166,11 @@
 <body>
   <header>
     <h1>Batik Air Task Card System</h1>
+    <button onclick="toggleDarkMode()" class="btn-toggle" style="position:absolute; left:12px; top:12px;">
+    🌙 Dark Mode
+  </button>
     <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
   </header>
-
    <!-- 🔔 Notification Button -->
    <div style="margin-top:10px;">
      <button id="notifyBtn" class="btn-toggle">Check Notifications 🔔</button>
@@ -372,6 +374,7 @@
       <h3>Productivity Dashboard (Roster)</h3>
       <p class="muted">Upload roster .xlsx. App auto-detects Malaysia date (GMT+8).</p>
       <div class="prod-row">
+        <div id="prodDatePill" style="margin:10px 0; font-weight:bold; color:#800000;"></div>
         <div><input type="file" id="prodFileInput" accept=".xlsx" /></div>
         <div><span class="meta-pill" id="prodDatePill">Date: —</span></div>
         <div><span class="meta-pill" id="prodCountsPill">Total LAEs: — | Working: — | Off: —</span></div>
