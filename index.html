@@ -1010,7 +1010,7 @@
         const tbody = document.getElementById('productivityBody');
         tbody.innerHTML = '';
         staffNames.forEach(name => {
-          const assigned = allTasks.filter(t => t.assignedTo === name).length;
+          const assigned = allTasks.filter(t => t.assignedTo === name  && t.status !== "rejected").length;
           const done = allTasks.filter(t => t.assignedTo === name && t.status === "verified").length;
           const percent = assigned > 0 ? Math.round(done / assigned * 100) : 0;
           const tr = document.createElement('tr');
