@@ -950,6 +950,9 @@
          if (t.status === "verified") {
            sections.done.push([t, i]);
 
+         } else if (t.status === "rejected") {
+           sections.rejected.push([t, i]);
+
          } else {
            sections.all.push([t, i]);
 
@@ -1127,7 +1130,7 @@
       sections.all.forEach(([t, i]) => sAll.appendChild(createCard(t, i)));
       sections.assigned.forEach(([t, i]) => sAssigned.appendChild(createCard(t, i)));
       sections.done.forEach(([t, i]) => sDone.appendChild(createCard(t, i)));
-      sections.rejected.forEach(([t, i]) => document.getElementById('rejectedTasks').appendChild(createCard(t, i)));
+      
 
       populateATAFilter();
     } // renderTasks
