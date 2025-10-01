@@ -636,6 +636,7 @@
         "assignedTasks",
         "doneTasks",
         "approvalSection",
+        "rejectedTasks",
         "commonDefects"
       ];
       sections.forEach(s => document.getElementById(s)?.classList.add('hidden'));
@@ -957,6 +958,9 @@
            sections.all.push([t, i]);
 
            if (currentUser) {
+             const taskName = (t.assignedTo || "").trim().toUpperCase();
+             const userName = (currentUser.name || "").trim().toUpperCase();
+
              if (currentUser.role === 'LAE' && t.assignedTo === currentUser.name) {
              sections.assigned.push([t, i]);
          }
