@@ -221,6 +221,15 @@
     <div id="loginTime"></div>
   </div>
   <style>
+ 
+  /* Full screen background image */
+  body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('myphoto.png') no-repeat center center fixed;
+    background-size: cover; /* cover entire screen */
+  }
   /* ===== LOGIN PAGE ANIMATIONS ===== */
   #loginPage {
     opacity: 0;
@@ -229,45 +238,19 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 70vh;
+    height: 100vh; /* full height */
     gap: 8px;
-  }  
-
-  /* Logo pop */
-  #loginPage img {
-    max-width: 400px;
-    margin-bottom: 20px;
-    transform: scale(0);
-    animation: logoPop 0.5s forwards 0.5s; /* start after fadeIn */
+    background: rgba(255, 255, 255, 0.8); /* semi-transparent box */
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   }
 
-  /* User photo pop */
-  .user-photo {
-    width: 150px;      
-    height: 150px;
-    border-radius: 50%; /* circular */
-    margin-bottom: 20px;
-    border: 2px solid #800000; 
-    transform: scale(0);
-    animation: photoPop 0.5s forwards 0.7s; /* after logo */
-  }
-
-  /* Fade-in login box */
+  /* Fade-in animation */
   @keyframes fadeInLogin {
     to { opacity: 1; }
   }
 
-  @keyframes logoPop {
-    0% { transform: scale(0); }
-    70% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-  }
- 
-  @keyframes photoPop {
-    0% { transform: scale(0); }
-    70% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-  }
 
   /* Inputs and button slide up */
   #loginPage input,
