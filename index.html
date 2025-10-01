@@ -1072,7 +1072,6 @@
     
     function addComment(index) {
       const input = document.getElementById(`commentInput-${index}`);
-      if (!input) return;
       const text = input.value.trim();
       if (!text) return;
 
@@ -1090,16 +1089,15 @@
 
        // Save and re-render
        saveAppData();
-       renderTasks();
+       renderComments(index);
      }
 
     function renderComments(index) {
-      const container = document.getElementById(`comments-${index}`);
-      if (!container) return;
- 
-      container.innerHTML = "";
-      const comments = allTasks[index].comments || [];
+      const list = document.getElementById(`comments-${index}`);
+      if (!list) return;
 
+      list.innerHTML = "";
+      const comments = allTasks[index].comments || [];
       comments.forEach(c => {
         const div = document.createElement("div");
         div.className = "comment";
@@ -1111,7 +1109,7 @@
           <b>${c.author}</b>: ${c.text} <br/>
           <small>${new Date(c.time).toLocaleString()}</small>
         `;
-        container.appendChild(div);
+        list.appendChild(div);
       });
     }
 
