@@ -605,15 +605,10 @@
     function signOut() {
       currentUser = null;
       localStorage.removeItem("currentUser");
-
-      // Show Clash of Clans style intro again
-      const intro = document.getElementById("intro");
-      if (intro) {
-        intro.style.display = "flex";
-        intro.style.opacity = "1";
-        intro.style.animation = "fadeOut 1s ease 3s forwards";
-      }
-   }
+      document.getElementById("app").classList.add("hidden");
+      document.getElementById("loginPage").classList.remove("hidden");
+     
+    }
 
     // ---------- Enhanced Attendance System ----------
     function loadAttendanceForDate() {
