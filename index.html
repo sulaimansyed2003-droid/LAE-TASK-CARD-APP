@@ -620,34 +620,34 @@
       }
 
       // ✅ Add this new function BELOW signOut
-    function showIntro(callback) {
-      const intro = document.getElementById("intro");
-      const img = intro.querySelector("img");
+      function showIntro(callback) {
+        const intro = document.getElementById("intro");
+        const img = intro.querySelector("img");
 
-      // Reset animation by forcing reflow
-      intro.classList.remove("hidden");
-      intro.style.animation = "none";
-      img.style.animation = "none";
-      void intro.offsetWidth; // force reflow
-      void img.offsetWidth;   // force reflow
+        // Reset animation by forcing reflow
+        intro.classList.remove("hidden");
+        intro.style.animation = "none";
+        img.style.animation = "none";
+        void intro.offsetWidth; // force reflow
+        void img.offsetWidth;   // force reflow
 
-      // Replay animations
-      intro.style.display = "flex";
-      intro.style.opacity = "1";
-      intro.style.animation = "fadeOut 1s ease 3s forwards";
-      img.style.opacity = "0";
-      img.style.transform = "scale(0.5)";
-      img.style.animation = "popIn 1s ease forwards";
+        // Replay animations
+        intro.style.display = "flex";
+        intro.style.opacity = "1";
+        intro.style.animation = "fadeOut 1s ease 3s forwards";
+        img.style.opacity = "0";
+        img.style.transform = "scale(0.5)";
+        img.style.animation = "popIn 1s ease forwards";
 
-      // After animation done
-      setTimeout(() => {
-        intro.classList.add("hidden");
-        if (callback) callback();
-      }, 4000);
-    }
-  </script>
-</body>
-</html>
+        // After animation done
+        setTimeout(() => {
+          intro.classList.add("hidden");
+          if (callback) callback();
+        }, 4000);
+      }
+    </script>
+  </body>
+  </html>
 
     // ---------- Enhanced Attendance System ----------
     function loadAttendanceForDate() {
