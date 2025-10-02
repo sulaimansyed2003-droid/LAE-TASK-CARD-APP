@@ -116,7 +116,7 @@
 <body>
 
   <!-- INTRO SCREEN -->
-  <div id="intro">
+  <div id="intro"  class="hidden">
     <img src="batikair-logo.png" alt="Batik Air Intro">
   </div>
 
@@ -604,11 +604,22 @@
 
     function signOut() {
       currentUser = null;
-      document.getElementById('app').classList.add('hidden');
-      document.getElementById('loginPage').classList.remove('hidden');
-      document.getElementById('userInfo').textContent = '';
-      hideMobileMenu();
-    }
+      localStorage.removeItem("currentUser");
+
+      // Show Clash of Clans style intro again
+      const intro = document.getElementById("intro");
+      if (intro) {
+        intro.style.display = "flex";
+        intro.style.opacity = "1";
+        intro.style.animation = "fadeOut 1s ease 3s forwards";
+      }
+
+      // Delay showing login until animation finishes
+      setTimeout(() => {
+        document.getElementById("app").classList.add("hidden");
+        document.getElementById("loginPage").classList.remove("hidden");
+     }, 3000); // matches the intro duration
+   }
 
     // ---------- Enhanced Attendance System ----------
     function loadAttendanceForDate() {
