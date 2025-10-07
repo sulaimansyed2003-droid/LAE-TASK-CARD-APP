@@ -770,7 +770,7 @@
         // Map known columns to internal fields
         allTasks = json.map(row => ({
           ata: row['ATA'] || row['ATA REF'] || row['ATA REF.'] || row['Ata'] || row['ATA CHAPTER'] ||  '',
-          card: row['TASK CARD NUM/ AMM REF'] || row['Task Card Number'] ||row['TASK CARD / REF'] || row['TASK CARD'] || row['Card Ref']  || row['No'] ||row['NUMBER'] || '',
+          card: row['TASK CARD NUM/ AMM REF'] ||row['TASK CARD NUM/\n AMM REF'] || row['Task Card Number'] ||row['TASK CARD / REF'] || row['TASK CARD'] || row['Card Ref']  || row['No'] ||row['NUMBER'] || '',
           description: row['TASK DESCRIPTION'] || row['Description'] || '',
           tools: row['TOOLS / TESTSET'] || row['Tools'] || '',
           consumables: row['CONSUMABLES / MSL'] || row['Consumables'] || '',
