@@ -774,7 +774,6 @@
           description: row['TASK DESCRIPTION'] || row['Description'] || '',
           tools: row['TOOLS / TESTSET'] || row['Tools'] || '',
           consumables: row['CONSUMABLES / MSL'] || row['Consumables'] || '',
-          workOrder: row['Work Order No'] || row['WORK ORDER'] || '',
           remarks: row['REMARKS'] || '',
           manhour: row['DURATION MANHOUR'] || row['Man Hour'] || '',
           due: row['DUE'] || '',
@@ -933,7 +932,6 @@
         const assignedSpan = t.assignedTo ? `<span class="assigned-bold">${t.assignedTo}</span>` : 'None';
         card.innerHTML = `
           <div class="task-header">ATA ${t.ata || '—'}</div>
-          <div class="block"><b>Work Order No:</b> ${escapeHtml(t.workOrder || '—')}</div>
           <div class="block"><b>Task Card / Ref:</b> ${escapeHtml(t.card || '—')}</div>
           <div class="block"><b>Description:</b> ${escapeHtml(t.description || '—')}</div>
           <div class="block"><b>Tools:</b> ${escapeHtml(t.tools || '—')}</div>
