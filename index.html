@@ -13,9 +13,14 @@
     .login-box { display:flex; flex-direction:column; align-items:center; justify-content:center; height:70vh; gap:8px; }
     .login-box input, .login-box select, .login-box button { margin:5px; padding:8px; font-size:16px; min-width:220px; }
     .login-box img { 
+      width: 100%;
       max-width: 400px; 
+      height: auto;
       margin-bottom: 20px; 
+      display: block;
+      object-fit: contain;
     }
+
     @media (max-width: 600px) {
       .login-box img {
         max-width: 150px;
