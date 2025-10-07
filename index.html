@@ -764,11 +764,13 @@
         const wb = XLSX.read(data, { type:'array' });
         const sh = wb.Sheets[wb.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(sh, { defval: '' });
+        console.log("Excel columns:", Object.keys(json[0]));
+
 
         // Map known columns to internal fields
         allTasks = json.map(row => ({
           ata: row['ATA'] || row['ATA REF'] || row['ATA REF.'] || row['Ata'] || row['ATA CHAPTER'] ||  '',
-          card: row['TASK CARD NUM/ AMM REF'] || row['Task Card Number'] || row['No'] ||'',
+          card: row['TASK CARD NUM/ AMM REF'] || row['Task Card Number'] ||row['TASK CARD / REF'] || row['TASK CARD'] || row['Card Ref']  || row['No'] ||row['NUMBER'] || '',
           description: row['TASK DESCRIPTION'] || row['Description'] || '',
           tools: row['TOOLS / TESTSET'] || row['Tools'] || '',
           consumables: row['CONSUMABLES / MSL'] || row['Consumables'] || '',
