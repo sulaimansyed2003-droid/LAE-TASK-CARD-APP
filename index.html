@@ -767,6 +767,8 @@
         console.log("Excel columns:", Object.keys(json[0]));
 
 
+         
+
         // Map known columns to internal fields
         allTasks = json.map(row => ({
           ata: row['ATA'] || row['ATA REF'] || row['ATA REF.'] || row['Ata'] || row['ATA CHAPTER'] ||  '',
