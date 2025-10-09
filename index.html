@@ -791,7 +791,12 @@
 
 
         return{
-          ata: currentATA|| row['ATA'] || row['ATA REF'] || row['ATA REF.'] || row['Ata'] || row['ATA CHAPTER'] || '',
+          ata: currentATA|| row['ATA'] || row['ATA REF'] || row['ATA REF.'] || row['Ata'] || row['ATA CHAPTER'] || '')
+                .toString()
+                .trim()
+                .replace(/^ATA\s*/i, 'ATA ') // ensures uniform "ATA XX" format
+                .toUpperCase()
+           ),
           card: row['TASK CARD NUM/ AMM REF'] ||row['TASK CARD NUM/\n AMM REF'] || row['Task Card Number'] ||row['TASK CARD / REF'] || row['TASK CARD'] || row['Card Ref']  || row['No'] ||row['NUMBER'] || '',
           description: row['TASK DESCRIPTION'] || row['Description'] || '',
           tools: row['TOOLS / TESTSET'] || row['Tools'] || '',
