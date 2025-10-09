@@ -791,7 +791,8 @@
 
 
         return{
-          ata: currentATA|| row['ATA'] || row['ATA REF'] || row['ATA REF.'] || row['Ata'] || row['ATA CHAPTER'] || '')
+          ata: ( 
+            (currentATA|| row['ATA'] || row['ATA REF'] || row['ATA REF.'] || row['Ata'] || row['ATA CHAPTER'] || '')
                 .toString()
                 .trim()
                 .replace(/^ATA\s*/i, 'ATA ') // ensures uniform "ATA XX" format
