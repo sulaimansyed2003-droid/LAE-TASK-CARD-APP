@@ -780,7 +780,8 @@
               row['Ata'] ||
               row['ATA CHAPTER'] ||
               row['TASK CARD NUM/ AMM REF'] || 
-              row['TASK CARD NUM/\n AMM REF'] || '';
+              row['TASK CARD NUM/\n AMM REF'] || 
+              ''
             ).toString().trim();
 
             if (/^ATA\s*\d+/i.test(firstCol)) {
