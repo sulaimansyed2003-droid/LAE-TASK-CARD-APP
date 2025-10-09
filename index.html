@@ -766,12 +766,22 @@
         const json = XLSX.utils.sheet_to_json(sh, { defval: '' });
         console.log("Excel columns:", Object.keys(json[0]));
 
-
+        let currentATA = ''; // keeps track of the last seen ATA
          
 
         // Map known columns to internal fields
-        allTasks = json.map(row => ({
-          ata: row['ATA'] || row['ATA REF'] || row['ATA REF.'] || row['Ata'] || row['ATA CHAPTER'] ||  '',
+        allTasks = json
+          .filter(row => Object.values(row).some(v => v !== '')) // skip empty rows
+          .map(row => ({
+          const firstCol = row['TASK CARD NUM/ AMM REF'] || row['TASK CARD NUM/\n AMM REF'] || '';
+          if (firstCol.toString().trim().startsWith('ATA')) {
+            currentATA = firstCol.toString().trim(); // update current ATA
+            return null; // skip ATA header rows
+          }
+
+
+        return{
+          ata: currentATA,
           card: row['TASK CARD NUM/ AMM REF'] ||row['TASK CARD NUM/\n AMM REF'] || row['Task Card Number'] ||row['TASK CARD / REF'] || row['TASK CARD'] || row['Card Ref']  || row['No'] ||row['NUMBER'] || '',
           description: row['TASK DESCRIPTION'] || row['Description'] || '',
           tools: row['TOOLS / TESTSET'] || row['Tools'] || '',
@@ -786,39 +796,38 @@
           verifiedBy: '',
           verifiedAt: null,
           comments: []   // 🔹 new field
-        }));
-        availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
+        };
+      })
+      .filter(Boolean); // remove null rows (ATA headers)
+    availableATAs = [...new Set(allTasks.map(t => t.ata).filter(Boolean))];
 
-        // 🔹 Save both tasks + Excel base64 into Firestore
-        const base64Excel = btoa(String.fromCharCode(...data));
-        await setDoc(doc(window.db, "appData", "batikAir"), {
-          tasks: allTasks,
-    	  attendanceRecords,
-      	  excelBase64: base64Excel
-        },
-        { merge: true }
-      );
+    // 🔹 Save both tasks + Excel base64 into Firestore
+    const base64Excel = btoa(String.fromCharCode(...data));
+    await setDoc(doc(window.db, "appData", "batikAir"), {
+      tasks: allTasks,
+      attendanceRecords,
+      excelBase64: base64Excel
+     },{ merge: true });
 
-      console.log("✅ Excel + tasks saved to Firestore");
-      await saveAppData();
+     console.log("✅ Excel + tasks saved to Firestore");
+     await saveAppData();
 
-      // Re-render tasks locally
-      renderTasks();
-       
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
+     // Re-render tasks locally
+     renderTasks();    
+   };
+   reader.readAsArrayBuffer(file);
+ }
 
 
-    document.getElementById('fileInput').addEventListener('change', ev => {
-      const f = ev.target.files[0];
-      if (f) {
-        handleTaskFile(f);
-        showNotification(`✅ Task Excel uploaded: ${f.name}`);
-        playNotificationSound();
-      }
-    });
+
+ document.getElementById('fileInput').addEventListener('change', ev => {
+   const f = ev.target.files[0];
+   if (f) {
+      handleTaskFile(f);
+      showNotification(`✅ Task Excel uploaded: ${f.name}`);
+      playNotificationSound();
+   }
+ });
 
     function renderTasks() {
       // basic search filter
