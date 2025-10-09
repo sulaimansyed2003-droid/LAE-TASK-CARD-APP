@@ -774,14 +774,14 @@
           .filter(row => Object.values(row).some(v => v !== '')) // skip empty rows
           .map(row => ({
           const firstCol = row['TASK CARD NUM/ AMM REF'] || row['TASK CARD NUM/\n AMM REF'] || '';
-          if (firstCol.toString().trim().startsWith('ATA')) {
+          if (firstCol.toString().trim().match(/^ATA\s*\d+/i)) {
             currentATA = firstCol.toString().trim(); // update current ATA
             return null; // skip ATA header rows
           }
 
 
         return{
-          ata: currentATA,
+          ata: currentATA, || row['ATA'] || row['ATA REF'] || row['ATA REF.'] || row['Ata'] || row['ATA CHAPTER'] || '',
           card: row['TASK CARD NUM/ AMM REF'] ||row['TASK CARD NUM/\n AMM REF'] || row['Task Card Number'] ||row['TASK CARD / REF'] || row['TASK CARD'] || row['Card Ref']  || row['No'] ||row['NUMBER'] || '',
           description: row['TASK DESCRIPTION'] || row['Description'] || '',
           tools: row['TOOLS / TESTSET'] || row['Tools'] || '',
