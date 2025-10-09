@@ -773,11 +773,20 @@
         allTasks = json
           .filter(row => Object.values(row).some(v => v !== '')) // skip empty rows
           .map(row => ({
-          const firstCol = row['TASK CARD NUM/ AMM REF'] || row['TASK CARD NUM/\n AMM REF'] || '';
-          if (firstCol.toString().trim().match(/^ATA\s*\d+/i)) {
-            currentATA = firstCol.toString().trim(); // update current ATA
-            return null; // skip ATA header rows
-          }
+            const firstCol = (
+              row['ATA'] ||
+              row['ATA REF'] ||
+              row['ATA REF.'] ||
+              row['Ata'] ||
+              row['ATA CHAPTER'] ||
+              row['TASK CARD NUM/ AMM REF'] || 
+              row['TASK CARD NUM/\n AMM REF'] || '';
+            ).toString().trim();
+
+            if (/^ATA\s*\d+/i.test(firstCol)) {
+               currentATA = firstCol; // store new ATA
+               return null; // skip this row from becoming a task
+            }
 
 
         return{
