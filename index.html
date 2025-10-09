@@ -853,6 +853,7 @@
       const sAssigned = document.getElementById('assignedTasks');
       const sDone = document.getElementById('doneTasks');
       [sAll, sAssigned, sDone].forEach(el => el.innerHTML = '');
+    
 
       const sections = { all: [], assigned: [], done: [], rejected: [] };
       // ✅ Prepare a filtered + sorted copy first
@@ -862,6 +863,9 @@
       tasksToRender = tasksToRender.filter(t =>
         !search || JSON.stringify(t).toLowerCase().includes(search)
       );
+
+      console.log("Selected ATA:", document.getElementById('ataFilter')?.value);
+      console.log("Available task ATAs:", [...new Set(allTasks.map(t => t.ata))]);
 
       // 🔹 Status filter
       if (selectedStatusFilter !== 'ALL') {
