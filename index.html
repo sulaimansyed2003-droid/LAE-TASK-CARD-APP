@@ -772,7 +772,7 @@
         // Map known columns to internal fields
         allTasks = json
           .filter(row => Object.values(row).some(v => v !== '')) // skip empty rows
-          .map(row => ({
+          .map(row => {
             const firstCol = (
               row['ATA'] ||
               row['ATA REF'] ||
